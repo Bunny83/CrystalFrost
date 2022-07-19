@@ -4,10 +4,10 @@ Open source Unity based Second Life viewer using LibreMetaverse.
 At current there is no working build. The initial commit is just the LibreMetaverse code adapted to use with Unity with no errors or warnings.
 I need to figure out how to actually log in now.
 
-The terms of use for the source code for this project are that you may download and modify the source for your own personal use, but may not distribute any changes without written permission from copyright holder of CrystalFrost, known on Github as JennaScvl. We do however welcome submissions and improvements, as well as people who wish to join the team.
+Unless otherwise noted at the top of a given file, the terms of use and redistribution for the source code for this project are that you may download and modify the source for your own personal use, but may not distribute any changes without written permission from copyright holder of CrystalFrost, known on Github as JennaScvl. We do however welcome submissions and improvements, as well as people who wish to join the team.
 
-This project is neither endorsed by nor associated with but uses code that is licensed from openmetaverse.co and Sjofn LLC.
-Below is the required copyright notice.
+This project is neither endorsed by nor associated with but uses code and content that is licensed from openmetaverse.co and Sjofn LLC.
+Below is the required copyright notice, which applies SOLELY to the code and content in the libremetaverse folder and to no other code in the project.
 
  * Copyright (c) 2006-2016, openmetaverse.co
  * Copyright (c) 2019-2022, Sjofn, LLC
