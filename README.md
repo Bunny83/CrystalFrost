@@ -9,7 +9,6 @@ The terms of use for the source code for this project are that you may download 
 This project is neither endorsed by nor associated with but uses code that is licensed from openmetaverse.co and Sjofn LLC.
 Below is the required copyright notice.
 
-/*
  * Copyright (c) 2006-2016, openmetaverse.co
  * Copyright (c) 2019-2022, Sjofn, LLC
  * All rights reserved.
@@ -34,4 +33,3 @@ Below is the required copyright notice.
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
- */
