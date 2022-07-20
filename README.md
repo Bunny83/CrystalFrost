@@ -1,8 +1,7 @@
 # CrystalFrost
-Open source Unity based Second Life viewer using LibreMetaverse.
+Open source Unity 2021.3.6f1 LTS based Second Life viewer using LibreMetaverse.
 
-At current there is no working build. The initial commit is just the LibreMetaverse code adapted to use with Unity with no errors or warnings.
-I need to figure out how to actually log in now.
+At current there is no working build, but the source code does work. It let syou log in and spawns boxes at the right scale, position, and rotation for most of the objects in the current sim. There is some basic movement and teleport code but it's not tied into any controls at the moment.
 
 Unless otherwise noted at the top of a given file, the terms of use and redistribution for the source code for this project are that you may download and modify the source for your own personal (but not commercial) use, but may not distribute any changes without written permission from copyright holder of CrystalFrost, known on Github as JennaScvl. We do however welcome submissions and improvements, as well as people who wish to join the team.
 
