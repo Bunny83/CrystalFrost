@@ -4239,7 +4239,7 @@ namespace OpenMetaverse.Messages.Linden
             public Face[] Faces;
             public ExtraParam[] ExtraParams;
             public UUID GroupID;
-            public Material Material;
+            public OMVMaterial Material;
             public string Name;
             public OMVVector3 Position;
             public OMVQuaternion Rotation;
@@ -4336,7 +4336,7 @@ namespace OpenMetaverse.Messages.Linden
             public void Deserialize(OSDMap map)
             {
                 GroupID = map["group-id"].AsUUID();
-                Material = (Material)map["material"].AsInteger();
+                Material = (OMVMaterial)map["material"].AsInteger();
                 Name = map["name"].AsString();
                 Position = map["pos"].AsVector3();
                 Rotation = map["rotation"].AsQuaternion();

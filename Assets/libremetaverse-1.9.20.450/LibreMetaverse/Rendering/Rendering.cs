@@ -87,7 +87,7 @@ namespace OpenMetaverse.Rendering
         [FieldOffset(12)]
         public OMVVector3 Normal;
         [FieldOffset(24)]
-        public Vector2 TexCoord;
+        public OMVVector2 TexCoord;
 
         public override string ToString()
         {
@@ -154,7 +154,7 @@ namespace OpenMetaverse.Rendering
     public struct PathPoint
     {
         public OMVVector3 Position;
-        public Vector2 Scale;
+        public OMVVector2 Scale;
         public OMVQuaternion Rotation;
         public float TexT;
     }
@@ -232,7 +232,7 @@ namespace OpenMetaverse.Rendering
     public class FacetedMesh : OMVMesh
     {
         /// <summary>List of primitive faces</summary>
-        public List<Face> Faces;
+        public List<Face> faces;
 
         /// <summary>
         /// Decodes mesh asset into FacetedMesh
@@ -257,7 +257,7 @@ namespace OpenMetaverse.Rendering
 
                 mesh = new FacetedMesh
                 {
-                    Faces = new List<Face>(),
+                    faces = new List<Face>(),
                     Prim = prim,
                     Profile =
                     {
@@ -341,8 +341,8 @@ namespace OpenMetaverse.Rendering
                         }
 
                         // UV texture map
-                        Vector2 texPosMax = Vector2.Zero;
-                        Vector2 texPosMin = Vector2.Zero;
+                        OMVVector2 texPosMax = OMVVector2.Zero;
+                        OMVVector2 texPosMin = OMVVector2.Zero;
                         byte[] texBytes = null;
                         if (subMeshMap.ContainsKey("TexCoord0"))
                         {
@@ -386,7 +386,7 @@ namespace OpenMetaverse.Rendering
                                 ushort tX = Utils.BytesToUInt16(texBytes, vertexIndexOffset);
                                 ushort tY = Utils.BytesToUInt16(texBytes, vertexIndexOffset + 2);
 
-                                vx.TexCoord = new Vector2(
+                                vx.TexCoord = new OMVVector2(
                                     Utils.UInt16ToFloat(tX, texPosMin.X, texPosMax.X),
                                     Utils.UInt16ToFloat(tY, texPosMin.Y, texPosMax.Y));
                             }
@@ -405,7 +405,7 @@ namespace OpenMetaverse.Rendering
                             oface.Indices.Add(v3);
                         }
 
-                        mesh.Faces.Add(oface);
+                        mesh.faces.Add(oface);
                     }
                 }
 

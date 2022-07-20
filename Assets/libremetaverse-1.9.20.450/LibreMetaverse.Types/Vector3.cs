@@ -63,7 +63,7 @@ namespace OpenMetaverse
             Z = value;
         }
 
-        public OMVVector3(Vector2 value, float z)
+        public OMVVector3(OMVVector2 value, float z)
         {
             X = value.X;
             Y = value.Y;

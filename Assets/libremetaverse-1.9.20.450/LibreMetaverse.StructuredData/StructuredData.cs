@@ -89,7 +89,7 @@ namespace OpenMetaverse.StructuredData
         public virtual DateTime AsDate() { return Utils.Epoch; }
         public virtual Uri AsUri() { return null; }
         public virtual byte[] AsBinary() { return Utils.EmptyBytes; }
-        public virtual Vector2 AsVector2() { return Vector2.Zero; }
+        public virtual OMVVector2 AsVector2() { return OMVVector2.Zero; }
         public virtual OMVVector3 AsVector3() { return OMVVector3.Zero; }
         public virtual Vector3d AsVector3d() { return Vector3d.Zero; }
         public virtual Vector4 AsVector4() { return Vector4.Zero; }
@@ -117,7 +117,7 @@ namespace OpenMetaverse.StructuredData
         public static OSD FromUri(Uri value) { return new OSDUri(value); }
         public static OSD FromBinary(byte[] value) { return new OSDBinary(value); }
 
-        public static OSD FromVector2(Vector2 value)
+        public static OSD FromVector2(OMVVector2 value)
         {
             OSDArray array = new OSDArray
             {
@@ -223,7 +223,7 @@ namespace OpenMetaverse.StructuredData
                     return new OSDBinary(l);
                 case ulong ul:
                     return new OSDBinary(ul);
-                case Vector2 vector2:
+                case OMVVector2 vector2:
                     return FromVector2(vector2);
                 case OMVVector3 vector3:
                     return FromVector3(vector3);
@@ -348,7 +348,7 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator OSD(DateTime value) { return new OSDDate(value); }
         public static implicit operator OSD(Uri value) { return new OSDUri(value); }
         public static implicit operator OSD(byte[] value) { return new OSDBinary(value); }
-        public static implicit operator OSD(Vector2 value) { return FromVector2(value); }
+        public static implicit operator OSD(OMVVector2 value) { return FromVector2(value); }
         public static implicit operator OSD(OMVVector3 value) { return FromVector3(value); }
         public static implicit operator OSD(Vector3d value) { return FromVector3d(value); }
         public static implicit operator OSD(Vector4 value) { return FromVector4(value); }
@@ -367,7 +367,7 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator DateTime(OSD value) { return value.AsDate(); }
         public static implicit operator Uri(OSD value) { return value.AsUri(); }
         public static implicit operator byte[](OSD value) { return value.AsBinary(); }
-        public static implicit operator Vector2(OSD value) { return value.AsVector2(); }
+        public static implicit operator OMVVector2(OSD value) { return value.AsVector2(); }
         public static implicit operator OMVVector3(OSD value) { return value.AsVector3(); }
         public static implicit operator Vector3d(OSD value) { return value.AsVector3d(); }
         public static implicit operator Vector4(OSD value) { return value.AsVector4(); }
@@ -1032,9 +1032,9 @@ namespace OpenMetaverse.StructuredData
             return binary.AsUInteger();
         }
 
-        public override Vector2 AsVector2()
+        public override OMVVector2 AsVector2()
         {
-            Vector2 vector = Vector2.Zero;
+            OMVVector2 vector = OMVVector2.Zero;
 
             if (Count == 2)
             {

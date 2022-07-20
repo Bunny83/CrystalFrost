@@ -179,7 +179,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Material type for a primitive
     /// </summary>
-    public enum Material : byte
+    public enum OMVMaterial : byte
     {
         /// <summary></summary>
         Stone = 0,

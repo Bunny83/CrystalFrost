@@ -549,8 +549,8 @@ namespace OpenMetaverse.Assets
             public float ParticleMaxAge;
             public Color4 ParticleStartColor;
             public Color4 ParticleEndColor;
-            public Vector2 ParticleStartScale;
-            public Vector2 ParticleEndScale;
+            public OMVVector2 ParticleStartScale;
+            public OMVVector2 ParticleEndScale;
 
             public OSDMap Serialize()
             {
@@ -1094,10 +1094,10 @@ namespace OpenMetaverse.Assets
             prim.Particles.MaxAge = obj.ParticleSys.MaxAge;
             prim.Particles.OuterAngle = obj.ParticleSys.OuterAngle;
             prim.Particles.ParticleEndColor = obj.ParticleSys.PartEndColor;
-            prim.Particles.ParticleEndScale = new Vector2(obj.ParticleSys.PartEndScaleX, obj.ParticleSys.PartEndScaleY);
+            prim.Particles.ParticleEndScale = new OMVVector2(obj.ParticleSys.PartEndScaleX, obj.ParticleSys.PartEndScaleY);
             prim.Particles.ParticleMaxAge = obj.ParticleSys.MaxAge;
             prim.Particles.ParticleStartColor = obj.ParticleSys.PartStartColor;
-            prim.Particles.ParticleStartScale = new Vector2(obj.ParticleSys.PartStartScaleX, obj.ParticleSys.PartStartScaleY);
+            prim.Particles.ParticleStartScale = new OMVVector2(obj.ParticleSys.PartStartScaleX, obj.ParticleSys.PartStartScaleY);
             prim.Particles.Pattern = (int)obj.ParticleSys.Pattern;
             prim.Particles.StartAge = obj.ParticleSys.StartAge;
             prim.Particles.TargetID = obj.ParticleSys.Target;
@@ -1189,7 +1189,7 @@ namespace OpenMetaverse.Assets
             prim.ID = this.ID;
             prim.Properties.LastOwnerID = this.LastOwnerID;
             prim.LocalID = this.LocalID;
-            prim.PrimData.Material = (Material)this.Material;
+            prim.PrimData.Material = (OMVMaterial)this.Material;
             prim.Properties.Name = this.Name;
             prim.OwnerID = this.OwnerID;
             prim.ParentID = this.ParentID;

@@ -614,15 +614,15 @@ namespace OpenMetaverse.ImportExport
                 }
             }
 
-            Vector2[] uvs = null;
+            OMVVector2[] uvs = null;
             if (uvSrc != null)
             {
                 var uvVal = ((float_array)uvSrc.Item).Values;
-                uvs = new Vector2[uvVal.Length / 2];
+                uvs = new OMVVector2[uvVal.Length / 2];
 
                 for (int i = 0; i < uvs.Length; i++)
                 {
-                    uvs[i] = new Vector2((float)uvVal[i * 2 + 0], (float)uvVal[i * 2 + 1]);
+                    uvs[i] = new OMVVector2((float)uvVal[i * 2 + 0], (float)uvVal[i * 2 + 1]);
                 }
 
             }

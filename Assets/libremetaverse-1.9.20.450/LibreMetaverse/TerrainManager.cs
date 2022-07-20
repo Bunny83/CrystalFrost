@@ -143,7 +143,7 @@ namespace OpenMetaverse
             if (simulator.Client.Settings.STORE_LAND_PATCHES)
             {
                 for (int i = 0; i < 256; i++)
-                    simulator.WindSpeeds[i] = new Vector2(xvalues[i], yvalues[i]);
+                    simulator.WindSpeeds[i] = new OMVVector2(xvalues[i], yvalues[i]);
             }
         }
 

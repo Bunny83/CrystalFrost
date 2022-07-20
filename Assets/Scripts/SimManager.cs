@@ -23,11 +23,14 @@ public class SimManager : MonoBehaviour
     GameObject cube;
     [SerializeField]
     GameObject blank;
+    [SerializeField]
+    Material blankMaterial;
 
     List<PrimEventArgs> objectsToRez = new List<PrimEventArgs>();
     List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
 
     Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
+
 
     void Start()
     {
@@ -75,15 +78,24 @@ public class SimManager : MonoBehaviour
                 {
 
                 }
+                go.name = prim.Type.ToString();
 
-                if(prim.Type == PrimType.Cylinder)
+                /*if(prim.Type == PrimType.Mesh)
+                {
+                    OMVMesh omvMesh = null;
+                    //omvMesh = Rendering.
+
+                }
+                else*/
+                if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
+                //if(prim.Type == PrimType.Cylinder)
                 {
                     Rendering.SimpleMesh omesh = new Rendering.SimpleMesh();//(OMV.Primitive prim, OMVR.DetailLevel lod);
                     omesh.Prim = prim;
-                    Rendering.IRendering mesher = null;
-
-                    LibreMetaverse.PrimMesher.PrimMesh primMesh = null;
-                    primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
+                    //Rendering.IRendering mesher = null;
+                    //prim.PrimData
+                    //go.name = prim.Type.ToString();
+                    /*primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
                     Mesh mesh = new Mesh();
                     mesh.Clear();
                     Vector3[] vertices = new Vector3[primMesh.coords.Count];
@@ -100,15 +112,74 @@ public class SimManager : MonoBehaviour
                     for(i=0; i<=mesh.triangles.Length; i++)
                     {
                     //    mesh.triangles[i] = primMesh.faces[i].n1
+                    }*/
+
+                    //Debug.Log(prim.PrimData.ProfileBegin.ToString());
+
+#if true
+                    //PrimMesh primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
+                    MeshmerizerR mesher = new MeshmerizerR();
+                    FacetedMesh fmesh = mesher.GenerateFacetedMesh(prim, DetailLevel.Highest);
+                    //Jenny.Console.WriteLine($"Cylinder has {fmesh.faces.Count.ToString()} faces");
+
+                    Mesh mesh = new Mesh();
+                    Mesh subMesh = new Mesh();
+                    MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+                    MeshRenderer rendr = go.GetComponent<MeshRenderer>();
+
+                    int i;
+                    int j;
+                    int v=0;
+
+                    Vector3[] vertices;
+                    int[] indices;
+                    Vector3[] normals;
+                    Vector2[] uvs;
+                    
+                    for(i=0;i<fmesh.faces.Count;i++)
+                    {
+                        v += fmesh.faces[i].Vertices.Count;
                     }
-                    //MeshmerizerR.GenerateSimpleMesh(prim, Rendering.DetailLevel.Highest);
-                    //omesh.Path = GeneratePath(prim.PrimData, 1.0); ;
-                    //omesh.Profile = profile;
-                    //omesh.Vertices = GenerateVertices();
-                    //omesh.Indices = GenerateIndices();
+
+                    Debug.Log($"Cylinder {prim.LocalID.ToString()} has {v} vertices");
+
+                    vertices = new Vector3[v];
+                    indices = new int[vertices.Length];
+                    normals = new Vector3[vertices.Length];
+                    uvs = new Vector2[vertices.Length];
+                    mesh.subMeshCount = fmesh.faces.Count;
+                    v = 0;
+
+                    for (j = 0; j < fmesh.faces.Count; j++)
+                    {
+                        for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
+                        {
+                            vertices[v] = fmesh.faces[j].Vertices[i].Position.ToUnity();
+                            //indices[i] = fmesh.faces[j].Indices[i];
+                            normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity();
+                            uvs[i] = fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                            v++;
+                        }
+                        //Debug.Log()
+                        //mesh.SetTriangles(fmesh.faces[j].Indices, j);
+                    }
+                    mesh.vertices = vertices;
+                    mesh.normals = normals;
+                    mesh.uv = uvs;
+                    rendr.materials = new Material[fmesh.faces.Count];
 
 
-                    //prim.PrimData.
+                    for (j=0;j<fmesh.faces.Count;j++)
+                    {
+                        //mesh.SetVertices()
+                        //Debug.Log($"mesh has {mesh.vertices.")
+                        mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, j);
+                        rendr.materials[j] = Instantiate(blankMaterial);
+                    }
+
+
+                    meshFilter.mesh = mesh;
+#endif
                 }
             }
             //Do not add code to manipulate the object below this line

@@ -383,7 +383,7 @@ namespace OpenMetaverse
 
         public readonly TerrainPatch[] Terrain;
 
-        public readonly Vector2[] WindSpeeds;
+        public readonly OMVVector2[] WindSpeeds;
 
         /// <summary>
         /// Provides access to an internal thread-safe dictionary containing parcel
@@ -539,7 +539,7 @@ namespace OpenMetaverse
             if (client.Settings.STORE_LAND_PATCHES)
             {
                 Terrain = new TerrainPatch[16 * 16];
-                WindSpeeds = new Vector2[16 * 16];
+                WindSpeeds = new OMVVector2[16 * 16];
             }
         }
 

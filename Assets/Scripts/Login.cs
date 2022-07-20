@@ -49,6 +49,7 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
         ClientManager.client.Settings.ALWAYS_REQUEST_OBJECTS = true;
         ClientManager.client.Settings.ALWAYS_DECODE_OBJECTS = true;
+        
         ClientManager.client.Settings.OBJECT_TRACKING = true;
         loginUI.SetActive(true);
         //ClientManager.client.Objects.
@@ -82,9 +83,8 @@ public class Login : MonoBehaviour
 
     }
 
-    IEnumerator LogOut(int secs)
+    public void LogOut()
     {
-        yield return new WaitForSeconds(secs);
         Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log out.");
         ClientManager.client.Network.Logout();
         loginUI.SetActive(true);

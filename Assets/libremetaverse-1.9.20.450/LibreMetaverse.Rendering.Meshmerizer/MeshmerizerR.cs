@@ -134,9 +134,9 @@ namespace OpenMetaverse.Rendering
         {
             var faceted = GenerateFacetedSculptMesh(prim, sculptTexture, lod);
 
-            if (faceted != null && faceted.Faces.Count == 1)
+            if (faceted != null && faceted.faces.Count == 1)
             {
-                Face face = faceted.Faces[0];
+                Face face = faceted.faces[0];
 
                 SimpleMesh mesh = new SimpleMesh
                 {
@@ -174,7 +174,7 @@ namespace OpenMetaverse.Rendering
             // copy the vertex information into IRendering structures
             var omvrmesh = new FacetedMesh
             {
-                Faces = new List<Face>(),
+                faces = new List<Face>(),
                 Prim = prim,
                 Profile = new Profile
                 {
@@ -200,7 +200,7 @@ namespace OpenMetaverse.Rendering
                     var m = indexer.viewerVertices[i][j];
                     vert.Position = new OMVVector3(m.v.X, m.v.Y, m.v.Z);
                     vert.Normal = new OMVVector3(m.n.X, m.n.Y, m.n.Z);
-                    vert.TexCoord = new Vector2(m.uv.U, 1.0f - m.uv.V);
+                    vert.TexCoord = new OMVVector2(m.uv.U, 1.0f - m.uv.V);
                     oface.Vertices.Add(vert);
                 }
 
@@ -214,7 +214,7 @@ namespace OpenMetaverse.Rendering
                     oface.Indices.Add((ushort)p.v3);
                 }
 
-                omvrmesh.Faces.Add(oface);
+                omvrmesh.faces.Add(oface);
             }
 
             return omvrmesh;
@@ -271,7 +271,7 @@ namespace OpenMetaverse.Rendering
             // copy the vertex information into IRendering structures
             FacetedMesh omvrmesh = new FacetedMesh
             {
-                Faces = new List<Face>(),
+                faces = new List<Face>(),
                 Prim = prim,
                 Profile = new Profile
                 {
@@ -297,7 +297,7 @@ namespace OpenMetaverse.Rendering
                     {
                         Position = new OMVVector3(newMesh.coords[j].X, newMesh.coords[j].Y, newMesh.coords[j].Z),
                         Normal = new OMVVector3(newMesh.normals[j].X, newMesh.normals[j].Y, newMesh.normals[j].Z),
-                        TexCoord = new Vector2(newMesh.uvs[j].U, newMesh.uvs[j].V)
+                        TexCoord = new OMVVector2(newMesh.uvs[j].U, newMesh.uvs[j].V)
                     };
                     oface.Vertices.Add(vert);
                 }
@@ -313,7 +313,7 @@ namespace OpenMetaverse.Rendering
                 {
                     oface.TextureFace = prim.Textures.FaceTextures[ii] ?? prim.Textures.DefaultTexture;
                     oface.ID = ii;
-                    omvrmesh.Faces.Add(oface);
+                    omvrmesh.faces.Add(oface);
                 }
             }
 
@@ -469,7 +469,7 @@ namespace OpenMetaverse.Rendering
             OSDArray meshFaces = meshOSD as OSDArray;
             if (meshFaces != null)
             {
-                ret = new FacetedMesh {Faces = new List<Face>()};
+                ret = new FacetedMesh {faces = new List<Face>()};
                 for (int faceIndex = 0; faceIndex < meshFaces.Count; faceIndex++)
                 {
                     AddSubMesh(prim, faceIndex, meshFaces[faceIndex], ref ret);
@@ -606,7 +606,7 @@ namespace OpenMetaverse.Rendering
                 oface.Vertices = CollectVertices(subMeshMap);
                 oface.Indices = CollectIndices(subMeshMap);
 
-                holdingMesh.Faces.Add(oface);
+                holdingMesh.faces.Add(oface);
             }
         }
 
@@ -640,8 +640,8 @@ namespace OpenMetaverse.Rendering
             }
 
             // UV texture map
-            Vector2 texPosMax = Vector2.Zero;
-            Vector2 texPosMin = Vector2.Zero;
+            OMVVector2 texPosMax = OMVVector2.Zero;
+            OMVVector2 texPosMin = OMVVector2.Zero;
             byte[] texBytes = null;
             if (subMeshMap.ContainsKey("TexCoord0"))
             {
@@ -686,7 +686,7 @@ namespace OpenMetaverse.Rendering
                     ushort tX = Utils.BytesToUInt16(texBytes, vertexIndexOffset);
                     ushort tY = Utils.BytesToUInt16(texBytes, vertexIndexOffset + 2);
 
-                    vx.TexCoord = new Vector2(
+                    vx.TexCoord = new OMVVector2(
                         Utils.UInt16ToFloat(tX, texPosMin.X, texPosMax.X),
                         Utils.UInt16ToFloat(tY, texPosMin.Y, texPosMax.Y));
                 }
@@ -900,7 +900,7 @@ namespace OpenMetaverse.Rendering
                 {
                     Position = new OMVVector3(newMesh.coords[j].X, newMesh.coords[j].Y, newMesh.coords[j].Z),
                     Normal = new OMVVector3(newMesh.normals[j].X, newMesh.normals[j].Y, newMesh.normals[j].Z),
-                    TexCoord = new Vector2(newMesh.uvs[j].U, newMesh.uvs[j].V)
+                    TexCoord = new OMVVector2(newMesh.uvs[j].U, newMesh.uvs[j].V)
                 };
                 terrain.Vertices.Add(vert);
             }

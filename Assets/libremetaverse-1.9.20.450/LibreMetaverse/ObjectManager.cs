@@ -1873,7 +1873,7 @@ namespace OpenMetaverse
                 #region Decode Object (primitive) parameters
                 Primitive.ConstructionData data = new Primitive.ConstructionData();
                 data.State = block.State;
-                data.Material = (Material)block.Material;
+                data.Material = (OMVMaterial)block.Material;
                 data.PathCurve = (PathCurve)block.PathCurve;
                 data.profileCurve = block.ProfileCurve;
                 data.PathBegin = Primitive.UnpackBeginCut(block.PathBegin);
@@ -2430,7 +2430,7 @@ namespace OpenMetaverse
                     // CRC
                     i += 4;
                     // Material
-                    prim.PrimData.Material = (Material)block.Data[i++];
+                    prim.PrimData.Material = (OMVMaterial)block.Data[i++];
                     // Click action
                     prim.ClickAction = (ClickAction)block.Data[i++];
                     // Scale
@@ -2946,7 +2946,7 @@ namespace OpenMetaverse
         {
             Primitive.ConstructionData prim = new Primitive.ConstructionData();
             prim.PCode = PCode.Prim;
-            prim.Material = Material.Wood;
+            prim.Material = OMVMaterial.Wood;
 
             switch (type)
             {
@@ -3110,7 +3110,7 @@ namespace OpenMetaverse
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="material">The new material of the object</param>
-        public void SetMaterial(Simulator simulator, uint localID, Material material)
+        public void SetMaterial(Simulator simulator, uint localID, OMVMaterial material)
         {
             ObjectMaterialPacket matPacket = new ObjectMaterialPacket();
 

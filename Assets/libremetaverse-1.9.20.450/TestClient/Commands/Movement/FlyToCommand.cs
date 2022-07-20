@@ -6,9 +6,9 @@ namespace OpenMetaverse.TestClient_.Commands.Movement
     {
 
         OMVVector3 myPos = new OMVVector3();
-        Vector2 myPos0 = new Vector2();
+        OMVVector2 myPos0 = new OMVVector2();
         OMVVector3 target = new OMVVector3();
-        Vector2 target0 = new Vector2();
+        OMVVector2 target0 = new OMVVector2();
         float diff, olddiff, saveolddiff;
         int startTime = 0;
         int duration = 10000;
@@ -95,8 +95,8 @@ namespace OpenMetaverse.TestClient_.Commands.Movement
             myPos = Client.Self.SimPosition;
             myPos0.X = myPos.X;
             myPos0.Y = myPos.Y;
-            diff = Vector2.Distance(target0, myPos0);
-            Vector2 vvel = new Vector2(Client.Self.Velocity.X, Client.Self.Velocity.Y);
+            diff = OMVVector2.Distance(target0, myPos0);
+            OMVVector2 vvel = new OMVVector2(Client.Self.Velocity.X, Client.Self.Velocity.Y);
             float vel = vvel.Length();
             if (diff >= 10.0)
             {

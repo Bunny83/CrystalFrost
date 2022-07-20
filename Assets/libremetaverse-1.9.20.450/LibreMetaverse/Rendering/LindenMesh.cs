@@ -80,8 +80,8 @@ namespace OpenMetaverse.Rendering
             public OMVVector3 Coord;                       //!< 3d co-ordinate of the vertex
             public OMVVector3 Normal;                      //!< Normal of the vertex
             public OMVVector3 BiNormal;                    //!< Bi normal of the vertex
-            public Vector2 TexCoord;                    //!< UV maping of the vertex
-            public Vector2 DetailTexCoord;              //!< Detailed? UV mapping
+            public OMVVector2 TexCoord;                    //!< UV maping of the vertex
+            public OMVVector2 DetailTexCoord;              //!< Detailed? UV mapping
             public float Weight;                        //!< Used to calculate the skin weights
 
             /// <summary>
@@ -103,7 +103,7 @@ namespace OpenMetaverse.Rendering
             public OMVVector3 Coord;               //!< Delta position
             public OMVVector3 Normal;              //!< Delta normal
             public OMVVector3 BiNormal;            //!< Delta BiNormal
-            public Vector2 TexCoord;            //!< Delta UV mapping
+            public OMVVector2 TexCoord;            //!< Delta UV mapping
 
             /// <summary>
             /// Provide a nice format for debugging
@@ -332,12 +332,12 @@ namespace OpenMetaverse.Rendering
                     Vertices[i].BiNormal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
                 for (int i = 0; i < NumVertices; i++)
-                    Vertices[i].TexCoord = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+                    Vertices[i].TexCoord = new OMVVector2(reader.ReadSingle(), reader.ReadSingle());
 
                 if (HasDetailTexCoords)
                 {
                     for (int i = 0; i < NumVertices; i++)
-                        Vertices[i].DetailTexCoord = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+                        Vertices[i].DetailTexCoord = new OMVVector2(reader.ReadSingle(), reader.ReadSingle());
                 }
 
                 if (HasWeights)
@@ -388,7 +388,7 @@ namespace OpenMetaverse.Rendering
                         morph.Vertices[i].Coord = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                         morph.Vertices[i].Normal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                         morph.Vertices[i].BiNormal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                        morph.Vertices[i].TexCoord = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+                        morph.Vertices[i].TexCoord = new OMVVector2(reader.ReadSingle(), reader.ReadSingle());
                     }
 
                     morphs.Add(morph);

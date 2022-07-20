@@ -61,7 +61,7 @@ namespace OpenMetaverse.Rendering
             mesh.Prim = prim;
             mesh.Path = path;
             mesh.Profile = profile;
-            mesh.Faces = GenerateFaces(prim.Textures);
+            mesh.faces = GenerateFaces(prim.Textures);
 
             return mesh;
         }
@@ -99,7 +99,7 @@ namespace OpenMetaverse.Rendering
 
             // FIXME: Implement these
             v.Normal = OMVVector3.Zero;
-            v.TexCoord = Vector2.Zero;
+            v.TexCoord = OMVVector2.Zero;
 
             v.Position = new OMVVector3(0.5f, 0.5f, -0.5f);
             vertices.Add(v);

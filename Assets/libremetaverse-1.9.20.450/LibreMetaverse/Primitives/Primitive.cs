@@ -87,7 +87,7 @@ namespace OpenMetaverse
             public float ProfileHollow;
 
             /// <summary></summary>
-            public Material Material;
+            public OMVMaterial Material;
             /// <summary></summary>
             public byte State;
             /// <summary></summary>
@@ -125,11 +125,11 @@ namespace OpenMetaverse
             }
 
             /// <summary></summary>
-            public Vector2 PathBeginScale
+            public OMVVector2 PathBeginScale
             {
                 get
                 {
-                    Vector2 begin = new Vector2(1f, 1f);
+                    OMVVector2 begin = new OMVVector2(1f, 1f);
                     if (PathScaleX > 1f)
                         begin.X = 2f - PathScaleX;
                     if (PathScaleY > 1f)
@@ -139,11 +139,11 @@ namespace OpenMetaverse
             }
 
             /// <summary></summary>
-            public Vector2 PathEndScale
+            public OMVVector2 PathEndScale
             {
                 get
                 {
-                    Vector2 end = new Vector2(1f, 1f);
+                    OMVVector2 end = new OMVVector2(1f, 1f);
                     if (PathScaleX < 1f)
                         end.X = PathScaleX;
                     if (PathScaleY < 1f)
@@ -1103,7 +1103,7 @@ namespace OpenMetaverse
             #region Path/Profile
 
             data.profileCurve = (byte)0;
-            data.Material = (Material)map["material"].AsInteger();
+            data.Material = (OMVMaterial)map["material"].AsInteger();
             data.PCode = (PCode)map["pcode"].AsInteger();
             data.State = (byte)map["state"].AsInteger();
 

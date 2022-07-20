@@ -301,7 +301,7 @@ namespace OpenMetaverse.Packets
             result.AppendFormat("{0,30}: {1,-3} {2,-36} [{3}]" + Environment.NewLine,
                 "Material",
                 block[i],
-                "(" + (Material) block[i++] + ")",
+                "(" + (OMVMaterial) block[i++] + ")",
                 "Material");
 
             // Click action
@@ -945,7 +945,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeObjectMaterial(string fieldName, object fieldData)
         {
-            return $"{fieldName,30}: {fieldData,-3} {"(" + (Material) (byte) fieldData + ")",-36} [Material]";
+            return $"{fieldName,30}: {fieldData,-3} {"(" + (OMVMaterial) (byte) fieldData + ")",-36} [Material]";
         }
 
         private static string DecodeObjectClickAction(string fieldName, object fieldData)

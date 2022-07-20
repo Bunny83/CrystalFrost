@@ -94,8 +94,8 @@ namespace OpenMetaverse.ImportExport
                 OSDMap faceMap = new OSDMap();
 
                 // Find UV min/max
-                Vector2 uvMin = new Vector2(float.MaxValue, float.MaxValue);
-                Vector2 uvMax = new Vector2(float.MinValue, float.MinValue);
+                OMVVector2 uvMin = new OMVVector2(float.MaxValue, float.MaxValue);
+                OMVVector2 uvMax = new OMVVector2(float.MinValue, float.MinValue);
                 foreach (var v in face.Vertices)
                 {
                     if (v.TexCoord.X < uvMin.X) uvMin.X = v.TexCoord.X;
