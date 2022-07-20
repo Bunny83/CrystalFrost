@@ -35,7 +35,7 @@ namespace OpenMetaverse
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Vector3 : IComparable<Vector3>, IEquatable<Vector3>
+    public struct OMVVector3 : IComparable<OMVVector3>, IEquatable<OMVVector3>
     {
         /// <summary>X value</summary>
         public float X;
@@ -48,28 +48,28 @@ namespace OpenMetaverse
 
         #region Constructors
 
-        public Vector3(float x, float y, float z)
+        public OMVVector3(float x, float y, float z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public Vector3(float value)
+        public OMVVector3(float value)
         {
             X = value;
             Y = value;
             Z = value;
         }
 
-        public Vector3(Vector2 value, float z)
+        public OMVVector3(Vector2 value, float z)
         {
             X = value.X;
             Y = value.Y;
             Z = z;
         }
 
-        public Vector3(Vector3d vector)
+        public OMVVector3(Vector3d vector)
         {
             X = (float)vector.X;
             Y = (float)vector.Y;
@@ -81,13 +81,13 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="byteArray">Byte array containing three four-byte floats</param>
         /// <param name="pos">Beginning position in the byte array</param>
-        public Vector3(byte[] byteArray, int pos)
+        public OMVVector3(byte[] byteArray, int pos)
         {
             X = Y = Z = 0f;
             FromBytes(byteArray, pos);
         }
 
-        public Vector3(Vector3 vector)
+        public OMVVector3(OMVVector3 vector)
         {
             X = vector.X;
             Y = vector.Y;
@@ -122,16 +122,16 @@ namespace OpenMetaverse
         /// between the two vectors</param>
         /// <returns>True if the magnitude of difference between the two vectors
         /// is less than the given tolerance, otherwise false</returns>
-        public bool ApproxEquals(Vector3 vec, float tolerance)
+        public bool ApproxEquals(OMVVector3 vec, float tolerance)
         {
-            Vector3 diff = this - vec;
+            OMVVector3 diff = this - vec;
             return (diff.LengthSquared() <= tolerance * tolerance);
         }
 
         /// <summary>
         /// IComparable.CompareTo implementation
         /// </summary>
-        public int CompareTo(Vector3 vector)
+        public int CompareTo(OMVVector3 vector)
         {
             return Length().CompareTo(vector.Length());
         }
@@ -210,7 +210,7 @@ namespace OpenMetaverse
 
         #region Static Methods
 
-        public static Vector3 Add(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Add(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X += value2.X;
             value1.Y += value2.Y;
@@ -218,28 +218,28 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 Clamp(Vector3 value1, Vector3 min, Vector3 max)
+        public static OMVVector3 Clamp(OMVVector3 value1, OMVVector3 min, OMVVector3 max)
         {
-            return new Vector3(
+            return new OMVVector3(
                 Utils.Clamp(value1.X, min.X, max.X),
                 Utils.Clamp(value1.Y, min.Y, max.Y),
                 Utils.Clamp(value1.Z, min.Z, max.Z));
         }
 
-        public static Vector3 Cross(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Cross(OMVVector3 value1, OMVVector3 value2)
         {
-            return new Vector3(
+            return new OMVVector3(
                 value1.Y * value2.Z - value2.Y * value1.Z,
                 value1.Z * value2.X - value2.Z * value1.X,
                 value1.X * value2.Y - value2.X * value1.Y);
         }
 
-        public static float Distance(Vector3 value1, Vector3 value2)
+        public static float Distance(OMVVector3 value1, OMVVector3 value2)
         {
             return (float)Math.Sqrt(DistanceSquared(value1, value2));
         }
 
-        public static float DistanceSquared(Vector3 value1, Vector3 value2)
+        public static float DistanceSquared(OMVVector3 value1, OMVVector3 value2)
         {
             return
                 (value1.X - value2.X) * (value1.X - value2.X) +
@@ -247,7 +247,7 @@ namespace OpenMetaverse
                 (value1.Z - value2.Z) * (value1.Z - value2.Z);
         }
 
-        public static Vector3 Divide(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Divide(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X /= value2.X;
             value1.Y /= value2.Y;
@@ -255,7 +255,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 Divide(Vector3 value1, float value2)
+        public static OMVVector3 Divide(OMVVector3 value1, float value2)
         {
             float factor = 1f / value2;
             value1.X *= factor;
@@ -264,41 +264,41 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static float Dot(Vector3 value1, Vector3 value2)
+        public static float Dot(OMVVector3 value1, OMVVector3 value2)
         {
             return value1.X * value2.X + value1.Y * value2.Y + value1.Z * value2.Z;
         }
 
-        public static Vector3 Lerp(Vector3 value1, Vector3 value2, float amount)
+        public static OMVVector3 Lerp(OMVVector3 value1, OMVVector3 value2, float amount)
         {
-            return new Vector3(
+            return new OMVVector3(
                 Utils.Lerp(value1.X, value2.X, amount),
                 Utils.Lerp(value1.Y, value2.Y, amount),
                 Utils.Lerp(value1.Z, value2.Z, amount));
         }
 
-        public static float Mag(Vector3 value)
+        public static float Mag(OMVVector3 value)
         {
             return (float)Math.Sqrt((value.X * value.X) + (value.Y * value.Y) + (value.Z * value.Z));
         }
 
-        public static Vector3 Max(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Max(OMVVector3 value1, OMVVector3 value2)
         {
-            return new Vector3(
+            return new OMVVector3(
                 Math.Max(value1.X, value2.X),
                 Math.Max(value1.Y, value2.Y),
                 Math.Max(value1.Z, value2.Z));
         }
 
-        public static Vector3 Min(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Min(OMVVector3 value1, OMVVector3 value2)
         {
-            return new Vector3(
+            return new OMVVector3(
                 Math.Min(value1.X, value2.X),
                 Math.Min(value1.Y, value2.Y),
                 Math.Min(value1.Z, value2.Z));
         }
 
-        public static Vector3 Multiply(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Multiply(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X *= value2.X;
             value1.Y *= value2.Y;
@@ -306,7 +306,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 Multiply(Vector3 value1, float scaleFactor)
+        public static OMVVector3 Multiply(OMVVector3 value1, float scaleFactor)
         {
             value1.X *= scaleFactor;
             value1.Y *= scaleFactor;
@@ -314,7 +314,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 Negate(Vector3 value)
+        public static OMVVector3 Negate(OMVVector3 value)
         {
             value.X = -value.X;
             value.Y = -value.Y;
@@ -322,7 +322,7 @@ namespace OpenMetaverse
             return value;
         }
 
-        public static Vector3 Normalize(Vector3 value)
+        public static OMVVector3 Normalize(OMVVector3 value)
         {
             const float MAG_THRESHOLD = 0.0000001f;
             float factor = Distance(value, Zero);
@@ -347,17 +347,17 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="val">A string representation of a 3D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
-        public static Vector3 Parse(string val)
+        public static OMVVector3 Parse(string val)
         {
             char[] splitChar = { ',' };
             string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar);
-            return new Vector3(
+            return new OMVVector3(
                 Single.Parse(split[0].Trim(), Utils.EnUsCulture),
                 Single.Parse(split[1].Trim(), Utils.EnUsCulture),
                 Single.Parse(split[2].Trim(), Utils.EnUsCulture));
         }
 
-        public static bool TryParse(string val, out Vector3 result)
+        public static bool TryParse(string val, out OMVVector3 result)
         {
             try
             {
@@ -366,7 +366,7 @@ namespace OpenMetaverse
             }
             catch (Exception)
             {
-                result = Vector3.Zero;
+                result = OMVVector3.Zero;
                 return false;
             }
         }
@@ -376,13 +376,13 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="a">Normalized directional vector (such as 1,0,0 for forward facing)</param>
         /// <param name="b">Normalized target vector</param>
-        public static Quaternion RotationBetween(Vector3 a, Vector3 b)
+        public static Quaternion RotationBetween(OMVVector3 a, OMVVector3 b)
         {
             float dotProduct = Dot(a, b);
-            Vector3 crossProduct = Cross(a, b);
+            OMVVector3 crossProduct = Cross(a, b);
             float magProduct = a.Length() * b.Length();
             double angle = Math.Acos(dotProduct / magProduct);
-            Vector3 axis = Normalize(crossProduct);
+            OMVVector3 axis = Normalize(crossProduct);
             float s = (float)Math.Sin(angle / 2d);
 
             return new Quaternion(
@@ -395,15 +395,15 @@ namespace OpenMetaverse
         /// <summary>
         /// Interpolates between two vectors using a cubic equation
         /// </summary>
-        public static Vector3 SmoothStep(Vector3 value1, Vector3 value2, float amount)
+        public static OMVVector3 SmoothStep(OMVVector3 value1, OMVVector3 value2, float amount)
         {
-            return new Vector3(
+            return new OMVVector3(
                 Utils.SmoothStep(value1.X, value2.X, amount),
                 Utils.SmoothStep(value1.Y, value2.Y, amount),
                 Utils.SmoothStep(value1.Z, value2.Z, amount));
         }
 
-        public static Vector3 Subtract(Vector3 value1, Vector3 value2)
+        public static OMVVector3 Subtract(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X -= value2.X;
             value1.Y -= value2.Y;
@@ -411,17 +411,17 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 Transform(Vector3 position, Matrix4 matrix)
+        public static OMVVector3 Transform(OMVVector3 position, Matrix4 matrix)
         {
-            return new Vector3(
+            return new OMVVector3(
                 (position.X * matrix.M11) + (position.Y * matrix.M21) + (position.Z * matrix.M31) + matrix.M41,
                 (position.X * matrix.M12) + (position.Y * matrix.M22) + (position.Z * matrix.M32) + matrix.M42,
                 (position.X * matrix.M13) + (position.Y * matrix.M23) + (position.Z * matrix.M33) + matrix.M43);
         }
 
-        public static Vector3 TransformNormal(Vector3 position, Matrix4 matrix)
+        public static OMVVector3 TransformNormal(OMVVector3 position, Matrix4 matrix)
         {
-            return new Vector3(
+            return new OMVVector3(
                 (position.X * matrix.M11) + (position.Y * matrix.M21) + (position.Z * matrix.M31),
                 (position.X * matrix.M12) + (position.Y * matrix.M22) + (position.Z * matrix.M32),
                 (position.X * matrix.M13) + (position.Y * matrix.M23) + (position.Z * matrix.M33));
@@ -433,10 +433,10 @@ namespace OpenMetaverse
 
         public override bool Equals(object obj)
         {
-            return (obj is Vector3 v3) && this == v3;
+            return (obj is OMVVector3 v3) && this == v3;
         }
 
-        public bool Equals(Vector3 other)
+        public bool Equals(OMVVector3 other)
         {
             return this == other;
         }
@@ -475,19 +475,19 @@ namespace OpenMetaverse
 
         #region Operators
 
-        public static bool operator ==(Vector3 value1, Vector3 value2)
+        public static bool operator ==(OMVVector3 value1, OMVVector3 value2)
         {
             return value1.X == value2.X
                 && value1.Y == value2.Y
                 && value1.Z == value2.Z;
         }
 
-        public static bool operator !=(Vector3 value1, Vector3 value2)
+        public static bool operator !=(OMVVector3 value1, OMVVector3 value2)
         {
             return !(value1 == value2);
         }
 
-        public static Vector3 operator +(Vector3 value1, Vector3 value2)
+        public static OMVVector3 operator +(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X += value2.X;
             value1.Y += value2.Y;
@@ -495,7 +495,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 operator -(Vector3 value)
+        public static OMVVector3 operator -(OMVVector3 value)
         {
             value.X = -value.X;
             value.Y = -value.Y;
@@ -503,7 +503,7 @@ namespace OpenMetaverse
             return value;
         }
 
-        public static Vector3 operator -(Vector3 value1, Vector3 value2)
+        public static OMVVector3 operator -(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X -= value2.X;
             value1.Y -= value2.Y;
@@ -511,7 +511,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 operator *(Vector3 value1, Vector3 value2)
+        public static OMVVector3 operator *(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X *= value2.X;
             value1.Y *= value2.Y;
@@ -519,7 +519,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 operator *(Vector3 value, float scaleFactor)
+        public static OMVVector3 operator *(OMVVector3 value, float scaleFactor)
         {
             value.X *= scaleFactor;
             value.Y *= scaleFactor;
@@ -527,7 +527,7 @@ namespace OpenMetaverse
             return value;
         }
 
-        public static Vector3 operator *(Vector3 vec, Quaternion rot)
+        public static OMVVector3 operator *(OMVVector3 vec, Quaternion rot)
         {
             float rw = -rot.X * vec.X - rot.Y * vec.Y - rot.Z * vec.Z;
             float rx = rot.W * vec.X + rot.Y * vec.Z - rot.Z * vec.Y;
@@ -541,12 +541,12 @@ namespace OpenMetaverse
             return vec;
         }
 
-        public static Vector3 operator *(Vector3 vector, Matrix4 matrix)
+        public static OMVVector3 operator *(OMVVector3 vector, Matrix4 matrix)
         {
             return Transform(vector, matrix);
         }
 
-        public static Vector3 operator /(Vector3 value1, Vector3 value2)
+        public static OMVVector3 operator /(OMVVector3 value1, OMVVector3 value2)
         {
             value1.X /= value2.X;
             value1.Y /= value2.Y;
@@ -554,7 +554,7 @@ namespace OpenMetaverse
             return value1;
         }
 
-        public static Vector3 operator /(Vector3 value, float divider)
+        public static OMVVector3 operator /(OMVVector3 value, float divider)
         {
             float factor = 1f / divider;
             value.X *= factor;
@@ -566,7 +566,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Cross product between two vectors
         /// </summary>
-        public static Vector3 operator %(Vector3 value1, Vector3 value2)
+        public static OMVVector3 operator %(OMVVector3 value1, OMVVector3 value2)
         {
             return Cross(value1, value2);
         }
@@ -576,23 +576,23 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static explicit operator Vector3(Vector3d value)
+        public static explicit operator OMVVector3(Vector3d value)
         {
-            Vector3d foo = (Vector3d)Vector3.Zero;
-            return new Vector3(value);
+            Vector3d foo = (Vector3d)OMVVector3.Zero;
+            return new OMVVector3(value);
         }
 
         #endregion Operators
 
         /// <summary>A vector with a value of 0,0,0</summary>
-        public readonly static Vector3 Zero = new Vector3();
+        public readonly static OMVVector3 Zero = new OMVVector3();
         /// <summary>A vector with a value of 1,1,1</summary>
-        public readonly static Vector3 One = new Vector3(1f, 1f, 1f);
+        public readonly static OMVVector3 One = new OMVVector3(1f, 1f, 1f);
         /// <summary>A unit vector facing forward (X axis), value 1,0,0</summary>
-        public readonly static Vector3 UnitX = new Vector3(1f, 0f, 0f);
+        public readonly static OMVVector3 UnitX = new OMVVector3(1f, 0f, 0f);
         /// <summary>A unit vector facing left (Y axis), value 0,1,0</summary>
-        public readonly static Vector3 UnitY = new Vector3(0f, 1f, 0f);
+        public readonly static OMVVector3 UnitY = new OMVVector3(0f, 1f, 0f);
         /// <summary>A unit vector facing up (Z axis), value 0,0,1</summary>
-        public readonly static Vector3 UnitZ = new Vector3(0f, 0f, 1f);
+        public readonly static OMVVector3 UnitZ = new OMVVector3(0f, 0f, 1f);
     }
 }

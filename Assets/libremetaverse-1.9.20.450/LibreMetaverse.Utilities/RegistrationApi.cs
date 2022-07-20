@@ -74,8 +74,8 @@ namespace OpenMetaverse
             // optional:
             public int? LimitedToEstate;
             public string StartRegionName;
-            public Vector3? StartLocation;
-            public Vector3? StartLookAt;
+            public OMVVector3? StartLocation;
+            public OMVVector3? StartLookAt;
         }
 
         private UserInfo _userInfo;

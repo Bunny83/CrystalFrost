@@ -160,9 +160,9 @@ namespace OpenMetaverse
             /// <summary>A <see langword="byte"/> representing the maximum number of particles emitted per burst</summary>
             public byte BurstPartCount;
             /// <summary>A <see cref="T:Vector3"/> which represents the velocity (speed) from the source which particles are emitted</summary>
-            public Vector3 AngularVelocity;
+            public OMVVector3 AngularVelocity;
             /// <summary>A <see cref="T:Vector3"/> which represents the Acceleration from the source which particles are emitted</summary>
-            public Vector3 PartAcceleration;
+            public OMVVector3 PartAcceleration;
             /// <summary>The <see cref="T:UUID"/> Key of the texture displayed on the particle</summary>
             public UUID Texture;
             /// <summary>The <see cref="T:UUID"/> Key of the specified target object or avatar particles will follow</summary>
@@ -241,7 +241,7 @@ namespace OpenMetaverse
                 MaxAge = StartAge = InnerAngle = OuterAngle = BurstRate = BurstRadius = BurstSpeedMin =
                     BurstSpeedMax = 0.0f;
                 BurstPartCount = 0;
-                AngularVelocity = PartAcceleration = Vector3.Zero;
+                AngularVelocity = PartAcceleration = OMVVector3.Zero;
                 Texture = Target = UUID.Zero;
                 PartDataFlags = ParticleDataFlags.None;
                 PartMaxAge = 0.0f;
@@ -301,11 +301,11 @@ namespace OpenMetaverse
                 float x = pack.UnpackFixed(true, 8, 7);
                 float y = pack.UnpackFixed(true, 8, 7);
                 float z = pack.UnpackFixed(true, 8, 7);
-                AngularVelocity = new Vector3(x, y, z);
+                AngularVelocity = new OMVVector3(x, y, z);
                 x = pack.UnpackFixed(true, 8, 7);
                 y = pack.UnpackFixed(true, 8, 7);
                 z = pack.UnpackFixed(true, 8, 7);
-                PartAcceleration = new Vector3(x, y, z);
+                PartAcceleration = new OMVVector3(x, y, z);
                 Texture = pack.UnpackUUID();
                 Target = pack.UnpackUUID();
             }
@@ -439,8 +439,8 @@ namespace OpenMetaverse
                 map["part_max_age"] = PartMaxAge;
                 map["part_start_color"] = PartStartColor;
                 map["part_end_color"] = PartEndColor;
-                map["part_start_scale"] = new Vector3(PartStartScaleX, PartStartScaleY, 0f);
-                map["part_end_scale"] = new Vector3(PartEndScaleX, PartEndScaleY, 0f);
+                map["part_start_scale"] = new OMVVector3(PartStartScaleX, PartStartScaleY, 0f);
+                map["part_end_scale"] = new OMVVector3(PartEndScaleX, PartEndScaleY, 0f);
 
                 if (HasGlow())
                 {
@@ -485,10 +485,10 @@ namespace OpenMetaverse
                     partSys.PartMaxAge = map["part_max_age"];
                     partSys.PartStartColor = map["part_start_color"];
                     partSys.PartEndColor = map["part_end_color"];
-                    Vector3 ss = map["part_start_scale"];
+                    OMVVector3 ss = map["part_start_scale"];
                     partSys.PartStartScaleX = ss.X;
                     partSys.PartStartScaleY = ss.Y;
-                    Vector3 es = map["part_end_scale"];
+                    OMVVector3 es = map["part_end_scale"];
                     partSys.PartEndScaleX = es.X;
                     partSys.PartEndScaleY = es.Y;
 

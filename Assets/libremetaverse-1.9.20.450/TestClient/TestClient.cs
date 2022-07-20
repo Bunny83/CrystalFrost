@@ -92,7 +92,7 @@ namespace OpenMetaverse.TestClient_
         {
             // SetCamera 5m behind the avatar
             Self.Movement.Camera.LookAt(
-                Self.SimPosition + new Vector3(-5, 0, 0) * Self.Movement.BodyRotation,
+                Self.SimPosition + new OMVVector3(-5, 0, 0) * Self.Movement.BodyRotation,
                 Self.SimPosition
             );
         }

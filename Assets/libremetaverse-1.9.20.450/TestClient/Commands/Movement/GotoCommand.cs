@@ -38,7 +38,7 @@ namespace OpenMetaverse.TestClient_
                 return "Usage: goto sim/x/y/z";
             }
 
-            if (Client.Self.Teleport(sim, new Vector3(x, y, z)))
+            if (Client.Self.Teleport(sim, new OMVVector3(x, y, z)))
                 return "Teleported to " + Client.Network.CurrentSim;
             else
                 return "Teleport failed: " + Client.Self.TeleportMessage;

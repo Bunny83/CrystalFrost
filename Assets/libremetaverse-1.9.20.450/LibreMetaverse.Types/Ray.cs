@@ -28,10 +28,10 @@ namespace OpenMetaverse
 {
     public struct Ray
     {
-        public Vector3 Origin;
-        public Vector3 Direction;
+        public OMVVector3 Origin;
+        public OMVVector3 Direction;
 
-        public Ray(Vector3 origin, Vector3 direction)
+        public Ray(OMVVector3 origin, OMVVector3 direction)
         {
             Origin = origin;
             Direction = direction;

@@ -225,9 +225,9 @@ namespace OpenMetaverse.Packets
                     {
                         field.SetValue(block, blockData[field.Name].AsUUID());
                     }
-                    else if (fieldType == typeof(Vector3))
+                    else if (fieldType == typeof(OMVVector3))
                     {
-                        Vector3 vec = ((OSDArray)blockData[field.Name]).AsVector3();
+                        OMVVector3 vec = ((OSDArray)blockData[field.Name]).AsVector3();
                         field.SetValue(block, vec);
                     }
                     else if (fieldType == typeof(Vector4))

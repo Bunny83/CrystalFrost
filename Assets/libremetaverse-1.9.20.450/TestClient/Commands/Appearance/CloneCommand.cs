@@ -48,7 +48,7 @@ namespace OpenMetaverse.TestClient_
                             AgentID = Client.Self.AgentID,
                             SessionID = Client.Self.SessionID,
                             SerialNum = SerialNum++,
-                            Size = new Vector3(2f, 2f, 2f) // HACK
+                            Size = new OMVVector3(2f, 2f, 2f) // HACK
                         },
                         WearableData = Array.Empty<AgentSetAppearancePacket.WearableDataBlock>(),
                         VisualParam = new AgentSetAppearancePacket.VisualParamBlock[appearance.VisualParam.Length]

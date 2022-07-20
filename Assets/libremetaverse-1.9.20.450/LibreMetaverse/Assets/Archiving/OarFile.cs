@@ -748,7 +748,7 @@ namespace OpenMetaverse.Assets
             writer.WriteElementString("RegionHandle", prim.RegionHandle.ToString());
             writer.WriteElementString("ScriptAccessPin", prim.RemoteScriptAccessPIN.ToString());
 
-            Vector3 groupPosition;
+            OMVVector3 groupPosition;
             if (parent == null)
                 groupPosition = prim.Position;
             else
@@ -756,12 +756,12 @@ namespace OpenMetaverse.Assets
 
             WriteVector(writer, "GroupPosition", groupPosition);
             if (prim.ParentID == 0)
-                WriteVector(writer, "OffsetPosition", Vector3.Zero);
+                WriteVector(writer, "OffsetPosition", OMVVector3.Zero);
             else
                 WriteVector(writer, "OffsetPosition", prim.Position);
             WriteQuaternion(writer, "RotationOffset", prim.Rotation);
             WriteVector(writer, "Velocity", prim.Velocity);
-            WriteVector(writer, "RotationalVelocity", Vector3.Zero);
+            WriteVector(writer, "RotationalVelocity", OMVVector3.Zero);
             WriteVector(writer, "AngularVelocity", prim.AngularVelocity);
             WriteVector(writer, "Acceleration", prim.Acceleration);
             writer.WriteElementString("Description", prim.Description);
@@ -824,7 +824,7 @@ namespace OpenMetaverse.Assets
 
             WriteVector(writer, "Scale", prim.Scale);
             writer.WriteElementString("UpdateFlag", "0");
-            WriteVector(writer, "SitTargetOrientation", Vector3.UnitZ); // TODO: Is this really a vector and not a quaternion?
+            WriteVector(writer, "SitTargetOrientation", OMVVector3.UnitZ); // TODO: Is this really a vector and not a quaternion?
             WriteVector(writer, "SitTargetPosition", prim.SitOffset);
             WriteVector(writer, "SitTargetPositionLL", prim.SitOffset);
             WriteQuaternion(writer, "SitTargetOrientationLL", prim.SitRotation);
@@ -855,7 +855,7 @@ namespace OpenMetaverse.Assets
             writer.WriteEndElement();
         }
 
-        static void WriteVector(XmlTextWriter writer, string name, Vector3 vec)
+        static void WriteVector(XmlTextWriter writer, string name, OMVVector3 vec)
         {
             writer.WriteStartElement(name);
             writer.WriteElementString("X", vec.X.ToString(Utils.EnUsCulture));

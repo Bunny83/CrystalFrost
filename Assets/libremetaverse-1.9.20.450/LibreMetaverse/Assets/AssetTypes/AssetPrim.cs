@@ -256,8 +256,8 @@ namespace OpenMetaverse.Assets
             if (reader.Name == "LoopSoundSlavePrims")
                 reader.ReadInnerXml();
 
-            Vector3 groupPosition = ReadVector(reader, "GroupPosition");
-            Vector3 offsetPosition = ReadVector(reader, "OffsetPosition");
+            OMVVector3 groupPosition = ReadVector(reader, "GroupPosition");
+            OMVVector3 offsetPosition = ReadVector(reader, "OffsetPosition");
             obj.Rotation = ReadQuaternion(reader, "RotationOffset");
             obj.Velocity = ReadVector(reader, "Velocity");
             if (reader.Name == "RotationalVelocity")
@@ -414,9 +414,9 @@ namespace OpenMetaverse.Assets
             return id;
         }
 
-        static Vector3 ReadVector(XmlTextReader reader, string name)
+        static OMVVector3 ReadVector(XmlTextReader reader, string name)
         {
-            Vector3 vec;
+            OMVVector3 vec;
 
             reader.ReadStartElement(name);
             vec.X = reader.ReadElementContentAsFloat("X", String.Empty);
@@ -454,7 +454,7 @@ namespace OpenMetaverse.Assets
             public float Drag;
             public float Wind;
             public float Tension;
-            public Vector3 Force;
+            public OMVVector3 Force;
 
             public OSDMap Serialize()
             {
@@ -541,8 +541,8 @@ namespace OpenMetaverse.Assets
             public float BurstSpeedMin;
             public float BurstSpeedMax;
             public int BurstParticleCount;
-            public Vector3 AngularVelocity;
-            public Vector3 Acceleration;
+            public OMVVector3 AngularVelocity;
+            public OMVVector3 Acceleration;
             public UUID TextureID;
             public UUID TargetID;
             public int DataFlags;
@@ -815,7 +815,7 @@ namespace OpenMetaverse.Assets
 
         public UUID ID;
         public bool AllowedDrop;
-        public Vector3 AttachmentPosition;
+        public OMVVector3 AttachmentPosition;
         public Quaternion AttachmentRotation;
         public Quaternion BeforeAttachmentRotation;
         public string Name;
@@ -836,16 +836,16 @@ namespace OpenMetaverse.Assets
         public int LinkNumber;
         public uint LocalID;
         public uint ParentID;
-        public Vector3 Position;
+        public OMVVector3 Position;
         public Quaternion Rotation;
-        public Vector3 Velocity;
-        public Vector3 AngularVelocity;
-        public Vector3 Acceleration;
-        public Vector3 Scale;
-        public Vector3 SitOffset;
+        public OMVVector3 Velocity;
+        public OMVVector3 AngularVelocity;
+        public OMVVector3 Acceleration;
+        public OMVVector3 Scale;
+        public OMVVector3 SitOffset;
         public Quaternion SitRotation;
-        public Vector3 CameraEyeOffset;
-        public Vector3 CameraAtOffset;
+        public OMVVector3 CameraEyeOffset;
+        public OMVVector3 CameraAtOffset;
         public int State;
         public int PCode;
         public int Material;

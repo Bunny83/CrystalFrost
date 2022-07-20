@@ -154,8 +154,8 @@ namespace OpenMetaverse.Messages.Linden
 
     public class CrossedRegionMessage : IMessage
     {
-        public Vector3 LookAt;
-        public Vector3 Position;
+        public OMVVector3 LookAt;
+        public OMVVector3 Position;
         public UUID AgentID;
         public UUID SessionID;
         public ulong RegionHandle;
@@ -357,7 +357,7 @@ namespace OpenMetaverse.Messages.Linden
 
         public class ReportDataBlock
         {
-            public Vector3 Location;
+            public OMVVector3 Location;
             public string OwnerName;
             public float Score;
             public UUID TaskID;
@@ -448,7 +448,7 @@ namespace OpenMetaverse.Messages.Linden
                 OSDMap extMap = (OSDMap)dataExtendedArray[i];
                 ReportDataBlock block = new ReportDataBlock
                 {
-                    Location = new Vector3(
+                    Location = new OMVVector3(
                         (float) blockMap["LocationX"].AsReal(),
                         (float) blockMap["LocationY"].AsReal(),
                         (float) blockMap["LocationZ"].AsReal()),
@@ -590,10 +590,10 @@ namespace OpenMetaverse.Messages.Linden
         public int LocalID;
         /// <summary>Maximum corner of the axis-aligned bounding box for this
         /// parcel</summary>
-        public Vector3 AABBMax;
+        public OMVVector3 AABBMax;
         /// <summary>Minimum corner of the axis-aligned bounding box for this
         /// parcel</summary>
-        public Vector3 AABBMin;
+        public OMVVector3 AABBMin;
         /// <summary>Total parcel land area</summary>
         public int Area;
         /// <summary></summary>
@@ -701,9 +701,9 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>Total number of primitives on this parcel</summary>
         public int TotalPrims;
         /// <summary></summary>
-        public Vector3 UserLocation;
+        public OMVVector3 UserLocation;
         /// <summary></summary>
-        public Vector3 UserLookAt;
+        public OMVVector3 UserLookAt;
         /// <summary>A description of the media</summary>
         public string MediaDesc;
         /// <summary>An Integer which represents the height of the media</summary>
@@ -965,9 +965,9 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary></summary>
         public UUID SnapshotID;
         /// <summary></summary>
-        public Vector3 UserLocation;
+        public OMVVector3 UserLocation;
         /// <summary></summary>
-        public Vector3 UserLookAt;
+        public OMVVector3 UserLookAt;
         /// <summary> true if avatars in this parcel should be invisible to people outside</summary>
         public bool SeeAVs;
         /// <summary> true if avatars outside can hear any sounds avatars inside play</summary>
@@ -1080,7 +1080,7 @@ namespace OpenMetaverse.Messages.Linden
     public class RemoteParcelRequestRequest : RemoteParcelRequestBlock
     {
         /// <summary>Local sim position of the parcel we are looking up</summary>
-        public Vector3 Location;
+        public OMVVector3 Location;
         /// <summary>Region handle of the parcel we are looking up</summary>
         public ulong RegionHandle;
         /// <summary>Region <see cref="UUID"/> of the parcel we are looking up</summary>
@@ -2614,7 +2614,7 @@ namespace OpenMetaverse.Messages.Linden
         public string FromEmail;
         public string Message;
         public string FromName;
-        public Vector3 GlobalPosition;
+        public OMVVector3 GlobalPosition;
         public string Subject;
         public string ToEmail;
 
@@ -3237,7 +3237,7 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>Key of originating region</summary>
         public UUID RegionID;
         /// <summary>Coordinates in originating region</summary>
-        public Vector3 Position;
+        public OMVVector3 Position;
         /// <summary>Instant message type</summary>
         public InstantMessageDialog Dialog;
         /// <summary>Group IM session toggle</summary>
@@ -4241,9 +4241,9 @@ namespace OpenMetaverse.Messages.Linden
             public UUID GroupID;
             public Material Material;
             public string Name;
-            public Vector3 Position;
+            public OMVVector3 Position;
             public Quaternion Rotation;
-            public Vector3 Scale;
+            public OMVVector3 Scale;
             public float PathBegin;
             public int PathCurve;
             public float PathEnd;

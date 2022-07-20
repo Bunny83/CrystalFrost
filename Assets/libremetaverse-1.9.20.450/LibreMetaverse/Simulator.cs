@@ -454,7 +454,7 @@ namespace OpenMetaverse
         /// not</summary>
         public bool Connected { get { return connected; } }
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        public InternalDictionary<UUID, Vector3> AvatarPositions { get { return avatarPositions; } }
+        public InternalDictionary<UUID, OMVVector3> AvatarPositions { get { return avatarPositions; } }
         /// <summary>AvatarPositions key representing TrackAgent target</summary>
         public UUID PreyID { get { return preyID; } }
         /// <summary>Indicates if UDP connection to the sim is fully established</summary>
@@ -472,7 +472,7 @@ namespace OpenMetaverse
         /// to the property Connected</summary>
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        internal InternalDictionary<UUID, Vector3> avatarPositions = new InternalDictionary<UUID, Vector3>();
+        internal InternalDictionary<UUID, OMVVector3> avatarPositions = new InternalDictionary<UUID, OMVVector3>();
         /// <summary>AvatarPositions key representing TrackAgent target</summary>
         internal UUID preyID = UUID.Zero;
         /// <summary>Sequence numbers of packets we've received

@@ -71,11 +71,11 @@ namespace OpenMetaverse.ImportExport
 
     public class ModelPrim
     {
-        public List<Vector3> Positions;
-        public Vector3 BoundMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-        public Vector3 BoundMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-        public Vector3 Position;
-        public Vector3 Scale;
+        public List<OMVVector3> Positions;
+        public OMVVector3 BoundMin = new OMVVector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        public OMVVector3 BoundMax = new OMVVector3(float.MinValue, float.MinValue, float.MinValue);
+        public OMVVector3 Position;
+        public OMVVector3 Scale;
         public Quaternion Rotation = Quaternion.Identity;
         public List<ModelFace> Faces = new List<ModelFace>();
         public string ID;
@@ -111,8 +111,8 @@ namespace OpenMetaverse.ImportExport
 
 
                 OSDMap positionDomain = new OSDMap();
-                positionDomain["Min"] = new Vector3(-0.5f, -0.5f, -0.5f);
-                positionDomain["Max"] = new Vector3(0.5f, 0.5f, 0.5f);
+                positionDomain["Min"] = new OMVVector3(-0.5f, -0.5f, -0.5f);
+                positionDomain["Max"] = new OMVVector3(0.5f, 0.5f, 0.5f);
                 faceMap["PositionDomain"] = positionDomain;
 
                 List<byte> posBytes = new List<byte>(face.Vertices.Count * sizeof(UInt16) * 3);
@@ -184,8 +184,8 @@ namespace OpenMetaverse.ImportExport
         public static OSD PhysicsStub()
         {
             OSDMap ret = new OSDMap();
-            ret["Max"] = new Vector3(0.5f, 0.5f, 0.5f);
-            ret["Min"] = new Vector3(-0.5f, -0.5f, -0.5f);
+            ret["Max"] = new OMVVector3(0.5f, 0.5f, 0.5f);
+            ret["Min"] = new OMVVector3(-0.5f, -0.5f, -0.5f);
             ret["BoundingVerts"] = new byte[] { 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255, 127, 0, 0, 255, 255, 255, 127, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 127, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 0, 0, 255, 255 };
             return ret;
         }

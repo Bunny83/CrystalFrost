@@ -20,10 +20,10 @@ namespace OpenMetaverse.TestClient_
 		            string treeName = args[0].Trim(new[] { ' ' });
 		            Tree tree = (Tree)Enum.Parse(typeof(Tree), treeName);
 
-		            Vector3 treePosition = Client.Self.SimPosition;
+		            OMVVector3 treePosition = Client.Self.SimPosition;
 		            treePosition.Z += 3.0f;
 
-		            Client.Objects.AddTree(Client.Network.CurrentSim, new Vector3(0.5f, 0.5f, 0.5f),
+		            Client.Objects.AddTree(Client.Network.CurrentSim, new OMVVector3(0.5f, 0.5f, 0.5f),
 		                Quaternion.Identity, treePosition, tree, Client.GroupID, false);
 
 		            return "Attempted to rez a " + treeName + " tree";

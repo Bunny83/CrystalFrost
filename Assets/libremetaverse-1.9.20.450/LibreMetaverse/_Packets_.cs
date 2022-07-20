@@ -2212,7 +2212,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID ObjectID;
             public byte[] ObjectName;
-            public Vector3 TelehubPos;
+            public OMVVector3 TelehubPos;
             public Quaternion TelehubRot;
 
             public override int Length
@@ -2263,7 +2263,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class SpawnPointBlockBlock : PacketBlock
         {
-            public Vector3 SpawnPointPos;
+            public OMVVector3 SpawnPointPos;
 
             public override int Length
             {
@@ -9321,8 +9321,8 @@ namespace OpenMetaverse.Packets
         public sealed class InfoBlock : PacketBlock
         {
             public UUID RegionID;
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public OMVVector3 Position;
+            public OMVVector3 LookAt;
 
             public override int Length
             {
@@ -9486,8 +9486,8 @@ namespace OpenMetaverse.Packets
         public sealed class InfoBlock : PacketBlock
         {
             public ulong RegionHandle;
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public OMVVector3 Position;
+            public OMVVector3 LookAt;
 
             public override int Length
             {
@@ -9611,8 +9611,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID AgentID;
             public uint LocationID;
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public OMVVector3 Position;
+            public OMVVector3 LookAt;
             public uint TeleportFlags;
 
             public override int Length
@@ -12528,7 +12528,7 @@ namespace OpenMetaverse.Packets
             public UUID AgentID;
             public UUID SessionID;
             public uint SerialNum;
-            public Vector3 Size;
+            public OMVVector3 Size;
 
             public override int Length
             {
@@ -13600,7 +13600,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class SharedDataBlock : PacketBlock
         {
-            public Vector3 Offset;
+            public OMVVector3 Offset;
             public uint DuplicateFlags;
 
             public override int Length
@@ -13842,8 +13842,8 @@ namespace OpenMetaverse.Packets
             public UUID AgentID;
             public UUID SessionID;
             public UUID GroupID;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
+            public OMVVector3 RayStart;
+            public OMVVector3 RayEnd;
             public bool BypassRaycast;
             public bool RayEndIsIntersection;
             public bool CopyCenters;
@@ -14138,7 +14138,7 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Vector3 Scale;
+            public OMVVector3 Scale;
 
             public override int Length
             {
@@ -19996,7 +19996,7 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
-            public Vector3 GrabOffset;
+            public OMVVector3 GrabOffset;
 
             public override int Length
             {
@@ -20036,12 +20036,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class SurfaceInfoBlock : PacketBlock
         {
-            public Vector3 UVCoord;
-            public Vector3 STCoord;
+            public OMVVector3 UVCoord;
+            public OMVVector3 STCoord;
             public int FaceIndex;
-            public Vector3 Position;
-            public Vector3 Normal;
-            public Vector3 Binormal;
+            public OMVVector3 Position;
+            public OMVVector3 Normal;
+            public OMVVector3 Binormal;
 
             public override int Length
             {
@@ -20291,8 +20291,8 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
-            public Vector3 GrabOffsetInitial;
-            public Vector3 GrabPosition;
+            public OMVVector3 GrabOffsetInitial;
+            public OMVVector3 GrabPosition;
             public uint TimeSinceLast;
 
             public override int Length
@@ -20337,12 +20337,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class SurfaceInfoBlock : PacketBlock
         {
-            public Vector3 UVCoord;
-            public Vector3 STCoord;
+            public OMVVector3 UVCoord;
+            public OMVVector3 STCoord;
             public int FaceIndex;
-            public Vector3 Position;
-            public Vector3 Normal;
-            public Vector3 Binormal;
+            public OMVVector3 Position;
+            public OMVVector3 Normal;
+            public OMVVector3 Binormal;
 
             public override int Length
             {
@@ -20629,12 +20629,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class SurfaceInfoBlock : PacketBlock
         {
-            public Vector3 UVCoord;
-            public Vector3 STCoord;
+            public OMVVector3 UVCoord;
+            public OMVVector3 STCoord;
             public int FaceIndex;
-            public Vector3 Position;
-            public Vector3 Normal;
-            public Vector3 Binormal;
+            public OMVVector3 Position;
+            public OMVVector3 Normal;
+            public OMVVector3 Binormal;
 
             public override int Length
             {
@@ -23442,7 +23442,7 @@ namespace OpenMetaverse.Packets
         {
             public byte ReportType;
             public byte Category;
-            public Vector3 Position;
+            public OMVVector3 Position;
             public byte CheckFlags;
             public UUID ScreenshotID;
             public UUID ObjectID;
@@ -24522,7 +24522,7 @@ namespace OpenMetaverse.Packets
             public byte SourceType;
             public byte ChatType;
             public byte Audible;
-            public Vector3 Position;
+            public OMVVector3 Position;
             public byte[] Message;
 
             public override int Length
@@ -26354,9 +26354,9 @@ namespace OpenMetaverse.Packets
             public ulong UsecSinceStart;
             public uint SecPerDay;
             public uint SecPerYear;
-            public Vector3 SunDirection;
+            public OMVVector3 SunDirection;
             public float SunPhase;
-            public Vector3 SunAngVelocity;
+            public OMVVector3 SunAngVelocity;
 
             public override int Length
             {
@@ -27460,7 +27460,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class AppearanceHoverBlock : PacketBlock
         {
-            public Vector3 HoverHeight;
+            public OMVVector3 HoverHeight;
 
             public override int Length
             {
@@ -33712,8 +33712,8 @@ namespace OpenMetaverse.Packets
         {
             public byte[] ObjectName;
             public byte[] SimName;
-            public Vector3 SimPosition;
-            public Vector3 LookAt;
+            public OMVVector3 SimPosition;
+            public OMVVector3 LookAt;
 
             public override int Length
             {
@@ -34182,8 +34182,8 @@ namespace OpenMetaverse.Packets
             public byte Category;
             public UUID AuthBuyerID;
             public UUID SnapshotID;
-            public Vector3 UserLocation;
-            public Vector3 UserLookAt;
+            public OMVVector3 UserLocation;
+            public OMVVector3 UserLookAt;
             public byte LandingType;
 
             public override int Length
@@ -40515,7 +40515,7 @@ namespace OpenMetaverse.Packets
             public UUID SourceID;
             public UUID RequestID;
             public UUID SearchID;
-            public Vector3 SearchPos;
+            public OMVVector3 SearchPos;
             public Quaternion SearchDir;
             public byte[] SearchName;
             public int Type;
@@ -40701,8 +40701,8 @@ namespace OpenMetaverse.Packets
             public UUID ObjectID;
             public UUID OwnerID;
             public UUID GroupID;
-            public Vector3 Position;
-            public Vector3 Velocity;
+            public OMVVector3 Position;
+            public OMVVector3 Velocity;
             public Quaternion Rotation;
             public byte[] Name;
             public int Type;
@@ -41075,8 +41075,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class DataBlock : PacketBlock
         {
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public OMVVector3 Position;
+            public OMVVector3 LookAt;
             public ulong RegionHandle;
             public uint Timestamp;
 
@@ -41643,7 +41643,7 @@ namespace OpenMetaverse.Packets
             public UUID ToAgentID;
             public uint ParentEstateID;
             public UUID RegionID;
-            public Vector3 Position;
+            public OMVVector3 Position;
             public byte Offline;
             public byte Dialog;
             public UUID ID;
@@ -50117,8 +50117,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID FromTaskID;
             public byte BypassRaycast;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
+            public OMVVector3 RayStart;
+            public OMVVector3 RayEnd;
             public UUID RayTargetID;
             public bool RayEndIsIntersection;
             public bool RezSelected;
@@ -50428,8 +50428,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID FromTaskID;
             public byte BypassRaycast;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
+            public OMVVector3 RayStart;
+            public OMVVector3 RayEnd;
             public UUID RayTargetID;
             public bool RayEndIsIntersection;
             public bool RezSelected;
@@ -55222,8 +55222,8 @@ namespace OpenMetaverse.Packets
         {
             public byte[] SimName;
             public uint LocationID;
-            public Vector3 LocationPos;
-            public Vector3 LocationLookAt;
+            public OMVVector3 LocationPos;
+            public OMVVector3 LocationLookAt;
 
             public override int Length
             {
@@ -71484,11 +71484,11 @@ namespace OpenMetaverse.Packets
             public ushort ProfileEnd;
             public ushort ProfileHollow;
             public byte BypassRaycast;
-            public Vector3 RayStart;
-            public Vector3 RayEnd;
+            public OMVVector3 RayStart;
+            public OMVVector3 RayEnd;
             public UUID RayTargetID;
             public byte RayEndIsIntersection;
-            public Vector3 Scale;
+            public OMVVector3 Scale;
             public Quaternion Rotation;
             public byte State;
 
@@ -72187,7 +72187,7 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Vector3 Position;
+            public OMVVector3 Position;
 
             public override int Length
             {
@@ -72883,8 +72883,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public sealed class InfoBlock : PacketBlock
         {
-            public Vector3 Position;
-            public Vector3 LookAt;
+            public OMVVector3 Position;
+            public OMVVector3 LookAt;
 
             public override int Length
             {
@@ -74718,10 +74718,10 @@ namespace OpenMetaverse.Packets
             public Quaternion BodyRotation;
             public Quaternion HeadRotation;
             public byte State;
-            public Vector3 CameraCenter;
-            public Vector3 CameraAtAxis;
-            public Vector3 CameraLeftAxis;
-            public Vector3 CameraUpAxis;
+            public OMVVector3 CameraCenter;
+            public OMVVector3 CameraAtAxis;
+            public OMVVector3 CameraLeftAxis;
+            public OMVVector3 CameraUpAxis;
             public float Far;
             public uint ControlFlags;
             public byte Flags;
@@ -75365,7 +75365,7 @@ namespace OpenMetaverse.Packets
         public sealed class TargetObjectBlock : PacketBlock
         {
             public UUID TargetID;
-            public Vector3 Offset;
+            public OMVVector3 Offset;
 
             public override int Length
             {
@@ -76641,7 +76641,7 @@ namespace OpenMetaverse.Packets
             public byte PCode;
             public byte Material;
             public byte ClickAction;
-            public Vector3 Scale;
+            public OMVVector3 Scale;
             public byte[] ObjectData;
             public uint ParentID;
             public uint UpdateFlags;
@@ -76678,8 +76678,8 @@ namespace OpenMetaverse.Packets
             public byte Flags;
             public float Radius;
             public byte JointType;
-            public Vector3 JointPivot;
-            public Vector3 JointAxisOrAnchor;
+            public OMVVector3 JointPivot;
+            public OMVVector3 JointAxisOrAnchor;
 
             public override int Length
             {
@@ -79464,10 +79464,10 @@ namespace OpenMetaverse.Packets
         public sealed class SitTransformBlock : PacketBlock
         {
             public bool AutoPilot;
-            public Vector3 SitPosition;
+            public OMVVector3 SitPosition;
             public Quaternion SitRotation;
-            public Vector3 CameraEyeOffset;
-            public Vector3 CameraAtOffset;
+            public OMVVector3 CameraEyeOffset;
+            public OMVVector3 CameraAtOffset;
             public bool ForceMouselook;
 
             public override int Length
@@ -79782,8 +79782,8 @@ namespace OpenMetaverse.Packets
             public int ClaimDate;
             public int ClaimPrice;
             public int RentPrice;
-            public Vector3 AABBMin;
-            public Vector3 AABBMax;
+            public OMVVector3 AABBMin;
+            public OMVVector3 AABBMax;
             public byte[] Bitmap;
             public int Area;
             public byte Status;
@@ -79811,8 +79811,8 @@ namespace OpenMetaverse.Packets
             public byte Category;
             public UUID AuthBuyerID;
             public UUID SnapshotID;
-            public Vector3 UserLocation;
-            public Vector3 UserLookAt;
+            public OMVVector3 UserLocation;
+            public OMVVector3 UserLookAt;
             public byte LandingType;
             public bool RegionPushOverride;
             public bool RegionDenyAnonymous;
@@ -80173,13 +80173,13 @@ namespace OpenMetaverse.Packets
             public uint ViewerCircuitCode;
             public UUID AgentID;
             public UUID SessionID;
-            public Vector3 AgentPos;
-            public Vector3 AgentVel;
-            public Vector3 Center;
-            public Vector3 Size;
-            public Vector3 AtAxis;
-            public Vector3 LeftAxis;
-            public Vector3 UpAxis;
+            public OMVVector3 AgentPos;
+            public OMVVector3 AgentVel;
+            public OMVVector3 Center;
+            public OMVVector3 Size;
+            public OMVVector3 AtAxis;
+            public OMVVector3 LeftAxis;
+            public OMVVector3 UpAxis;
             public bool ChangedGrid;
             public float Far;
             public float Aspect;
@@ -81459,13 +81459,13 @@ namespace OpenMetaverse.Packets
             public uint ViewerCircuitCode;
             public UUID AgentID;
             public UUID SessionID;
-            public Vector3 AgentPos;
-            public Vector3 AgentVel;
-            public Vector3 Center;
-            public Vector3 Size;
-            public Vector3 AtAxis;
-            public Vector3 LeftAxis;
-            public Vector3 UpAxis;
+            public OMVVector3 AgentPos;
+            public OMVVector3 AgentVel;
+            public OMVVector3 Center;
+            public OMVVector3 Size;
+            public OMVVector3 AtAxis;
+            public OMVVector3 LeftAxis;
+            public OMVVector3 UpAxis;
             public bool ChangedGrid;
 
             public override int Length
@@ -81633,7 +81633,7 @@ namespace OpenMetaverse.Packets
             public UUID ObjectID;
             public UUID ParentID;
             public ulong Handle;
-            public Vector3 Position;
+            public OMVVector3 Position;
             public float Gain;
 
             public override int Length

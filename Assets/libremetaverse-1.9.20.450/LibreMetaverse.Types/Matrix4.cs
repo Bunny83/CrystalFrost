@@ -40,11 +40,11 @@ namespace OpenMetaverse
 
         #region Properties
 
-        public Vector3 AtAxis
+        public OMVVector3 AtAxis
         {
             get
             {
-                return new Vector3(M11, M21, M31);
+                return new OMVVector3(M11, M21, M31);
             }
             set
             {
@@ -54,11 +54,11 @@ namespace OpenMetaverse
             }
         }
 
-        public Vector3 LeftAxis
+        public OMVVector3 LeftAxis
         {
             get
             {
-                return new Vector3(M12, M22, M32);
+                return new OMVVector3(M12, M22, M32);
             }
             set
             {
@@ -68,11 +68,11 @@ namespace OpenMetaverse
             }
         }
 
-        public Vector3 UpAxis
+        public OMVVector3 UpAxis
         {
             get
             {
-                return new Vector3(M13, M23, M33);
+                return new OMVVector3(M13, M23, M33);
             }
             set
             {
@@ -278,7 +278,7 @@ namespace OpenMetaverse
             return quat;
         }
 
-        public bool Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        public bool Decompose(out OMVVector3 scale, out Quaternion rotation, out OMVVector3 translation)
         {
             translation.X = this.M41;
             translation.Y = this.M42;
@@ -336,7 +336,7 @@ namespace OpenMetaverse
             return matrix;
         }
 
-        public static Matrix4 CreateFromAxisAngle(Vector3 axis, float angle)
+        public static Matrix4 CreateFromAxisAngle(OMVVector3 axis, float angle)
         {
             Matrix4 matrix = new Matrix4();
 
@@ -452,13 +452,13 @@ namespace OpenMetaverse
             return matrix;
         }
 
-        public static Matrix4 CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
+        public static Matrix4 CreateLookAt(OMVVector3 cameraPosition, OMVVector3 cameraTarget, OMVVector3 cameraUpVector)
         {
             Matrix4 matrix;
 
-            Vector3 z = Vector3.Normalize(cameraPosition - cameraTarget);
-            Vector3 x = Vector3.Normalize(Vector3.Cross(cameraUpVector, z));
-            Vector3 y = Vector3.Cross(z, x);
+            OMVVector3 z = OMVVector3.Normalize(cameraPosition - cameraTarget);
+            OMVVector3 x = OMVVector3.Normalize(OMVVector3.Cross(cameraUpVector, z));
+            OMVVector3 y = OMVVector3.Cross(z, x);
 
             matrix.M11 = x.X;
             matrix.M12 = y.X;
@@ -475,9 +475,9 @@ namespace OpenMetaverse
             matrix.M33 = z.Z;
             matrix.M34 = 0f;
 
-            matrix.M41 = -Vector3.Dot(x, cameraPosition);
-            matrix.M42 = -Vector3.Dot(y, cameraPosition);
-            matrix.M43 = -Vector3.Dot(z, cameraPosition);
+            matrix.M41 = -OMVVector3.Dot(x, cameraPosition);
+            matrix.M42 = -OMVVector3.Dot(y, cameraPosition);
+            matrix.M43 = -OMVVector3.Dot(z, cameraPosition);
             matrix.M44 = 1f;
 
             return matrix;
@@ -573,7 +573,7 @@ namespace OpenMetaverse
             return matrix;
         }
 
-        public static Matrix4 CreateScale(Vector3 scale)
+        public static Matrix4 CreateScale(OMVVector3 scale)
         {
             Matrix4 matrix;
 
@@ -600,7 +600,7 @@ namespace OpenMetaverse
             return matrix;
         }
 
-        public static Matrix4 CreateTranslation(Vector3 position)
+        public static Matrix4 CreateTranslation(OMVVector3 position)
         {
             Matrix4 matrix;
 
@@ -627,7 +627,7 @@ namespace OpenMetaverse
             return matrix;
         }
 
-        public static Matrix4 CreateWorld(Vector3 position, Vector3 forward, Vector3 up)
+        public static Matrix4 CreateWorld(OMVVector3 position, OMVVector3 forward, OMVVector3 up)
         {
             Matrix4 result;
             
@@ -635,11 +635,11 @@ namespace OpenMetaverse
             forward.Normalize();
 
             // Calculate right vector
-            Vector3 right = Vector3.Cross(forward, up);
+            OMVVector3 right = OMVVector3.Cross(forward, up);
             right.Normalize();
 
             // Recalculate up vector
-            up = Vector3.Cross(right, forward);
+            up = OMVVector3.Cross(right, forward);
             up.Normalize();
 
             result.M11 = right.X;

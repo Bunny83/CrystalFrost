@@ -335,8 +335,8 @@ namespace OpenMetaverse
     public struct HomeInfo
     {
         public ulong RegionHandle;
-        public Vector3 Position;
-        public Vector3 LookAt;
+        public OMVVector3 Position;
+        public OMVVector3 LookAt;
     }
 
     /// <summary>
@@ -364,7 +364,7 @@ namespace OpenMetaverse
         public string AgentAccessMax;
         public string AgentRegionAccess;
         public string InitialOutfit;
-        public Vector3 LookAt;
+        public OMVVector3 LookAt;
         public HomeInfo Home;
         public int CircuitCode;
         public uint RegionX;
@@ -481,8 +481,8 @@ namespace OpenMetaverse
             else
             {
                 Home.RegionHandle = 0;
-                Home.Position = Vector3.Zero;
-                Home.LookAt = Vector3.Zero;
+                Home.Position = OMVVector3.Zero;
+                Home.LookAt = OMVVector3.Zero;
             }
 
             CircuitCode = (int)ParseUInt("circuit_code", reply);
@@ -899,10 +899,10 @@ namespace OpenMetaverse
             return reply.ContainsKey(key) ? $"{reply[key]}" : string.Empty;
         }
 
-        public static Vector3 ParseVector3(string key, OSDMap reply)
+        public static OMVVector3 ParseVector3(string key, OSDMap reply)
         {
             OSD osd;
-            if (!reply.TryGetValue(key, out osd)) return Vector3.Zero;
+            if (!reply.TryGetValue(key, out osd)) return OMVVector3.Zero;
 
             switch (osd.Type)
             {
@@ -913,12 +913,12 @@ namespace OpenMetaverse
                     return array.AsVector3();
             }
 
-            return Vector3.Zero;
+            return OMVVector3.Zero;
         }
 
-        public static Vector3 ParseVector3(string key, Hashtable reply)
+        public static OMVVector3 ParseVector3(string key, Hashtable reply)
         {
-            if (!reply.ContainsKey(key)) return Vector3.Zero;
+            if (!reply.ContainsKey(key)) return OMVVector3.Zero;
             var value = reply[key];
 
             if (value is IList list1)
@@ -931,7 +931,7 @@ namespace OpenMetaverse
                     float.TryParse((string)list[1], out y);
                     float.TryParse((string)list[2], out z);
 
-                    return new Vector3(x, y, z);
+                    return new OMVVector3(x, y, z);
                 }
             }
             else if (value is string str)
@@ -940,7 +940,7 @@ namespace OpenMetaverse
                 return array.AsVector3();
             }
 
-            return Vector3.Zero;
+            return OMVVector3.Zero;
         }
 
         public static UUID ParseMappedUUID(string key, string key2, OSDMap reply)

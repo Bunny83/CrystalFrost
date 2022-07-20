@@ -39,7 +39,7 @@ namespace OpenMetaverse.Assets
         /// <summary>UUID of the Landmark target region</summary>
         public UUID RegionID = UUID.Zero;
         /// <summary> Local position of the target </summary>
-        public Vector3 Position = Vector3.Zero;
+        public OMVVector3 Position = OMVVector3.Zero;
 
         /// <summary>Construct an Asset of type Landmark</summary>
         public AssetLandmark() { }
@@ -79,7 +79,7 @@ namespace OpenMetaverse.Assets
                 String[] vecStrings = text.Substring(text.IndexOf("local_pos", StringComparison.Ordinal) + 10).Split(vecDelim.ToCharArray());
                 if (vecStrings.Length == 3)
                 {
-                    Position = new Vector3(float.Parse(vecStrings[0], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[1], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[2], System.Globalization.CultureInfo.InvariantCulture));
+                    Position = new OMVVector3(float.Parse(vecStrings[0], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[1], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[2], System.Globalization.CultureInfo.InvariantCulture));
                     return true;
                 }
             }

@@ -143,15 +143,15 @@ namespace OpenMetaverse
         /// <summary></summary>
         public uint LocalID;
         /// <summary></summary>
-        public Vector3 Position;
+        public OMVVector3 Position;
         /// <summary></summary>
-        public Vector3 Velocity;
+        public OMVVector3 Velocity;
         /// <summary></summary>
-        public Vector3 Acceleration;
+        public OMVVector3 Acceleration;
         /// <summary></summary>
         public Quaternion Rotation;
         /// <summary></summary>
-        public Vector3 AngularVelocity;
+        public OMVVector3 AngularVelocity;
         /// <summary></summary>
         public Primitive.TextureEntry Textures;
     }
@@ -870,7 +870,7 @@ namespace OpenMetaverse
         /// <param name="localID">The Local ID of the object</param>
         public void ClickObject(Simulator simulator, uint localID)
         {
-            ClickObject(simulator, localID, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+            ClickObject(simulator, localID, OMVVector3.Zero, OMVVector3.Zero, 0, OMVVector3.Zero, OMVVector3.Zero, OMVVector3.Zero);
         }
 
         /// <summary>
@@ -885,13 +885,13 @@ namespace OpenMetaverse
         /// <param name="normal">The surface normal of the position to touch (A normal is a vector perpindicular to the surface)</param>
         /// <param name="binormal">The surface binormal of the position to touch (A binormal is a vector tangen to the surface
         /// pointing along the U direction of the tangent space</param>
-        public void ClickObject(Simulator simulator, uint localID, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
-            Vector3 normal, Vector3 binormal)
+        public void ClickObject(Simulator simulator, uint localID, OMVVector3 uvCoord, OMVVector3 stCoord, int faceIndex, OMVVector3 position,
+            OMVVector3 normal, OMVVector3 binormal)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket();
             grab.AgentData.AgentID = Client.Self.AgentID;
             grab.AgentData.SessionID = Client.Self.SessionID;
-            grab.ObjectData.GrabOffset = Vector3.Zero;
+            grab.ObjectData.GrabOffset = OMVVector3.Zero;
             grab.ObjectData.LocalID = localID;
             grab.SurfaceInfo = new ObjectGrabPacket.SurfaceInfoBlock[1];
             grab.SurfaceInfo[0] = new ObjectGrabPacket.SurfaceInfoBlock();
@@ -940,8 +940,8 @@ namespace OpenMetaverse
         /// follow up by moving the object after it has been created. This
         /// function will not set textures, light and flexible data, or other 
         /// extended primitive properties</remarks>
-        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position,
-            Vector3 scale, Quaternion rotation)
+        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, OMVVector3 position,
+            OMVVector3 scale, Quaternion rotation)
         {
             AddPrim(simulator, prim, groupID, position, scale, rotation, PrimFlags.CreateSelected);
         }
@@ -963,8 +963,8 @@ namespace OpenMetaverse
         /// follow up by moving the object after it has been created. This
         /// function will not set textures, light and flexible data, or other 
         /// extended primitive properties</remarks>
-        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, Vector3 position,
-            Vector3 scale, Quaternion rotation, PrimFlags createFlags)
+        public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, OMVVector3 position,
+            OMVVector3 scale, Quaternion rotation, PrimFlags createFlags)
         {
             ObjectAddPacket packet = new ObjectAddPacket();
 
@@ -1020,7 +1020,7 @@ namespace OpenMetaverse
         /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
         /// or UUID.Zero if no group is to be set</param>
         /// <param name="newTree">true to use the "new" Linden trees, false to use the old</param>
-        public void AddTree(Simulator simulator, Vector3 scale, Quaternion rotation, Vector3 position,
+        public void AddTree(Simulator simulator, OMVVector3 scale, Quaternion rotation, OMVVector3 position,
             Tree treeType, UUID groupOwner, bool newTree)
         {
             ObjectAddPacket add = new ObjectAddPacket();
@@ -1052,7 +1052,7 @@ namespace OpenMetaverse
         /// <param name="grassType">The type of grass from the <seealso cref="Grass"/> enum</param>
         /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
         /// or UUID.Zero if no group is to be set</param>
-        public void AddGrass(Simulator simulator, Vector3 scale, Quaternion rotation, Vector3 position,
+        public void AddGrass(Simulator simulator, OMVVector3 scale, Quaternion rotation, OMVVector3 position,
             Grass grassType, UUID groupOwner)
         {
             ObjectAddPacket add = new ObjectAddPacket();
@@ -1435,7 +1435,7 @@ namespace OpenMetaverse
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="position">The new position of the object</param>
-        public void SetPosition(Simulator simulator, uint localID, Vector3 position)
+        public void SetPosition(Simulator simulator, uint localID, OMVVector3 position)
         {
             UpdateObject(simulator, localID, position, UpdateType.Position | UpdateType.Linked);
         }
@@ -1447,7 +1447,7 @@ namespace OpenMetaverse
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="position">The new position of the object</param>
         /// <param name="childOnly">if true, will change position of (this) child prim only, not entire linkset</param>
-        public void SetPosition(Simulator simulator, uint localID, Vector3 position, bool childOnly)
+        public void SetPosition(Simulator simulator, uint localID, OMVVector3 position, bool childOnly)
         {
             UpdateType type = UpdateType.Position;
 
@@ -1465,7 +1465,7 @@ namespace OpenMetaverse
         /// <param name="scale">The new scale of the object</param>
         /// <param name="childOnly">If true, will change scale of this prim only, not entire linkset</param>
         /// <param name="uniform">True to resize prims uniformly</param>
-        public void SetScale(Simulator simulator, uint localID, Vector3 scale, bool childOnly, bool uniform)
+        public void SetScale(Simulator simulator, uint localID, OMVVector3 scale, bool childOnly, bool uniform)
         {
             UpdateType type = UpdateType.Scale;
 
@@ -1513,7 +1513,7 @@ namespace OpenMetaverse
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="data">The new rotation, size, or position of the target object</param>
         /// <param name="type">The flags from the <seealso cref="UpdateType"/> Enum</param>
-        public void UpdateObject(Simulator simulator, uint localID, Vector3 data, UpdateType type)
+        public void UpdateObject(Simulator simulator, uint localID, OMVVector3 data, UpdateType type)
         {
             MultipleObjectUpdatePacket multiObjectUpdate = new MultipleObjectUpdatePacket();
             multiObjectUpdate.AgentData.AgentID = Client.Self.AgentID;
@@ -1906,19 +1906,19 @@ namespace OpenMetaverse
                         goto case 60;
                     case 60:
                         // Position
-                        objectupdate.Position = new Vector3(block.ObjectData, pos);
+                        objectupdate.Position = new OMVVector3(block.ObjectData, pos);
                         pos += 12;
                         // Velocity
-                        objectupdate.Velocity = new Vector3(block.ObjectData, pos);
+                        objectupdate.Velocity = new OMVVector3(block.ObjectData, pos);
                         pos += 12;
                         // Acceleration
-                        objectupdate.Acceleration = new Vector3(block.ObjectData, pos);
+                        objectupdate.Acceleration = new OMVVector3(block.ObjectData, pos);
                         pos += 12;
                         // Rotation (theta)
                         objectupdate.Rotation = new Quaternion(block.ObjectData, pos, true);
                         pos += 12;
                         // Angular velocity (omega)
-                        objectupdate.AngularVelocity = new Vector3(block.ObjectData, pos);
+                        objectupdate.AngularVelocity = new OMVVector3(block.ObjectData, pos);
                         pos += 12;
 
                         break;
@@ -1932,19 +1932,19 @@ namespace OpenMetaverse
                         // The data is an array of unsigned shorts
 
                         // Position
-                        objectupdate.Position = new Vector3(
+                        objectupdate.Position = new OMVVector3(
                             Utils.UInt16ToFloat(block.ObjectData, pos, -0.5f * 256.0f, 1.5f * 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 2, -0.5f * 256.0f, 1.5f * 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 3.0f * 256.0f));
                         pos += 6;
                         // Velocity
-                        objectupdate.Velocity = new Vector3(
+                        objectupdate.Velocity = new OMVVector3(
                             Utils.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
                         pos += 6;
                         // Acceleration
-                        objectupdate.Acceleration = new Vector3(
+                        objectupdate.Acceleration = new OMVVector3(
                             Utils.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
@@ -1957,7 +1957,7 @@ namespace OpenMetaverse
                             Utils.UInt16ToFloat(block.ObjectData, pos + 6, -1.0f, 1.0f));
                         pos += 8;
                         // Angular velocity (omega)
-                        objectupdate.AngularVelocity = new Vector3(
+                        objectupdate.AngularVelocity = new OMVVector3(
                             Utils.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
@@ -1968,19 +1968,19 @@ namespace OpenMetaverse
                         // The data is an array of single bytes (8-bit numbers)
 
                         // Position
-                        objectupdate.Position = new Vector3(
+                        objectupdate.Position = new OMVVector3(
                             Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
                         // Velocity
-                        objectupdate.Velocity = new Vector3(
+                        objectupdate.Velocity = new OMVVector3(
                             Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
                         // Accleration
-                        objectupdate.Acceleration = new Vector3(
+                        objectupdate.Acceleration = new OMVVector3(
                             Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
@@ -1993,7 +1993,7 @@ namespace OpenMetaverse
                             Utils.ByteToFloat(block.ObjectData, pos + 3, -1.0f, 1.0f));
                         pos += 4;
                         // Angular Velocity
-                        objectupdate.AngularVelocity = new Vector3(
+                        objectupdate.AngularVelocity = new OMVVector3(
                             Utils.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
@@ -2289,16 +2289,16 @@ namespace OpenMetaverse
                         pos += 16;
                     }
                     // Position
-                    update.Position = new Vector3(block.Data, pos);
+                    update.Position = new OMVVector3(block.Data, pos);
                     pos += 12;
                     // Velocity
-                    update.Velocity = new Vector3(
+                    update.Velocity = new OMVVector3(
                         Utils.UInt16ToFloat(block.Data, pos, -128.0f, 128.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 2, -128.0f, 128.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 4, -128.0f, 128.0f));
                     pos += 6;
                     // Acceleration
-                    update.Acceleration = new Vector3(
+                    update.Acceleration = new OMVVector3(
                         Utils.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
@@ -2311,7 +2311,7 @@ namespace OpenMetaverse
                         Utils.UInt16ToFloat(block.Data, pos + 6, -1.0f, 1.0f));
                     pos += 8;
                     // Angular velocity (omega)
-                    update.AngularVelocity = new Vector3(
+                    update.AngularVelocity = new OMVVector3(
                         Utils.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
@@ -2433,10 +2433,10 @@ namespace OpenMetaverse
                     // Click action
                     prim.ClickAction = (ClickAction)block.Data[i++];
                     // Scale
-                    prim.Scale = new Vector3(block.Data, i);
+                    prim.Scale = new OMVVector3(block.Data, i);
                     i += 12;
                     // Position
-                    prim.Position = new Vector3(block.Data, i);
+                    prim.Position = new OMVVector3(block.Data, i);
                     i += 12;
                     // Rotation
                     prim.Rotation = new Quaternion(block.Data, i, true);
@@ -2451,7 +2451,7 @@ namespace OpenMetaverse
                     // Angular velocity
                     if ((flags & CompressedFlags.HasAngularVelocity) != 0)
                     {
-                        prim.AngularVelocity = new Vector3(block.Data, i);
+                        prim.AngularVelocity = new OMVVector3(block.Data, i);
                         i += 12;
                     }
 
@@ -3257,7 +3257,7 @@ namespace OpenMetaverse
                             #region Linear Motion
                             // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
                             // no acceleration
-                            if (avatar.Acceleration != Vector3.Zero && avatar.Velocity == Vector3.Zero)
+                            if (avatar.Acceleration != OMVVector3.Zero && avatar.Velocity == OMVVector3.Zero)
                             {
                                 avatar.Position += (avatar.Velocity + avatar.Acceleration *
                                     (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;
@@ -3274,7 +3274,7 @@ namespace OpenMetaverse
                             if (prim.Joint == JointType.Invalid)
                             {
                                 #region Angular Velocity
-                                Vector3 angVel = prim.AngularVelocity;
+                                OMVVector3 angVel = prim.AngularVelocity;
                                 float omega = angVel.LengthSquared();
 
                                 if (omega > 0.00001f)
@@ -3291,7 +3291,7 @@ namespace OpenMetaverse
                                 #region Linear Motion
                                 // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
                                 // no acceleration
-                                if (prim.Acceleration != Vector3.Zero && prim.Velocity == Vector3.Zero)
+                                if (prim.Acceleration != OMVVector3.Zero && prim.Velocity == OMVVector3.Zero)
                                 {
                                     prim.Position += (prim.Velocity + prim.Acceleration *
                                         (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;

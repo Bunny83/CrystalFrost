@@ -486,10 +486,10 @@ namespace OpenMetaverse
         public int RentPrice;
         /// <summary>Minimum corner of the axis-aligned bounding box for this
         /// parcel</summary>
-        public Vector3 AABBMin;
+        public OMVVector3 AABBMin;
         /// <summary>Maximum corner of the axis-aligned bounding box for this
         /// parcel</summary>
-        public Vector3 AABBMax;
+        public OMVVector3 AABBMax;
         /// <summary>Bitmap describing land layout in 4x4m squares across the 
         /// entire region</summary>
         public byte[] Bitmap;
@@ -546,9 +546,9 @@ namespace OpenMetaverse
         /// <summary>Key of parcel snapshot</summary>
         public UUID SnapshotID;
         /// <summary>The landing point location</summary>
-        public Vector3 UserLocation;
+        public OMVVector3 UserLocation;
         /// <summary>The landing point LookAt</summary>
-        public Vector3 UserLookAt;
+        public OMVVector3 UserLookAt;
         /// <summary>The type of landing enforced from the <see cref="LandingType"/> enum</summary>
         public LandingType Landing;
         /// <summary></summary>
@@ -1416,7 +1416,7 @@ namespace OpenMetaverse
         /// <returns>0 on failure, or parcel LocalID on success.</returns>
         /// <remarks>A call to <code>Parcels.RequestAllSimParcels</code> is required to populate map and
         /// dictionary.</remarks>
-        public int GetParcelLocalID(Simulator simulator, Vector3 position)
+        public int GetParcelLocalID(Simulator simulator, OMVVector3 position)
         {
             if (simulator.ParcelMap[(byte)position.Y / 4, (byte)position.X / 4] > 0)
             {
@@ -1653,7 +1653,7 @@ namespace OpenMetaverse
         /// <param name="regionHandle">Remote region handle</param>
         /// <param name="regionID">Remote region UUID</param>
         /// <returns>If successful UUID of the remote parcel, UUID.Zero otherwise</returns>
-        public UUID RequestRemoteParcelID(Vector3 location, ulong regionHandle, UUID regionID)
+        public UUID RequestRemoteParcelID(OMVVector3 location, ulong regionHandle, UUID regionID)
         {
             if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
                 return UUID.Zero;

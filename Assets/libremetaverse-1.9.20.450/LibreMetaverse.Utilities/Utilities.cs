@@ -53,7 +53,7 @@ namespace OpenMetaverse.Utilities
         /// <param name="client"></param>
         /// <param name="target">Target to shoot at</param>
         /// <returns></returns>
-        public static bool Shoot(GridClient client, Vector3 target)
+        public static bool Shoot(GridClient client, OMVVector3 target)
         {
             return client.Self.Movement.TurnToward(target) && Shoot(client);
         }
@@ -158,7 +158,7 @@ namespace OpenMetaverse.Utilities
     {
         private readonly GridClient _client;
         private ulong _simHandle;
-        private Vector3 _position = Vector3.Zero;
+        private OMVVector3 _position = OMVVector3.Zero;
         private readonly System.Timers.Timer _checkTimer;
 
         public ConnectionManager(GridClient client, int timerFrequency)
@@ -221,7 +221,7 @@ namespace OpenMetaverse.Utilities
             }
         }
 
-        public void StayInSim(ulong handle, Vector3 desiredPosition)
+        public void StayInSim(ulong handle, OMVVector3 desiredPosition)
         {
             _simHandle = handle;
             _position = desiredPosition;

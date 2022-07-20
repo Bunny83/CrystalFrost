@@ -29,14 +29,14 @@ namespace OpenMetaverse.TestClient_
             string searchString = (args.Length > 1) ? args[1] : string.Empty;
 
             // *** get current location ***
-            Vector3 location = Client.Self.SimPosition;
+            OMVVector3 location = Client.Self.SimPosition;
 
             // *** find all objects in radius ***
             List<Primitive> prims = Client.Network.CurrentSim.ObjectsPrimitives.FindAll(
                 delegate(Primitive prim)
                 {
-                    Vector3 pos = prim.Position;
-                    return ((prim.ParentID == 0) && (pos != Vector3.Zero) && (Vector3.Distance(pos, location) < radius));
+                    OMVVector3 pos = prim.Position;
+                    return ((prim.ParentID == 0) && (pos != OMVVector3.Zero) && (OMVVector3.Distance(pos, location) < radius));
                 }
             );
 

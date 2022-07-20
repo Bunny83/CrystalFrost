@@ -56,7 +56,7 @@ namespace OpenMetaverse
             W = w;
         }
 
-        public Quaternion(Vector3 vectorPart, float scalarPart)
+        public Quaternion(OMVVector3 vectorPart, float scalarPart)
         {
             X = vectorPart.X;
             Y = vectorPart.Y;
@@ -325,9 +325,9 @@ namespace OpenMetaverse
         /// Convert quaternion to euler angles vector
         /// </summary>
         /// <returns></returns>
-        public Vector3 ToEulerVector() {
+        public OMVVector3 ToEulerVector() {
 	        GetEulerAngles(out float r, out float p, out float y);
-	        return new Vector3(r, p, y);
+	        return new OMVVector3(r, p, y);
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="axis">Unit vector describing the axis</param>
         /// <param name="angle">Angle around the axis, in radians</param>
-        public void GetAxisAngle(out Vector3 axis, out float angle)
+        public void GetAxisAngle(out OMVVector3 axis, out float angle)
         {
             Quaternion q = Normalize(this);
 
@@ -344,7 +344,7 @@ namespace OpenMetaverse
             {
                 float invSin = 1.0f / sin;
                 if (q.W < 0) invSin = -invSin;
-                axis = new Vector3(q.X, q.Y, q.Z) * invSin;
+                axis = new OMVVector3(q.X, q.Y, q.Z) * invSin;
 
                 angle = 2.0f * (float)Math.Acos(q.W);
                 if (angle > Math.PI)
@@ -352,7 +352,7 @@ namespace OpenMetaverse
             }
             else
             {
-                axis = Vector3.UnitX;
+                axis = OMVVector3.UnitX;
                 angle = 0f;
             }
         }
@@ -387,7 +387,7 @@ namespace OpenMetaverse
         /// </summary>
         public static Quaternion CreateFromAxisAngle(float axisX, float axisY, float axisZ, float angle)
         {
-            Vector3 axis = new Vector3(axisX, axisY, axisZ);
+            OMVVector3 axis = new OMVVector3(axisX, axisY, axisZ);
             return CreateFromAxisAngle(axis, angle);
         }
 
@@ -397,10 +397,10 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="axis">Axis of rotation</param>
         /// <param name="angle">Angle of rotation</param>
-        public static Quaternion CreateFromAxisAngle(Vector3 axis, float angle)
+        public static Quaternion CreateFromAxisAngle(OMVVector3 axis, float angle)
         {
             Quaternion q;
-            axis = Vector3.Normalize(axis);
+            axis = OMVVector3.Normalize(axis);
 
             angle *= 0.5f;
             float c = (float)Math.Cos(angle);
@@ -421,7 +421,7 @@ namespace OpenMetaverse
         /// <param name="eulers">Vector representation of the euler angles in
         /// radians</param>
         /// <returns>Quaternion representation of the euler angles</returns>
-        public static Quaternion CreateFromEulers(Vector3 eulers)
+        public static Quaternion CreateFromEulers(OMVVector3 eulers)
         {
             return CreateFromEulers(eulers.X, eulers.Y, eulers.Z);
         }

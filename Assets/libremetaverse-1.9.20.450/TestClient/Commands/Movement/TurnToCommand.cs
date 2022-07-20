@@ -46,7 +46,7 @@ namespace OpenMetaverse.TestClient_.Commands.Movement
                 return "Usage: turnto x y z";
             }
 
-            Vector3 newDirection;
+            OMVVector3 newDirection;
             newDirection.X = (float)x;
             newDirection.Y = (float)y;
             newDirection.Z = (float)z;

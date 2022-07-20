@@ -34,7 +34,7 @@ namespace OpenMetaverse
     /// <summary>Describes tasks returned in LandStatReply</summary>
     public class EstateTask
     {
-        public Vector3 Position;
+        public OMVVector3 Position;
         public float Score;
         public float MonoScore;
         public UUID TaskID;
@@ -912,7 +912,7 @@ namespace OpenMetaverse
                 foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
                 {
                     EstateTask task = new EstateTask();
-                    task.Position = new Vector3(rep.LocationX, rep.LocationY, rep.LocationZ);
+                    task.Position = new OMVVector3(rep.LocationX, rep.LocationY, rep.LocationZ);
                     task.Score = rep.Score;
                     task.TaskID = rep.TaskID;
                     task.TaskLocalID = rep.TaskLocalID;

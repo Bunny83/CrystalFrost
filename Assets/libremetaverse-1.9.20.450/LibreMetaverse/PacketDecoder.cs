@@ -205,14 +205,14 @@ namespace OpenMetaverse.Packets
             // Position
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Position",
-                new Vector3(block, i),
+                new OMVVector3(block, i),
                 "Vector3");
             i += 12;
 
             // Velocity
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Velocity",
-                new Vector3(
+                new OMVVector3(
                     Utils.UInt16ToFloat(block, i, -128.0f, 128.0f),
                     Utils.UInt16ToFloat(block, i + 2, -128.0f, 128.0f),
                     Utils.UInt16ToFloat(block, i + 4, -128.0f, 128.0f)),
@@ -222,7 +222,7 @@ namespace OpenMetaverse.Packets
             // Acceleration
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Acceleration",
-                new Vector3(
+                new OMVVector3(
                     Utils.UInt16ToFloat(block, i, -64.0f, 64.0f),
                     Utils.UInt16ToFloat(block, i + 2, -64.0f, 64.0f),
                     Utils.UInt16ToFloat(block, i + 4, -64.0f, 64.0f)),
@@ -242,7 +242,7 @@ namespace OpenMetaverse.Packets
             // Angular velocity (omega)
             result.AppendFormat("{0,30}: {1,-40} [{2}]",
                 "AngularVelocity",
-                new Vector3(
+                new OMVVector3(
                     Utils.UInt16ToFloat(block, i, -64.0f, 64.0f),
                     Utils.UInt16ToFloat(block, i + 2, -64.0f, 64.0f),
                     Utils.UInt16ToFloat(block, i + 4, -64.0f, 64.0f)),
@@ -314,21 +314,21 @@ namespace OpenMetaverse.Packets
             // Scale
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Scale",
-                new Vector3(block, i),
+                new OMVVector3(block, i),
                 "Vector3");
             i += 12;
 
             // Position
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Position",
-                new Vector3(block, i),
+                new OMVVector3(block, i),
                 "Vector3");
             i += 12;
 
             // Rotation
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Rotation",
-                new Vector3(block, i),
+                new OMVVector3(block, i),
                 "Vector3");
 
             i += 12;
@@ -353,7 +353,7 @@ namespace OpenMetaverse.Packets
             {
                 result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                     "AngularVelocity",
-                    new Vector3(block, i),
+                    new OMVVector3(block, i),
                     "Vector3");
                 i += 12;
             }
@@ -653,11 +653,11 @@ namespace OpenMetaverse.Packets
                 /* TODO: these are likely useful packed fields,
                  * need to unpack them */
                 Vector4 col = Vector4.Zero;
-                Vector3 offset = Vector3.Zero;
-                Vector3 vel = Vector3.Zero;
-                Vector3 acc = Vector3.Zero;
+                OMVVector3 offset = OMVVector3.Zero;
+                OMVVector3 vel = OMVVector3.Zero;
+                OMVVector3 acc = OMVVector3.Zero;
                 Quaternion q = Quaternion.Identity;
-                Vector3 angvel = Vector3.Zero;
+                OMVVector3 angvel = OMVVector3.Zero;
 
                 col.FromBytes(data, 0);
                 offset.FromBytes(data, 16);
@@ -696,11 +696,11 @@ namespace OpenMetaverse.Packets
             else if (data.Length == 60)
             {
                 /* TODO: these are likely useful packed fields, need to unpack them */
-                Vector3 offset = Vector3.Zero;
-                Vector3 vel = Vector3.Zero;
-                Vector3 acc = Vector3.Zero;
+                OMVVector3 offset = OMVVector3.Zero;
+                OMVVector3 vel = OMVVector3.Zero;
+                OMVVector3 acc = OMVVector3.Zero;
                 Quaternion q = Quaternion.Identity;
-                Vector3 angvel = Vector3.Zero;
+                OMVVector3 angvel = OMVVector3.Zero;
 
                 offset.FromBytes(data, 0);
                 vel.FromBytes(data, 12);

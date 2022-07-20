@@ -200,7 +200,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public float Tension;
             /// <summary></summary>
-            public Vector3 Force;
+            public OMVVector3 Force;
 
             /// <summary>
             /// Default constructor
@@ -224,7 +224,7 @@ namespace OpenMetaverse
                     Drag = (float)(data[pos++] & 0x7F) / 10.0f;
                     Gravity = (float)(data[pos++] / 10.0f) - 10.0f;
                     Wind = (float)data[pos++] / 10.0f;
-                    Force = new Vector3(data, pos);
+                    Force = new OMVVector3(data, pos);
                 }
                 else
                 {
@@ -234,7 +234,7 @@ namespace OpenMetaverse
                     Drag = 0.0f;
                     Gravity = 0.0f;
                     Wind = 0.0f;
-                    Force = Vector3.Zero;
+                    Force = OMVVector3.Zero;
                 }
             }
 
@@ -440,7 +440,7 @@ namespace OpenMetaverse
             /// <summary></summary>
             public UUID LightTexture;
             /// <summary></summary>
-            public Vector3 Params;
+            public OMVVector3 Params;
 
             /// <summary>
             /// Default constructor
@@ -459,12 +459,12 @@ namespace OpenMetaverse
                 if (data.Length - pos >= 28)
                 {
                     LightTexture = new UUID(data, pos);
-                    Params = new Vector3(data, pos + 16);
+                    Params = new OMVVector3(data, pos + 16);
                 }
                 else
                 {
                     LightTexture = UUID.Zero;
-                    Params = Vector3.Zero;
+                    Params = OMVVector3.Zero;
                 }
             }
 
@@ -795,17 +795,17 @@ namespace OpenMetaverse
         /// <summary>Unknown</summary>
         public byte[] ScratchPad;
         /// <summary></summary>
-        public Vector3 Position;
+        public OMVVector3 Position;
         /// <summary></summary>
-        public Vector3 Scale;
+        public OMVVector3 Scale;
         /// <summary></summary>
         public Quaternion Rotation = Quaternion.Identity;
         /// <summary></summary>
-        public Vector3 Velocity;
+        public OMVVector3 Velocity;
         /// <summary></summary>
-        public Vector3 AngularVelocity;
+        public OMVVector3 AngularVelocity;
         /// <summary></summary>
-        public Vector3 Acceleration;
+        public OMVVector3 Acceleration;
         /// <summary></summary>
         public Vector4 CollisionPlane;
         /// <summary></summary>
@@ -838,9 +838,9 @@ namespace OpenMetaverse
         /// <summary></summary>
         public JointType Joint;
         /// <summary></summary>
-        public Vector3 JointPivot;
+        public OMVVector3 JointPivot;
         /// <summary></summary>
-        public Vector3 JointAxisOrAnchor;
+        public OMVVector3 JointAxisOrAnchor;
         /// <summary></summary>
         public NameValue[] NameValues;
         /// <summary></summary>

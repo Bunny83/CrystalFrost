@@ -442,8 +442,8 @@ namespace OpenMetaverse.ImportExport
                         if (nodes != null) {
                             ModelPrim firstPrim = null;         // The first prim is actually calculated, the others are just copied from it.
 
-                            Vector3 asset_scale = new Vector3(1,1,1);
-                            Vector3 asset_offset = new Vector3(0, 0, 0);            // Scale and offset between Collada and OS asset (Which is always in a unit cube)
+                            OMVVector3 asset_scale = new OMVVector3(1,1,1);
+                            OMVVector3 asset_offset = new OMVVector3(0, 0, 0);            // Scale and offset between Collada and OS asset (Which is always in a unit cube)
 
                             foreach (var node in nodes) {
                                 var prim = new ModelPrim
@@ -485,7 +485,7 @@ namespace OpenMetaverse.ImportExport
                                 // The offset created when normalizing the mesh vertices into the OS unit cube must be rotated
                                 // before being added to the position part of the Collada transform. 
                                 Matrix4 rot = Matrix4.CreateFromQuaternion(prim.Rotation);              // Convert rotation to matrix for for Transform
-                                Vector3 offset = Vector3.Transform(asset_offset * prim.Scale, rot);     // The offset must be rotated and mutiplied by the Collada file's scale as the offset is added during rendering with the unit cube mesh already multiplied by the compound scale.
+                                OMVVector3 offset = OMVVector3.Transform(asset_offset * prim.Scale, rot);     // The offset must be rotated and mutiplied by the Collada file's scale as the offset is added during rendering with the unit cube mesh already multiplied by the compound scale.
                                 prim.Position += offset;
                                 prim.Scale *= asset_scale;                                              // Modify scale from Collada instance by the rescaling done in AddPositions()
                             }
@@ -504,21 +504,21 @@ namespace OpenMetaverse.ImportExport
             return sources.FirstOrDefault(src => src.id == id);
         }
 
-        void AddPositions(out Vector3 scale, out Vector3 offset, mesh mesh, ModelPrim prim, Matrix4 transform)
+        void AddPositions(out OMVVector3 scale, out OMVVector3 offset, mesh mesh, ModelPrim prim, Matrix4 transform)
         {
-            prim.Positions = new List<Vector3>();
+            prim.Positions = new List<OMVVector3>();
             source posSrc = FindSource(mesh.source, mesh.vertices.input[0].source);
             double[] posVals = ((float_array)posSrc.Item).Values;
 
             for (int i = 0; i < posVals.Length / 3; i++)
             {
-                Vector3 pos = new Vector3((float)posVals[i * 3], (float)posVals[i * 3 + 1], (float)posVals[i * 3 + 2]);
-                pos = Vector3.Transform(pos, transform);
+                OMVVector3 pos = new OMVVector3((float)posVals[i * 3], (float)posVals[i * 3 + 1], (float)posVals[i * 3 + 2]);
+                pos = OMVVector3.Transform(pos, transform);
                 prim.Positions.Add(pos);
             }
 
-            prim.BoundMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            prim.BoundMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            prim.BoundMin = new OMVVector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            prim.BoundMax = new OMVVector3(float.MinValue, float.MinValue, float.MinValue);
 
             foreach (var pos in prim.Positions)
             {
@@ -537,8 +537,8 @@ namespace OpenMetaverse.ImportExport
             // Fit vertex positions into identity cube -0.5 .. 0.5
             for (int i = 0; i < prim.Positions.Count; i++)
             {
-                Vector3 pos = prim.Positions[i];
-                pos = new Vector3(
+                OMVVector3 pos = prim.Positions[i];
+                pos = new OMVVector3(
                     scale.X == 0 ? 0 : ((pos.X - prim.BoundMin.X) / scale.X) - 0.5f,
                     scale.Y == 0 ? 0 : ((pos.Y - prim.BoundMin.Y) / scale.Y) - 0.5f,
                     scale.Z == 0 ? 0 : ((pos.Z - prim.BoundMin.Z) / scale.Z) - 0.5f
@@ -600,16 +600,16 @@ namespace OpenMetaverse.ImportExport
             var vcount = StrToArray(list.vcount);
             var idx = StrToArray(list.p);
 
-            Vector3[] normals = null;
+            OMVVector3[] normals = null;
             if (normalSrc != null)
             {
                 var norVal = ((float_array)normalSrc.Item).Values;
-                normals = new Vector3[norVal.Length / 3];
+                normals = new OMVVector3[norVal.Length / 3];
 
                 for (int i = 0; i < normals.Length; i++)
                 {
-                    normals[i] = new Vector3((float)norVal[i * 3 + 0], (float)norVal[i * 3 + 1], (float)norVal[i * 3 + 2]);
-                    normals[i] = Vector3.TransformNormal(normals[i], transform);
+                    normals[i] = new OMVVector3((float)norVal[i * 3 + 0], (float)norVal[i * 3 + 1], (float)norVal[i * 3 + 2]);
+                    normals[i] = OMVVector3.TransformNormal(normals[i], transform);
                     normals[i].Normalize();
                 }
             }

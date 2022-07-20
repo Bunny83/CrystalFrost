@@ -6,6 +6,7 @@ using OpenMetaverse;
 using OpenMetaverse.Packets;
 using LibreMetaverse.Voice;
 using OpenMetaverse.TestClient_;
+using Jenny;
 
 public class Login : MonoBehaviour
 {
@@ -30,6 +31,10 @@ public class Login : MonoBehaviour
     TMPro.TMP_InputField password;
     [SerializeField]
     TMPro.TMP_Text console;
+    [SerializeField]
+    GameObject loginUI;
+    [SerializeField]
+    GameObject consoleUI;
 
     LoginDetails loginDetails;
 
@@ -37,27 +42,51 @@ public class Login : MonoBehaviour
     //OpenMetaverse.Vector3 vector3omv;
     public string loginURI;
 
-    void Start()
+    void Awake()
     {
         Jenny.Console.textOutput = console;
-        string[] args = { "--first Myra", "--last Loveless", "--pass xkEvweMWhAgH2e5" };
-        //Program.Main(args);
+        ClientManager.client = new GridClient();
+        ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
+        loginUI.SetActive(true);
     }
 
     public void TryLogin()
     {
-        Debug.Log($"Login\nFirst Name: {firstName.text}\nLast Name: {lastName.text}\nPassword: {password.text}");
-        loginDetails.FirstName = firstName.text;
-        loginDetails.LastName = lastName.text;
-        loginDetails.Password = password.text;
-        loginURI = Settings.AGNI_LOGIN_SERVER;
+        //Debug.Log($"Login\nFirst Name: {firstName.text}\nLast Name: {lastName.text}\nPassword: {password.text}");
+        //loginDetails.FirstName = firstName.text;
+        //loginDetails.LastName = lastName.text;
+        //loginDetails.Password = password.text;
+        //loginURI = Settings.AGNI_LOGIN_SERVER;
+
+        string text;
+        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log in to Myra Loveless");
+        if(ClientManager.client.Network.Login(firstName.text, lastName.text, password.text, "CrystalFrost", "0.1"))
+        {
+            Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
+            loginUI.SetActive(false);
+            ClientManager.active = true;
+        }
+        else
+        {
+            Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
+            loginUI.SetActive(true);
+            ClientManager.active = false;
+        }
+
+        StartCoroutine(LogOut(30));
         //NetworkManager.    
 
     }
 
+    IEnumerator LogOut(int secs)
+    {
+        yield return new WaitForSeconds(secs);
+        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log out.");
+        ClientManager.client.Network.Logout();
+        loginUI.SetActive(true);
+        ClientManager.active = false;
 
-
-
+    }
 
     public UUID GroupID = UUID.Zero;
     public Dictionary<UUID, GroupMember> GroupMembers;

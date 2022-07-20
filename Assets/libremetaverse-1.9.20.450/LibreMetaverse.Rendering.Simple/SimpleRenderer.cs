@@ -71,7 +71,7 @@ namespace OpenMetaverse.Rendering
             return GenerateFacetedMesh(prim, lod);
         }
 
-        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace, Vector3 primScale)
+        public void TransformTexCoords(List<Vertex> vertices, OMVVector3 center, Primitive.TextureEntryFace teFace, OMVVector3 primScale)
         {
             // Lalala...
         }
@@ -87,7 +87,7 @@ namespace OpenMetaverse.Rendering
         {
             Profile profile = new Profile();
             profile.Faces = new List<ProfileFace>();
-            profile.Positions = new List<Vector3>();
+            profile.Positions = new List<OMVVector3>();
             return profile;
         }
 
@@ -98,24 +98,24 @@ namespace OpenMetaverse.Rendering
             Vertex v = new Vertex();
 
             // FIXME: Implement these
-            v.Normal = Vector3.Zero;
+            v.Normal = OMVVector3.Zero;
             v.TexCoord = Vector2.Zero;
 
-            v.Position = new Vector3(0.5f, 0.5f, -0.5f);
+            v.Position = new OMVVector3(0.5f, 0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(0.5f, -0.5f, -0.5f);
+            v.Position = new OMVVector3(0.5f, -0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(-0.5f, -0.5f, -0.5f);
+            v.Position = new OMVVector3(-0.5f, -0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(-0.5f, 0.5f, -0.5f);
+            v.Position = new OMVVector3(-0.5f, 0.5f, -0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(0.5f, 0.5f, 0.5f);
+            v.Position = new OMVVector3(0.5f, 0.5f, 0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(0.5f, -0.5f, 0.5f);
+            v.Position = new OMVVector3(0.5f, -0.5f, 0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(-0.5f, -0.5f, 0.5f);
+            v.Position = new OMVVector3(-0.5f, -0.5f, 0.5f);
             vertices.Add(v);
-            v.Position = new Vector3(-0.5f, 0.5f, 0.5f);
+            v.Position = new OMVVector3(-0.5f, 0.5f, 0.5f);
             vertices.Add(v);
 
             return vertices;

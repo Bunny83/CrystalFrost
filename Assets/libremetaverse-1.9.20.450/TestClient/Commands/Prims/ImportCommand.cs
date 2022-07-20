@@ -34,7 +34,7 @@ namespace OpenMetaverse.TestClient_
         }
 
         Primitive currentPrim;
-        Vector3 currentPosition;
+        OMVVector3 currentPosition;
         AutoResetEvent primDone = new AutoResetEvent(false);
         List<Primitive> primsCreated;
         List<uint> linkQueue;

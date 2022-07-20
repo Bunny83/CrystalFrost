@@ -1574,7 +1574,7 @@ namespace OpenMetaverse
         {
             Client.Self.InstantMessage(Client.Self.Name, group, notice.Subject + "|" + notice.Message,
                 UUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online,
-                Vector3.Zero, UUID.Zero, notice.SerializeAttachment());
+                OMVVector3.Zero, UUID.Zero, notice.SerializeAttachment());
         }
 
         /// <summary>Start a group proposal (vote)</summary>

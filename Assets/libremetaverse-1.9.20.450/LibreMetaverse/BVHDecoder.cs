@@ -351,7 +351,7 @@ namespace OpenMetaverse
                     y = Utils.UInt16ToFloat(data, i, min, max); i += 2;
                     z = Utils.UInt16ToFloat(data, i, min, max); i += 2;
                 }
-                pJKey.key_element = new Vector3(x, y, z);
+                pJKey.key_element = new OMVVector3(x, y, z);
                 m_keys[j] = pJKey;
             }
             return m_keys;
@@ -535,7 +535,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Either a Vector3 position or a Vector3 Euler rotation
         /// </summary>
-        public Vector3 key_element;
+        public OMVVector3 key_element;
     }
 
     /// <summary>

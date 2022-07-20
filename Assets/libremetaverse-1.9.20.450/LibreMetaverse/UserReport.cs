@@ -126,7 +126,7 @@ namespace LibreMetaverse
         /// <param name="details"></param>
         public void SendUserReport(ReportType reportType, int category,
             UUID screenshotId, UUID objectId, UUID abuserId,
-            string abuseRegionName, UUID abuseRegionId, Vector3 pos,
+            string abuseRegionName, UUID abuseRegionId, OMVVector3 pos,
             string summary, string details)
         {
             OSDMap report = new OSDMap
@@ -187,7 +187,7 @@ namespace LibreMetaverse
         /// <param name="details"></param>
         public void SendUserReportLegacy(ReportType reportType, int category, 
             UUID screenshotId, UUID objectId, UUID abuserId,
-            string abuseRegionName, UUID abuseRegionId, Vector3 pos,
+            string abuseRegionName, UUID abuseRegionId, OMVVector3 pos,
             string summary, string details)
         {
             UserReportPacket urp = new UserReportPacket()

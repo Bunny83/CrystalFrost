@@ -385,10 +385,10 @@ namespace OpenMetaverse
         public float SunPhase { get; private set; }
 
         /// <summary>Current direction of the sun</summary>
-        public Vector3 SunDirection { get; private set; }
+        public OMVVector3 SunDirection { get; private set; }
 
         /// <summary>Current angular velocity of the sun</summary>
-        public Vector3 SunAngVelocity { get; private set; }
+        public OMVVector3 SunAngVelocity { get; private set; }
 
         /// <summary>Microseconds since the start of SL 4-hour day</summary>
         public ulong TimeOfDay { get; private set; }
@@ -798,11 +798,11 @@ namespace OpenMetaverse
             CoarseLocationUpdatePacket coarse = (CoarseLocationUpdatePacket)e.Packet;
 
             // populate a dictionary from the packet, for local use
-            Dictionary<UUID, Vector3> coarseEntries = new Dictionary<UUID, Vector3>();
+            Dictionary<UUID, OMVVector3> coarseEntries = new Dictionary<UUID, OMVVector3>();
             for (int i = 0; i < coarse.AgentData.Length; i++)
             {
                 if(coarse.Location.Length > 0)
-                    coarseEntries[coarse.AgentData[i].AgentID] = new Vector3((int)coarse.Location[i].X, (int)coarse.Location[i].Y, (int)coarse.Location[i].Z * 4);
+                    coarseEntries[coarse.AgentData[i].AgentID] = new OMVVector3((int)coarse.Location[i].X, (int)coarse.Location[i].Y, (int)coarse.Location[i].Z * 4);
 
                 // the friend we are tracking on radar
                 if (i == coarse.Index.Prey)
@@ -823,7 +823,7 @@ namespace OpenMetaverse
                     e.Simulator.avatarPositions.Dictionary.Remove(trackedID);
 
                 // add or update tracked info, and record who is new
-                foreach (KeyValuePair<UUID, Vector3> entry in coarseEntries)
+                foreach (KeyValuePair<UUID, OMVVector3> entry in coarseEntries)
                 {
                     if (!e.Simulator.avatarPositions.Dictionary.ContainsKey(entry.Key))
                         newEntries.Add(entry.Key);

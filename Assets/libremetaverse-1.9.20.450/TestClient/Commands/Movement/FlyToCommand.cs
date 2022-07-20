@@ -5,9 +5,9 @@ namespace OpenMetaverse.TestClient_.Commands.Movement
     class FlyToCommand : Command
     {
 
-        Vector3 myPos = new Vector3();
+        OMVVector3 myPos = new OMVVector3();
         Vector2 myPos0 = new Vector2();
-        Vector3 target = new Vector3();
+        OMVVector3 target = new OMVVector3();
         Vector2 target0 = new Vector2();
         float diff, olddiff, saveolddiff;
         int startTime = 0;
@@ -75,7 +75,7 @@ namespace OpenMetaverse.TestClient_.Commands.Movement
                     //Client.Self.Movement.SendUpdate(false);
                     Debug("Fly z ");
                 }
-                else if (Vector3.Distance(target, Client.Self.SimPosition) <= 2.0)
+                else if (OMVVector3.Distance(target, Client.Self.SimPosition) <= 2.0)
                 {
                     EndFlyto();
                     Debug("At Target");

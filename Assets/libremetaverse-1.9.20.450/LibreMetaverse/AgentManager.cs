@@ -691,7 +691,7 @@ namespace OpenMetaverse
         /// <summary>Key of originating region</summary>
         public UUID RegionID;
         /// <summary>Coordinates in originating region</summary>
-        public Vector3 Position;
+        public OMVVector3 Position;
         /// <summary>Instant message type</summary>
         public InstantMessageDialog Dialog;
         /// <summary>Group IM session toggle</summary>
@@ -1293,24 +1293,24 @@ namespace OpenMetaverse
         /// <summary>The CollisionPlane of Agent</summary>
         public Vector4 CollisionPlane => collisionPlane;
 
-        /// <summary>An <seealso cref="Vector3"/> representing the velocity of our agent</summary>
-        public Vector3 Velocity => velocity;
+        /// <summary>An <seealso cref="OMVVector3"/> representing the velocity of our agent</summary>
+        public OMVVector3 Velocity => velocity;
 
-        /// <summary>An <seealso cref="Vector3"/> representing the acceleration of our agent</summary>
-        public Vector3 Acceleration => acceleration;
+        /// <summary>An <seealso cref="OMVVector3"/> representing the acceleration of our agent</summary>
+        public OMVVector3 Acceleration => acceleration;
 
-        /// <summary>A <seealso cref="Vector3"/> which specifies the angular speed, and axis about which an Avatar is rotating.</summary>
-        public Vector3 AngularVelocity => angularVelocity;
+        /// <summary>A <seealso cref="OMVVector3"/> which specifies the angular speed, and axis about which an Avatar is rotating.</summary>
+        public OMVVector3 AngularVelocity => angularVelocity;
 
         /// <summary>Region handle for 'home' region</summary>
         public ulong HomeRegionHandle => home.RegionHandle;
 
         /// <summary>Position avatar client will goto when login to 'home' or during
         /// teleport request to 'home' region.</summary>
-        public Vector3 HomePosition => home.Position;
+        public OMVVector3 HomePosition => home.Position;
 
         /// <summary>LookAt point saved/restored with HomePosition</summary>
-        public Vector3 HomeLookAt => home.LookAt;
+        public OMVVector3 HomeLookAt => home.LookAt;
 
         /// <summary>Avatar First Name (i.e. Philip)</summary>
         public string FirstName { get; private set; } = string.Empty;
@@ -1319,7 +1319,7 @@ namespace OpenMetaverse
         public string LastName { get; private set; } = string.Empty;
 
         /// <summary>LookAt point received with the login response message</summary>
-        public Vector3 LookAt { get; private set; }
+        public OMVVector3 LookAt { get; private set; }
 
         /// <summary>Avatar Full Name (i.e. Philip Linden)</summary>
         public string Name
@@ -1354,12 +1354,12 @@ namespace OpenMetaverse
 
         /// <summary>Current position of the agent as a relative offset from
         /// the simulator, or the parent object if we are sitting on something</summary>
-        public Vector3 RelativePosition { get { return relativePosition; } set { relativePosition = value; } }
+        public OMVVector3 RelativePosition { get { return relativePosition; } set { relativePosition = value; } }
         /// <summary>Current rotation of the agent as a relative rotation from
         /// the simulator, or the parent object if we are sitting on something</summary>
         public Quaternion RelativeRotation { get { return relativeRotation; } set { relativeRotation = value; } }
         /// <summary>Current position of the agent in the simulator</summary>
-        public Vector3 SimPosition
+        public OMVVector3 SimPosition
         {
             get
             {
@@ -1371,7 +1371,7 @@ namespace OpenMetaverse
 
                 // a bit more complicatated, agent sitting on a prim
                 Primitive p;
-                Vector3 fullPosition = relativePosition;
+                OMVVector3 fullPosition = relativePosition;
 
                 if (Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out p))
                 {
@@ -1442,7 +1442,7 @@ namespace OpenMetaverse
                 {
                     uint globalX, globalY;
                     Utils.LongToUInts(Client.Network.CurrentSim.Handle, out globalX, out globalY);
-                    Vector3 pos = SimPosition;
+                    OMVVector3 pos = SimPosition;
 
                     return new Vector3d(
                         globalX + pos.X,
@@ -1459,12 +1459,12 @@ namespace OpenMetaverse
         #endregion Properties
 
         internal uint localID;
-        internal Vector3 relativePosition;
+        internal OMVVector3 relativePosition;
         internal Quaternion relativeRotation = Quaternion.Identity;
         internal Vector4 collisionPlane;
-        internal Vector3 velocity;
-        internal Vector3 acceleration;
-        internal Vector3 angularVelocity;
+        internal OMVVector3 velocity;
+        internal OMVVector3 acceleration;
+        internal OMVVector3 angularVelocity;
         internal uint sittingOn;
         internal int lastInterpolation;
 
@@ -1689,7 +1689,7 @@ namespace OpenMetaverse
             }
 
             InstantMessage(fromName, target, message, imSessionID, InstantMessageDialog.MessageFromAgent,
-                InstantMessageOnline.Offline, Vector3.Zero, UUID.Zero, binaryBucket);
+                InstantMessageOnline.Offline, OMVVector3.Zero, UUID.Zero, binaryBucket);
         }
 
         /// <summary>
@@ -1706,7 +1706,7 @@ namespace OpenMetaverse
         /// <param name="binaryBucket">Packed binary data that is specific to
         /// the dialog type</param>
         public void InstantMessage(string fromName, UUID target, string message, UUID imSessionID,
-            InstantMessageDialog dialog, InstantMessageOnline offline, Vector3 position, UUID regionID,
+            InstantMessageDialog dialog, InstantMessageOnline offline, OMVVector3 position, UUID regionID,
             byte[] binaryBucket)
         {
             if (target != UUID.Zero)
@@ -1730,7 +1730,7 @@ namespace OpenMetaverse
                 im.MessageBlock.BinaryBucket = binaryBucket ?? Utils.EmptyBytes;
 
                 // These fields are mandatory, even if we don't have valid values for them
-                im.MessageBlock.Position = Vector3.Zero;
+                im.MessageBlock.Position = OMVVector3.Zero;
                 //TODO: Allow region id to be correctly set by caller or fetched from Client.*
                 im.MessageBlock.RegionID = regionID;
 
@@ -1781,7 +1781,7 @@ namespace OpenMetaverse
                             Offline = 0,
                             ID = groupID,
                             ToAgentID = groupID,
-                            Position = Vector3.Zero,
+                            Position = OMVVector3.Zero,
                             RegionID = UUID.Zero,
                             BinaryBucket = Utils.StringToBytes("\0")
                         }
@@ -1854,7 +1854,7 @@ namespace OpenMetaverse
                     ID = groupID,
                     ToAgentID = groupID,
                     BinaryBucket = Utils.EmptyBytes,
-                    Position = Vector3.Zero,
+                    Position = OMVVector3.Zero,
                     RegionID = UUID.Zero
                 }
             };
@@ -2175,7 +2175,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="targetID"><seealso cref="UUID"/> of the object to sit on</param>
         /// <param name="offset">Sit at offset</param>
-        public void RequestSit(UUID targetID, Vector3 offset)
+        public void RequestSit(UUID targetID, OMVVector3 offset)
         {
             AgentRequestSitPacket requestSit = new AgentRequestSitPacket
             {
@@ -2382,8 +2382,8 @@ namespace OpenMetaverse
 
         #region Touch and grab
 
-        public static readonly Vector3 TOUCH_INVALID_TEXCOORD = new Vector3(-1.0f, -1.0f, 0.0f);
-        public static readonly Vector3 TOUCH_INVALID_VECTOR = Vector3.Zero;
+        public static readonly OMVVector3 TOUCH_INVALID_TEXCOORD = new OMVVector3(-1.0f, -1.0f, 0.0f);
+        public static readonly OMVVector3 TOUCH_INVALID_VECTOR = OMVVector3.Zero;
 
         /// <summary>
         /// Grabs an object
@@ -2392,7 +2392,7 @@ namespace OpenMetaverse
         /// <seealso cref="Simulator.ObjectsPrimitives"/>
         public void Grab(uint objectLocalID)
         {
-            Grab(objectLocalID, Vector3.Zero, TOUCH_INVALID_TEXCOORD, TOUCH_INVALID_TEXCOORD, 
+            Grab(objectLocalID, OMVVector3.Zero, TOUCH_INVALID_TEXCOORD, TOUCH_INVALID_TEXCOORD, 
                 0, TOUCH_INVALID_VECTOR, TOUCH_INVALID_VECTOR, TOUCH_INVALID_VECTOR);
         }
 
@@ -2408,8 +2408,8 @@ namespace OpenMetaverse
         /// <param name="normal">The surface normal of the position to grab (A normal is a vector perpendicular to the surface)</param>
         /// <param name="binormal">The surface bi-normal of the position to grab (A bi-normal is a vector tangent to the surface
         /// pointing along the U direction of the tangent space</param>
-        public void Grab(uint objectLocalID, Vector3 grabOffset, Vector3 uvCoord, Vector3 stCoord, 
-            int faceIndex, Vector3 position, Vector3 normal, Vector3 binormal)
+        public void Grab(uint objectLocalID, OMVVector3 grabOffset, OMVVector3 uvCoord, OMVVector3 stCoord, 
+            int faceIndex, OMVVector3 position, OMVVector3 normal, OMVVector3 binormal)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket
             {
@@ -2444,10 +2444,10 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="objectID"><seealso cref="UUID"/> of the object to drag</param>
         /// <param name="grabPosition">Drag target in region coordinates</param>
-        public void GrabUpdate(UUID objectID, Vector3 grabPosition)
+        public void GrabUpdate(UUID objectID, OMVVector3 grabPosition)
         {
-            GrabUpdate(objectID, grabPosition, Vector3.Zero, Vector3.Zero, Vector3.Zero, 
-                0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+            GrabUpdate(objectID, grabPosition, OMVVector3.Zero, OMVVector3.Zero, OMVVector3.Zero, 
+                0, OMVVector3.Zero, OMVVector3.Zero, OMVVector3.Zero);
         }
 
         /// <summary>
@@ -2463,8 +2463,8 @@ namespace OpenMetaverse
         /// <param name="normal">The surface normal of the position to grab (A normal is a vector perpendicular to the surface)</param>
         /// <param name="binormal">The surface bi-normal of the position to grab (A bi-normal is a vector tangent to the surface
         /// pointing along the U direction of the tangent space</param>
-        public void GrabUpdate(UUID objectID, Vector3 grabPosition, Vector3 grabOffset, Vector3 uvCoord, Vector3 stCoord, 
-            int faceIndex, Vector3 position, Vector3 normal, Vector3 binormal)
+        public void GrabUpdate(UUID objectID, OMVVector3 grabPosition, OMVVector3 grabOffset, OMVVector3 uvCoord, OMVVector3 stCoord, 
+            int faceIndex, OMVVector3 position, OMVVector3 normal, OMVVector3 binormal)
         {
             ObjectGrabUpdatePacket grab = new ObjectGrabUpdatePacket
             {
@@ -2520,8 +2520,8 @@ namespace OpenMetaverse
         /// <param name="normal">The surface normal of the position to grab (A normal is a vector perpendicular to the surface)</param>
         /// <param name="binormal">The surface bi-normal of the position to grab (A bi-normal is a vector tangent to the surface
         /// pointing along the U direction of the tangent space</param>
-        public void DeGrab(uint objectLocalID, Vector3 uvCoord, Vector3 stCoord, 
-            int faceIndex, Vector3 position, Vector3 normal, Vector3 binormal)
+        public void DeGrab(uint objectLocalID, OMVVector3 uvCoord, OMVVector3 stCoord, 
+            int faceIndex, OMVVector3 position, OMVVector3 normal, OMVVector3 binormal)
         {
             ObjectDeGrabPacket degrab = new ObjectDeGrabPacket
             {
@@ -2983,9 +2983,9 @@ namespace OpenMetaverse
         /// <param name="position">Position to teleport to</param>
         /// <returns>True if the lookup and teleport were successful, otherwise
         /// false</returns>
-        public bool Teleport(string simName, Vector3 position)
+        public bool Teleport(string simName, OMVVector3 position)
         {
-            return Teleport(simName, position, new Vector3(0, 1.0f, 0));
+            return Teleport(simName, position, new OMVVector3(0, 1.0f, 0));
         }
 
         /// <summary>
@@ -2997,7 +2997,7 @@ namespace OpenMetaverse
         /// <param name="lookAt">Target to look at</param>
         /// <returns>True if the lookup and teleport were successful, otherwise
         /// false</returns>
-        public bool Teleport(string simName, Vector3 position, Vector3 lookAt)
+        public bool Teleport(string simName, OMVVector3 position, OMVVector3 lookAt)
         {
             if (Client.Network.CurrentSim == null)
                 return false;
@@ -3031,23 +3031,23 @@ namespace OpenMetaverse
         /// Teleport agent to another region
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="Vector3"/> position in destination sim to teleport to</param>
+        /// <param name="position"><seealso cref="OMVVector3"/> position in destination sim to teleport to</param>
         /// <returns>true on success, false on failure</returns>
         /// <remarks>This call is blocking</remarks>
-        public bool Teleport(ulong regionHandle, Vector3 position)
+        public bool Teleport(ulong regionHandle, OMVVector3 position)
         {
-            return Teleport(regionHandle, position, new Vector3(0.0f, 1.0f, 0.0f));
+            return Teleport(regionHandle, position, new OMVVector3(0.0f, 1.0f, 0.0f));
         }
 
         /// <summary>
         /// Teleport agent to another region
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="Vector3"/> position in destination sim to teleport to</param>
-        /// <param name="lookAt"><seealso cref="Vector3"/> direction in destination sim agent will look at</param>
+        /// <param name="position"><seealso cref="OMVVector3"/> position in destination sim to teleport to</param>
+        /// <param name="lookAt"><seealso cref="OMVVector3"/> direction in destination sim agent will look at</param>
         /// <returns>true on success, false on failure</returns>
         /// <remarks>This call is blocking</remarks>
-        public bool Teleport(ulong regionHandle, Vector3 position, Vector3 lookAt)
+        public bool Teleport(ulong regionHandle, OMVVector3 position, OMVVector3 lookAt)
         {
             if (Client.Network.CurrentSim == null ||
                 Client.Network.CurrentSim.Caps == null ||
@@ -3089,19 +3089,19 @@ namespace OpenMetaverse
         /// Request teleport to a another simulator
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="Vector3"/> position in destination sim to teleport to</param>
-        public void RequestTeleport(ulong regionHandle, Vector3 position)
+        /// <param name="position"><seealso cref="OMVVector3"/> position in destination sim to teleport to</param>
+        public void RequestTeleport(ulong regionHandle, OMVVector3 position)
         {
-            RequestTeleport(regionHandle, position, new Vector3(0.0f, 1.0f, 0.0f));
+            RequestTeleport(regionHandle, position, new OMVVector3(0.0f, 1.0f, 0.0f));
         }
 
         /// <summary>
         /// Request teleport to a another simulator
         /// </summary>
         /// <param name="regionHandle">handle of region to teleport agent to</param>
-        /// <param name="position"><seealso cref="Vector3"/> position in destination sim to teleport to</param>
-        /// <param name="lookAt"><seealso cref="Vector3"/> direction in destination sim agent will look at</param>
-        public void RequestTeleport(ulong regionHandle, Vector3 position, Vector3 lookAt)
+        /// <param name="position"><seealso cref="OMVVector3"/> position in destination sim to teleport to</param>
+        /// <param name="lookAt"><seealso cref="OMVVector3"/> direction in destination sim agent will look at</param>
+        public void RequestTeleport(ulong regionHandle, OMVVector3 position, OMVVector3 lookAt)
         {
             if (Client.Network.CurrentSim != null &&
                 Client.Network.CurrentSim.Caps != null &&
@@ -3531,7 +3531,7 @@ namespace OpenMetaverse
         {
             InstantMessage(Name, groupID, string.Empty, imSessionID,
                 accept ? InstantMessageDialog.GroupInvitationAccept : InstantMessageDialog.GroupInvitationDecline,
-                InstantMessageOnline.Offline, Vector3.Zero, UUID.Zero, Utils.EmptyBytes);
+                InstantMessageOnline.Offline, OMVVector3.Zero, UUID.Zero, Utils.EmptyBytes);
         }
 
         /// <summary>
@@ -3557,7 +3557,7 @@ namespace OpenMetaverse
                     SearchDir = Quaternion.Identity,
                     SearchID = searchID,
                     SearchName = Utils.StringToBytes(name),
-                    SearchPos = Vector3.Zero,
+                    SearchPos = OMVVector3.Zero,
                     SearchRegions = 0,
                     SourceID = Client.Self.AgentID,
                     Type = (int) type
@@ -3970,7 +3970,7 @@ namespace OpenMetaverse
                         ? msg["parent_estate_id"].AsUInteger() : 1;
                     message.Position = msg.ContainsKey("position")
                         ? msg["position"].AsVector3()
-                        : new Vector3(msg["local_x"], msg["local_y"], msg["local_z"]);
+                        : new OMVVector3(msg["local_x"], msg["local_y"], msg["local_z"]);
                     message.BinaryBucket = msg.ContainsKey("binary_bucket")
                         ? msg["binary_bucket"].AsBinary() : new byte[] { 0 };
                     message.GroupIM = msg.ContainsKey("from_group") && msg["from_group"].AsBoolean();
@@ -4989,7 +4989,7 @@ namespace OpenMetaverse
         public UUID OwnerID { get; }
 
         /// <summary>Get the position of the agent or object sending the message</summary>
-        public Vector3 Position { get; }
+        public OMVVector3 Position { get; }
 
         /// <summary>
         /// Construct a new instance of the ChatEventArgs object
@@ -5004,7 +5004,7 @@ namespace OpenMetaverse
         /// <param name="ownerid">The ID of the object owner, or the agent ID sending the message</param>
         /// <param name="position">The position of the agent or object sending the message</param>
         public ChatEventArgs(Simulator simulator, string message, ChatAudibleLevel audible, ChatType type,
-        ChatSourceType sourceType, string fromName, UUID sourceId, UUID ownerid, Vector3 position)
+        ChatSourceType sourceType, string fromName, UUID sourceId, UUID ownerid, OMVVector3 position)
         {
             Simulator = simulator;
             Message = message;
@@ -5500,7 +5500,7 @@ namespace OpenMetaverse
         public UUID OwnerID { get; }
 
         /// <summary>Get the position of the primitive sending the sensor</summary>
-        public Vector3 Position { get; }
+        public OMVVector3 Position { get; }
 
         /// <summary>Get the range the primitive specified to scan</summary>
         public float Range { get; }
@@ -5512,7 +5512,7 @@ namespace OpenMetaverse
         public ScriptSensorTypeFlags Type { get; }
 
         /// <summary>Get the velocity of the primitive sending the sensor</summary>
-        public Vector3 Velocity { get; }
+        public OMVVector3 Velocity { get; }
 
         /// <summary>
         /// Construct a new instance of the ScriptSensorReplyEventArgs
@@ -5528,8 +5528,8 @@ namespace OpenMetaverse
         /// <param name="type">The type of sensor the primitive sent</param>
         /// <param name="velocity">The velocity of the primitive sending the sensor</param>
         public ScriptSensorReplyEventArgs(UUID requestorID, UUID groupID, string name,
-            UUID objectID, UUID ownerID, Vector3 position, float range, Quaternion rotation,
-            ScriptSensorTypeFlags type, Vector3 velocity)
+            UUID objectID, UUID ownerID, OMVVector3 position, float range, Quaternion rotation,
+            ScriptSensorTypeFlags type, OMVVector3 velocity)
         {
             RequestorID = requestorID;
             GroupID = groupID;
@@ -5554,23 +5554,23 @@ namespace OpenMetaverse
         public bool Autopilot { get; }
 
         /// <summary>Get the camera offset of the agent when seated</summary>
-        public Vector3 CameraAtOffset { get; }
+        public OMVVector3 CameraAtOffset { get; }
 
         /// <summary>Get the camera eye offset of the agent when seated</summary>
-        public Vector3 CameraEyeOffset { get; }
+        public OMVVector3 CameraEyeOffset { get; }
 
         /// <summary>True of the agent will be in mouselook mode when seated</summary>
         public bool ForceMouselook { get; }
 
         /// <summary>Get the position of the agent when seated</summary>
-        public Vector3 SitPosition { get; }
+        public OMVVector3 SitPosition { get; }
 
         /// <summary>Get the rotation of the agent when seated</summary>
         public Quaternion SitRotation { get; }
 
         /// <summary>Construct a new instance of the AvatarSitResponseEventArgs object</summary>
-        public AvatarSitResponseEventArgs(UUID objectID, bool autoPilot, Vector3 cameraAtOffset,
-            Vector3 cameraEyeOffset, bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation)
+        public AvatarSitResponseEventArgs(UUID objectID, bool autoPilot, OMVVector3 cameraAtOffset,
+            OMVVector3 cameraEyeOffset, bool forceMouselook, OMVVector3 sitPosition, Quaternion sitRotation)
         {
             ObjectID = objectID;
             Autopilot = autoPilot;

@@ -71,7 +71,7 @@ namespace OpenMetaverse
             FromBytes(byteArray, pos);
         }
 
-        public Vector3d(Vector3 vector)
+        public Vector3d(OMVVector3 vector)
         {
             X = vector.X;
             Y = vector.Y;
@@ -502,7 +502,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static implicit operator Vector3d(Vector3 value)
+        public static implicit operator Vector3d(OMVVector3 value)
         {
             return new Vector3d(value);
         }

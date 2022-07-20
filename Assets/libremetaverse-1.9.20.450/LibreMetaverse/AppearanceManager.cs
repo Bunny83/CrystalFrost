@@ -2345,7 +2345,7 @@ namespace OpenMetaverse
                     (agentSizeVPHeight * .12022) + (agentSizeVPHeadSize * .01117) + (agentSizeVPNeckLength * .038) +
                     (agentSizeVPHeelHeight * .08) + (agentSizeVPPlatformHeight * .07);
 
-                set.AgentData.Size = new Vector3(0.45f, 0.6f, (float)agentHeight);
+                set.AgentData.Size = new OMVVector3(0.45f, 0.6f, (float)agentHeight);
 
                 #endregion Agent Size
 

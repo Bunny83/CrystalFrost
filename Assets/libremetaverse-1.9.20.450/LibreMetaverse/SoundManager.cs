@@ -164,7 +164,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="soundID">UUID of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
-        public void SendSoundTrigger(UUID soundID, Vector3 position)
+        public void SendSoundTrigger(UUID soundID, OMVVector3 position)
         {
             SendSoundTrigger(soundID, _client.Self.SimPosition, 1.0f);
         }
@@ -175,7 +175,7 @@ namespace OpenMetaverse
         /// <param name="soundID">UUID of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SendSoundTrigger(UUID soundID, Vector3 position, float gain)
+        public void SendSoundTrigger(UUID soundID, OMVVector3 position, float gain)
         {
             SendSoundTrigger(soundID, _client.Network.CurrentSim.Handle, position, gain);
         }
@@ -186,7 +186,7 @@ namespace OpenMetaverse
         /// <param name="sim">UUID of the sound to be played.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SendSoundTrigger(UUID soundID, Simulator sim, Vector3 position, float gain)
+        public void SendSoundTrigger(UUID soundID, Simulator sim, OMVVector3 position, float gain)
         {
             SendSoundTrigger(soundID, sim.Handle, position, gain);
         }
@@ -198,7 +198,7 @@ namespace OpenMetaverse
         /// <param name="handle">handle id for the sim to be played in.</param>
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
-        public void SendSoundTrigger(UUID soundID, ulong handle, Vector3 position, float gain)
+        public void SendSoundTrigger(UUID soundID, ulong handle, OMVVector3 position, float gain)
         {
             SoundTriggerPacket soundtrigger = new SoundTriggerPacket
             {
@@ -416,7 +416,7 @@ namespace OpenMetaverse
         public ulong RegionHandle { get; }
 
         /// <summary>Get the source position</summary>
-        public Vector3 Position { get; }
+        public OMVVector3 Position { get; }
 
         /// <summary>
         /// Construct a new instance of the SoundTriggerEventArgs class
@@ -429,7 +429,7 @@ namespace OpenMetaverse
         /// <param name="gain">The volume level</param>
         /// <param name="regionHandle">The regionhandle</param>
         /// <param name="position">The source position</param>
-        public SoundTriggerEventArgs(Simulator sim, UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, Vector3 position)
+        public SoundTriggerEventArgs(Simulator sim, UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, OMVVector3 position)
         {
             Simulator = sim;
             SoundID = soundID;

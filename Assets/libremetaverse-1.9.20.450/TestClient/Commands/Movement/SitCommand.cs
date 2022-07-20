@@ -19,7 +19,7 @@ namespace OpenMetaverse.TestClient_
             Client.Network.CurrentSim.ObjectsPrimitives.ForEach(
                 delegate(Primitive prim)
                 {
-                    float distance = Vector3.Distance(Client.Self.SimPosition, prim.Position);
+                    float distance = OMVVector3.Distance(Client.Self.SimPosition, prim.Position);
 
                     if (closest == null || distance < closestDistance)
                     {
@@ -31,7 +31,7 @@ namespace OpenMetaverse.TestClient_
 
             if (closest != null)
             {
-                Client.Self.RequestSit(closest.ID, Vector3.Zero);
+                Client.Self.RequestSit(closest.ID, OMVVector3.Zero);
                 Client.Self.Sit();
 
                 return "Sat on " + closest.ID + " (" + closest.LocalID + "). Distance: " + closestDistance;

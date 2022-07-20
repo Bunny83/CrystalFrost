@@ -96,6 +96,6 @@ namespace OpenMetaverse.Rendering
         /// <param name="center">Center-point of the face</param>
         /// <param name="teFace">Face texture parameters</param>
         /// <param name="primScale">Scale of the prim</param>
-        void TransformTexCoords (List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace, Vector3 primScale);
+        void TransformTexCoords (List<Vertex> vertices, OMVVector3 center, Primitive.TextureEntryFace teFace, OMVVector3 primScale);
     }
 }

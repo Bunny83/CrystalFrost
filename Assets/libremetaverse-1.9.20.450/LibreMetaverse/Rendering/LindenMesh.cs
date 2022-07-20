@@ -77,9 +77,9 @@ namespace OpenMetaverse.Rendering
         /// </remarks>
         public struct Vertex
         {
-            public Vector3 Coord;                       //!< 3d co-ordinate of the vertex
-            public Vector3 Normal;                      //!< Normal of the vertex
-            public Vector3 BiNormal;                    //!< Bi normal of the vertex
+            public OMVVector3 Coord;                       //!< 3d co-ordinate of the vertex
+            public OMVVector3 Normal;                      //!< Normal of the vertex
+            public OMVVector3 BiNormal;                    //!< Bi normal of the vertex
             public Vector2 TexCoord;                    //!< UV maping of the vertex
             public Vector2 DetailTexCoord;              //!< Detailed? UV mapping
             public float Weight;                        //!< Used to calculate the skin weights
@@ -100,9 +100,9 @@ namespace OpenMetaverse.Rendering
         public struct MorphVertex
         {
             public uint VertexIndex;            //!< Index into the vertex list of the vertex to change
-            public Vector3 Coord;               //!< Delta position
-            public Vector3 Normal;              //!< Delta normal
-            public Vector3 BiNormal;            //!< Delta BiNormal
+            public OMVVector3 Coord;               //!< Delta position
+            public OMVVector3 Normal;              //!< Delta normal
+            public OMVVector3 BiNormal;            //!< Delta BiNormal
             public Vector2 TexCoord;            //!< Delta UV mapping
 
             /// <summary>
@@ -169,10 +169,10 @@ namespace OpenMetaverse.Rendering
             public string Header;                       //!< Header - marking the file as a Linden Lab Mesh (llm)
             public bool HasWeights;                     //!< Do the vertices carry any defintions about skin weights
             public bool HasDetailTexCoords;             //!< Do the vertices carry any defintions about detailed UV mappings
-            public Vector3 Position;                    //!< Origin of this mesh
-            public Vector3 RotationAngles;              //!< Used to reconstruct a normalized quarternion (These are *NOT* Euler rotations)
+            public OMVVector3 Position;                    //!< Origin of this mesh
+            public OMVVector3 RotationAngles;              //!< Used to reconstruct a normalized quarternion (These are *NOT* Euler rotations)
             public byte RotationOrder;                  //!< Not used
-            public Vector3 Scale;                       //!< Scaling information
+            public OMVVector3 Scale;                       //!< Scaling information
             public ushort NumFaces;                     //!< # of polygons in the mesh
             public Face[] Faces;                        //!< Polygons making up the mesh, the indices are into the full mesh
 
@@ -193,10 +193,10 @@ namespace OpenMetaverse.Rendering
                     // Populate base mesh parameters
                     HasWeights = (reader.ReadByte() != 0);
                     HasDetailTexCoords = (reader.ReadByte() != 0);
-                    Position = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                    RotationAngles = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    Position = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    RotationAngles = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                     RotationOrder = reader.ReadByte();
-                    Scale = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    Scale = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                     NumFaces = reader.ReadUInt16();
 
                     Faces = new Face[NumFaces];
@@ -218,10 +218,10 @@ namespace OpenMetaverse.Rendering
             protected string _header;
             protected bool _hasWeights;
             protected bool _hasDetailTexCoords;
-            protected Vector3 _position;
-            protected Vector3 _rotationAngles;
+            protected OMVVector3 _position;
+            protected OMVVector3 _rotationAngles;
             protected byte _rotationOrder;
-            protected Vector3 _scale;
+            protected OMVVector3 _scale;
             protected ushort _numFaces;
             protected Face[] _faces;
 
@@ -237,10 +237,10 @@ namespace OpenMetaverse.Rendering
                 // Populate base mesh variables
                 _hasWeights = (input.UnpackByte() != 0);
                 _hasDetailTexCoords = (input.UnpackByte() != 0);
-                _position = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                _rotationAngles = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _position = new OMVVector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _rotationAngles = new OMVVector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
                 _rotationOrder = input.UnpackByte();
-                _scale = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                _scale = new OMVVector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
                 _numFaces = input.UnpackUShort();
 
                 _faces = new Face[_numFaces];
@@ -257,10 +257,10 @@ namespace OpenMetaverse.Rendering
         public string Header { get; protected set; }                            //!< The header marker contained in the .llm file
         public bool HasWeights { get; protected set; }                          //!< Does the file contain skin weights?
         public bool HasDetailTexCoords { get; protected set; }                  //!< Does the file contain detailed UV mapings
-        public Vector3 Position { get; protected set; }                         //!< Origin of this mesh
-        public Vector3 RotationAngles { get; protected set; }                   //!< Rotation - This is a compressed quaternion
+        public OMVVector3 Position { get; protected set; }                         //!< Origin of this mesh
+        public OMVVector3 RotationAngles { get; protected set; }                   //!< Rotation - This is a compressed quaternion
         //public byte RotationOrder
-        public Vector3 Scale { get; protected set; }                            //!< Scale of this mesh
+        public OMVVector3 Scale { get; protected set; }                            //!< Scale of this mesh
         public ushort NumVertices { get; protected set; }                       //!< # of vertices in the file
         public Vertex[] Vertices { get; protected set; }                        //!< The actual vertices defining the 3d shape
         public ushort NumFaces { get; protected set; }                          //!< # of polygons in the file
@@ -314,22 +314,22 @@ namespace OpenMetaverse.Rendering
                 // Populate base mesh parameters
                 HasWeights = (reader.ReadByte() != 0);
                 HasDetailTexCoords = (reader.ReadByte() != 0);
-                Position = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                RotationAngles = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                Position = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                RotationAngles = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                 /* RotationOrder = */ reader.ReadByte();
-                Scale = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                Scale = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
                 // Populate the vertex array
                 NumVertices = reader.ReadUInt16();
                 Vertices = new Vertex[NumVertices];
                 for (int i = 0; i < NumVertices; i++)
-                    Vertices[i].Coord = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    Vertices[i].Coord = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
                 for (int i = 0; i < NumVertices; i++)
-                    Vertices[i].Normal = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    Vertices[i].Normal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
                 for (int i = 0; i < NumVertices; i++)
-                    Vertices[i].BiNormal = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    Vertices[i].BiNormal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
                 for (int i = 0; i < NumVertices; i++)
                     Vertices[i].TexCoord = new Vector2(reader.ReadSingle(), reader.ReadSingle());
@@ -385,9 +385,9 @@ namespace OpenMetaverse.Rendering
                     for (int i = 0; i < morph.NumVertices; i++)
                     {
                         morph.Vertices[i].VertexIndex = reader.ReadUInt32();
-                        morph.Vertices[i].Coord = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                        morph.Vertices[i].Normal = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                        morph.Vertices[i].BiNormal = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                        morph.Vertices[i].Coord = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                        morph.Vertices[i].Normal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                        morph.Vertices[i].BiNormal = new OMVVector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                         morph.Vertices[i].TexCoord = new Vector2(reader.ReadSingle(), reader.ReadSingle());
                     }
 

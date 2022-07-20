@@ -946,7 +946,7 @@ namespace OpenMetaverse
                 UUID prey = reply.AgentBlock.Prey;
                 ulong regionHandle = Helpers.GlobalPosToRegionHandle((float)reply.LocationBlock[0].GlobalX,
                     (float)reply.LocationBlock[0].GlobalY, out x, out y);
-                Vector3 xyz = new Vector3(x, y, 0f);
+                OMVVector3 xyz = new OMVVector3(x, y, 0f);
 
                 OnFriendFoundReply(new FriendFoundReplyEventArgs(prey, regionHandle, xyz));
             }
@@ -1168,7 +1168,7 @@ namespace OpenMetaverse
         public ulong RegionHandle { get; }
 
         /// <summary>Get the simulator local position where our friend is located</summary>
-        public Vector3 Location { get; }
+        public OMVVector3 Location { get; }
 
         /// <summary>
         /// Construct a new instance of the FriendFoundReplyEventArgs class
@@ -1176,7 +1176,7 @@ namespace OpenMetaverse
         /// <param name="agentID">The ID of the agent we have requested location information for</param>
         /// <param name="regionHandle">The region handle where our friend is located</param>
         /// <param name="location">The simulator local position our friend is located</param>
-        public FriendFoundReplyEventArgs(UUID agentID, ulong regionHandle, Vector3 location)
+        public FriendFoundReplyEventArgs(UUID agentID, ulong regionHandle, OMVVector3 location)
         {
             this.AgentID = agentID;
             this.RegionHandle = regionHandle;

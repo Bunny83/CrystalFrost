@@ -61,7 +61,7 @@ namespace OpenMetaverse
             W = w;
         }
 
-        public Vector4(Vector3 value, float w)
+        public Vector4(OMVVector3 value, float w)
         {
             X = value.X;
             Y = value.Y;
@@ -376,7 +376,7 @@ namespace OpenMetaverse
                 (position.X * matrix.M14) + (position.Y * matrix.M24) + matrix.M44);
         }
 
-        public static Vector4 Transform(Vector3 position, Matrix4 matrix)
+        public static Vector4 Transform(OMVVector3 position, Matrix4 matrix)
         {
             return new Vector4(
                 (position.X * matrix.M11) + (position.Y * matrix.M21) + (position.Z * matrix.M31) + matrix.M41,

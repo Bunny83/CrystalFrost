@@ -83,9 +83,9 @@ namespace OpenMetaverse.Rendering
     public struct Vertex : IEquatable<Vertex>
     {
         [FieldOffset(0)]
-        public Vector3 Position;
+        public OMVVector3 Position;
         [FieldOffset(12)]
-        public Vector3 Normal;
+        public OMVVector3 Normal;
         [FieldOffset(24)]
         public Vector2 TexCoord;
 
@@ -147,13 +147,13 @@ namespace OpenMetaverse.Rendering
         public bool Open;
         public bool Concave;
         public int TotalOutsidePoints;
-        public List<Vector3> Positions;
+        public List<OMVVector3> Positions;
         public List<ProfileFace> Faces;
     }
 
     public struct PathPoint
     {
-        public Vector3 Position;
+        public OMVVector3 Position;
         public Vector2 Scale;
         public Quaternion Rotation;
         public float TexT;
@@ -174,9 +174,9 @@ namespace OpenMetaverse.Rendering
         public int NumT;
 
         public int ID;
-        public Vector3 Center;
-        public Vector3 MinExtent;
-        public Vector3 MaxExtent;
+        public OMVVector3 Center;
+        public OMVVector3 MinExtent;
+        public OMVVector3 MaxExtent;
         public List<Vertex> Vertices;
         public List<ushort> Indices;
         public List<int> Edge;
@@ -262,7 +262,7 @@ namespace OpenMetaverse.Rendering
                     Profile =
                     {
                         Faces = new List<ProfileFace>(),
-                        Positions = new List<Vector3>()
+                        Positions = new List<OMVVector3>()
                     },
                     Path = {Points = new List<PathPoint>()}
                 };
@@ -315,8 +315,8 @@ namespace OpenMetaverse.Rendering
                             TextureFace = prim.Textures.GetFace((uint) faceNr)
                         };
 
-                        Vector3 posMax;
-                        Vector3 posMin;
+                        OMVVector3 posMax;
+                        OMVVector3 posMin;
 
                         // If PositionDomain is not specified, the default is from -0.5 to 0.5
                         if (subMeshMap.ContainsKey("PositionDomain"))
@@ -326,8 +326,8 @@ namespace OpenMetaverse.Rendering
                         }
                         else
                         {
-                            posMax = new Vector3(0.5f, 0.5f, 0.5f);
-                            posMin = new Vector3(-0.5f, -0.5f, -0.5f);
+                            posMax = new OMVVector3(0.5f, 0.5f, 0.5f);
+                            posMin = new OMVVector3(-0.5f, -0.5f, -0.5f);
                         }
 
                         // Vertex positions
@@ -361,7 +361,7 @@ namespace OpenMetaverse.Rendering
 
                             Vertex vx = new Vertex
                             {
-                                Position = new Vector3(
+                                Position = new OMVVector3(
                                     Utils.UInt16ToFloat(uX, posMin.X, posMax.X),
                                     Utils.UInt16ToFloat(uY, posMin.Y, posMax.Y),
                                     Utils.UInt16ToFloat(uZ, posMin.Z, posMax.Z))
@@ -373,7 +373,7 @@ namespace OpenMetaverse.Rendering
                                 ushort nY = Utils.BytesToUInt16(norBytes, i + 2);
                                 ushort nZ = Utils.BytesToUInt16(norBytes, i + 4);
 
-                                vx.Normal = new Vector3(
+                                vx.Normal = new OMVVector3(
                                     Utils.UInt16ToFloat(nX, posMin.X, posMax.X),
                                     Utils.UInt16ToFloat(nY, posMin.Y, posMax.Y),
                                     Utils.UInt16ToFloat(nZ, posMin.Z, posMax.Z));
@@ -440,7 +440,7 @@ namespace OpenMetaverse.Rendering
             this.Profile.MaxX = mesh.Profile.MaxX;
             this.Profile.MinX = mesh.Profile.MinX;
             this.Profile.Open = mesh.Profile.Open;
-            this.Profile.Positions = new List<Vector3>(mesh.Profile.Positions);
+            this.Profile.Positions = new List<OMVVector3>(mesh.Profile.Positions);
             this.Profile.TotalOutsidePoints = mesh.Profile.TotalOutsidePoints;
             this.Vertices = new List<Vertex>(mesh.Vertices);
         }

@@ -439,13 +439,13 @@ namespace OpenMetaverse
             /// <summary></summary>
             private Quaternion LastHeadRotation;
             /// <summary></summary>
-            private Vector3 LastCameraCenter;
+            private OMVVector3 LastCameraCenter;
             /// <summary></summary>
-            private Vector3 LastCameraXAxis;
+            private OMVVector3 LastCameraXAxis;
             /// <summary></summary>
-            private Vector3 LastCameraYAxis;
+            private OMVVector3 LastCameraYAxis;
             /// <summary></summary>
-            private Vector3 LastCameraZAxis;
+            private OMVVector3 LastCameraZAxis;
             /// <summary></summary>
             private float LastFar;
             #endregion Change tracking
@@ -515,7 +515,7 @@ namespace OpenMetaverse
             /// This will also anchor the camera position on the avatar
             /// </summary>
             /// <param name="target">Region coordinates to turn toward</param>
-            public bool TurnToward(Vector3 target)
+            public bool TurnToward(OMVVector3 target)
             {
                 return TurnToward(target, true);
             }
@@ -526,7 +526,7 @@ namespace OpenMetaverse
             /// </summary>
             /// <param name="target">Region coordinates to turn toward</param>
             /// <param name="sendUpdate">whether to send update or not</param>
-            public bool TurnToward(Vector3 target, bool sendUpdate)
+            public bool TurnToward(OMVVector3 target, bool sendUpdate)
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
@@ -542,7 +542,7 @@ namespace OpenMetaverse
                         else parentRot = Client.Network.CurrentSim.ObjectsPrimitives[Client.Self.SittingOn].Rotation;
                     }
 
-                    Quaternion between = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Client.Self.SimPosition));
+                    Quaternion between = OMVVector3.RotationBetween(OMVVector3.UnitX, OMVVector3.Normalize(target - Client.Self.SimPosition));
                     Quaternion rot = between * (Quaternion.Identity / parentRot);
 
                     BodyRotation = rot;
@@ -594,10 +594,10 @@ namespace OpenMetaverse
                 if (simulator != null && (!simulator.AgentMovementComplete))
                     return;
 
-                Vector3 origin = Camera.Position;
-                Vector3 xAxis = Camera.LeftAxis;
-                Vector3 yAxis = Camera.AtAxis;
-                Vector3 zAxis = Camera.UpAxis;
+                OMVVector3 origin = Camera.Position;
+                OMVVector3 xAxis = Camera.LeftAxis;
+                OMVVector3 yAxis = Camera.AtAxis;
+                OMVVector3 zAxis = Camera.UpAxis;
 
                 // Attempted to sort these in a rough order of how often they might change
                 if (AgentControls == 0 &&
@@ -670,8 +670,8 @@ namespace OpenMetaverse
             /// <param name="reliable"></param>
             /// <param name="flags"></param>
             /// <param name="state"></param>
-            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, Vector3 position, Vector3 forwardAxis,
-                Vector3 leftAxis, Vector3 upAxis, Quaternion bodyRotation, Quaternion headRotation, float farClip,
+            public void SendManualUpdate(AgentManager.ControlFlags controlFlags, OMVVector3 position, OMVVector3 forwardAxis,
+                OMVVector3 leftAxis, OMVVector3 upAxis, Quaternion bodyRotation, Quaternion headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)
             {
                 // Since version 1.40.4 of the Linden simulator, sending this update

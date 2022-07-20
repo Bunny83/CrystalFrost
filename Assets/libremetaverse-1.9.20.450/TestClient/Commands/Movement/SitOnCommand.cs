@@ -24,7 +24,7 @@ namespace OpenMetaverse.TestClient_
 
                 if (targetPrim != null)
                 {
-                    Client.Self.RequestSit(targetPrim.ID, Vector3.Zero);
+                    Client.Self.RequestSit(targetPrim.ID, OMVVector3.Zero);
                     Client.Self.Sit();
                     return "Requested to sit on prim " + targetPrim.ID +
                         " (" + targetPrim.LocalID + ")";

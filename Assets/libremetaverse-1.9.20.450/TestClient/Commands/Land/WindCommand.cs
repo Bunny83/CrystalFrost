@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient_
         {
             // Get the agent's current "patch" position, where each patch of
             // wind data is a 16x16m square
-            Vector3 agentPos = Client.Self.SimPosition;
+            OMVVector3 agentPos = Client.Self.SimPosition;
             int xPos = (int)Utils.Clamp(agentPos.X, 0.0f, 255.0f) / 16;
             int yPos = (int)Utils.Clamp(agentPos.Y, 0.0f, 255.0f) / 16;
 

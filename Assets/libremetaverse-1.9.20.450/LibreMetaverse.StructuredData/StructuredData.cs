@@ -90,7 +90,7 @@ namespace OpenMetaverse.StructuredData
         public virtual Uri AsUri() { return null; }
         public virtual byte[] AsBinary() { return Utils.EmptyBytes; }
         public virtual Vector2 AsVector2() { return Vector2.Zero; }
-        public virtual Vector3 AsVector3() { return Vector3.Zero; }
+        public virtual OMVVector3 AsVector3() { return OMVVector3.Zero; }
         public virtual Vector3d AsVector3d() { return Vector3d.Zero; }
         public virtual Vector4 AsVector4() { return Vector4.Zero; }
         public virtual Quaternion AsQuaternion() { return Quaternion.Identity; }
@@ -127,7 +127,7 @@ namespace OpenMetaverse.StructuredData
             return array;
         }
 
-        public static OSD FromVector3(Vector3 value)
+        public static OSD FromVector3(OMVVector3 value)
         {
             OSDArray array = new OSDArray
             {
@@ -225,7 +225,7 @@ namespace OpenMetaverse.StructuredData
                     return new OSDBinary(ul);
                 case Vector2 vector2:
                     return FromVector2(vector2);
-                case Vector3 vector3:
+                case OMVVector3 vector3:
                     return FromVector3(vector3);
                 case Vector3d vector3D:
                     return FromVector3d(vector3D);
@@ -295,11 +295,11 @@ namespace OpenMetaverse.StructuredData
             {
                 return value.AsUUID();
             }
-            if (type == typeof(Vector3))
+            if (type == typeof(OMVVector3))
             {
                 if (value.Type == OSDType.Array)
                     return ((OSDArray)value).AsVector3();
-                return Vector3.Zero;
+                return OMVVector3.Zero;
             }
             if (type == typeof(Vector4))
             {
@@ -349,7 +349,7 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator OSD(Uri value) { return new OSDUri(value); }
         public static implicit operator OSD(byte[] value) { return new OSDBinary(value); }
         public static implicit operator OSD(Vector2 value) { return FromVector2(value); }
-        public static implicit operator OSD(Vector3 value) { return FromVector3(value); }
+        public static implicit operator OSD(OMVVector3 value) { return FromVector3(value); }
         public static implicit operator OSD(Vector3d value) { return FromVector3d(value); }
         public static implicit operator OSD(Vector4 value) { return FromVector4(value); }
         public static implicit operator OSD(Quaternion value) { return FromQuaternion(value); }
@@ -368,7 +368,7 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator Uri(OSD value) { return value.AsUri(); }
         public static implicit operator byte[](OSD value) { return value.AsBinary(); }
         public static implicit operator Vector2(OSD value) { return value.AsVector2(); }
-        public static implicit operator Vector3(OSD value) { return value.AsVector3(); }
+        public static implicit operator OMVVector3(OSD value) { return value.AsVector3(); }
         public static implicit operator Vector3d(OSD value) { return value.AsVector3d(); }
         public static implicit operator Vector4(OSD value) { return value.AsVector4(); }
         public static implicit operator Quaternion(OSD value) { return value.AsQuaternion(); }
@@ -1045,9 +1045,9 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public override Vector3 AsVector3()
+        public override OMVVector3 AsVector3()
         {
-            Vector3 vector = Vector3.Zero;
+            OMVVector3 vector = OMVVector3.Zero;
 
             if (Count == 3)
             {
