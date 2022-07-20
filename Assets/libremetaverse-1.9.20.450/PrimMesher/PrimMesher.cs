@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 namespace LibreMetaverse.PrimMesher
 {
@@ -125,6 +126,11 @@ namespace LibreMetaverse.PrimMesher
             X = x;
             Y = y;
             Z = z;
+        }
+
+        public Vector3 ToUnity()
+        {
+            return new Vector3(X, Z, Y);
         }
 
         public float Length()

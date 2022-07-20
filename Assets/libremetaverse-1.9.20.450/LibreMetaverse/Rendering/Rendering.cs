@@ -212,7 +212,7 @@ namespace OpenMetaverse.Rendering
 
     #region Mesh Classes
 
-    public class Mesh
+    public class OMVMesh
     {
         public Primitive Prim;
         public Path Path;
@@ -229,7 +229,7 @@ namespace OpenMetaverse.Rendering
     /// <summary>
     /// Contains all mesh faces that belong to a prim
     /// </summary>
-    public class FacetedMesh : Mesh
+    public class FacetedMesh : OMVMesh
     {
         /// <summary>List of primitive faces</summary>
         public List<Face> Faces;
@@ -420,7 +420,7 @@ namespace OpenMetaverse.Rendering
         }
     }
 
-    public class SimpleMesh : Mesh
+    public class SimpleMesh : OMVMesh
     {
         public List<Vertex> Vertices;
         public List<ushort> Indices;

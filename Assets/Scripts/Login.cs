@@ -77,7 +77,7 @@ public class Login : MonoBehaviour
             ClientManager.active = false;
         }
 
-        StartCoroutine(LogOut(30));
+        //StartCoroutine(LogOut(30));
         //NetworkManager.    
 
     }
