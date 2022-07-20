@@ -468,7 +468,7 @@ namespace OpenMetaverse
 
         public Vector3 ToVector3()
         {
-            return new Vector3(X, Z, Y);
+            return ToUnity();
         }
 
 

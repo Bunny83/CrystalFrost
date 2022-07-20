@@ -720,7 +720,8 @@ namespace OpenMetaverse
 
         public UnityEngine.Quaternion ToUnity()
         {
-            return new UnityEngine.Quaternion(X, Z, Y, W);
+            return new UnityEngine.Quaternion(-X,-Z,-Y,W);
+
         }
 
         #endregion Overrides

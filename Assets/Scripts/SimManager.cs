@@ -35,20 +35,24 @@ public class SimManager : MonoBehaviour
         while(objectsToRez.Count>0)
         {
             Primitive prim = objectsToRez[0].Prim;
-            GameObject go = Instantiate(cube, prim.Position.ToVector3(), prim.Rotation.ToUnity());
+            GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
+            GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
+            go.transform.parent = bgo.transform;
             objects.Add(prim.LocalID, go);
 
             //Handle scaling and parenting;
             go.transform.localScale = prim.Scale.ToVector3();
             if (objects.ContainsKey(prim.ParentID) && prim.ParentID != prim.LocalID)
             {
-                //go.transform.localRotation = prim.Rotation.ToUnity();
+
                 //go.transform.position = (objects[prim.ParentID].transform.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.position);
-                go.transform.rotation = prim.Rotation.ToUnity() * objects[prim.ParentID].transform.rotation;
+                //o.transform.rotation = prim.Rotation.ToUnity() * objects[prim.ParentID].transform.rotation;
                 //go.transform.rotation = objects[prim.ParentID].transform.rotation * prim.Rotation.ToUnity() ;
                 
-                go.transform.position = (prim.Position.ToUnity()) + (objects[prim.ParentID].transform.position);
-                go.transform.parent = objects[prim.ParentID].transform;
+                go.transform.position = (objects[prim.ParentID].transform.parent.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.parent.position);
+                go.transform.parent = objects[prim.ParentID].transform.parent;
+                go.transform.rotation = go.transform.parent.rotation * prim.Rotation.ToUnity();
+                Destroy(bgo);
             }
             else
             {
