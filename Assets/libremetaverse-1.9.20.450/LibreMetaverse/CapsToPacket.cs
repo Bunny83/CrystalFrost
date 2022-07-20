@@ -235,9 +235,9 @@ namespace OpenMetaverse.Packets
                         Vector4 vec = ((OSDArray)blockData[field.Name]).AsVector4();
                         field.SetValue(block, vec);
                     }
-                    else if (fieldType == typeof(Quaternion))
+                    else if (fieldType == typeof(OMVQuaternion))
                     {
-                        Quaternion quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
+                        OMVQuaternion quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
                         field.SetValue(block, quat);
                     }
                     else if (fieldType == typeof(byte[]) && blockData[field.Name].Type == OSDType.String)

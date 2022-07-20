@@ -128,7 +128,7 @@ namespace OpenMetaverse
                 throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
-        public CoordinateFrame(OMVVector3 origin, Quaternion rotation)
+        public CoordinateFrame(OMVVector3 origin, OMVQuaternion rotation)
         {
             Matrix4 m = Matrix4.CreateFromQuaternion(rotation);
 
@@ -154,11 +154,11 @@ namespace OpenMetaverse
 
         public void Rotate(float angle, OMVVector3 rotationAxis)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(rotationAxis, angle);
+            OMVQuaternion q = OMVQuaternion.CreateFromAxisAngle(rotationAxis, angle);
             Rotate(q);
         }
 
-        public void Rotate(Quaternion q)
+        public void Rotate(OMVQuaternion q)
         {
             Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
@@ -177,7 +177,7 @@ namespace OpenMetaverse
 
         public void Roll(float angle)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(xAxis, angle);
+            OMVQuaternion q = OMVQuaternion.CreateFromAxisAngle(xAxis, angle);
             Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
 
@@ -187,7 +187,7 @@ namespace OpenMetaverse
 
         public void Pitch(float angle)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(yAxis, angle);
+            OMVQuaternion q = OMVQuaternion.CreateFromAxisAngle(yAxis, angle);
             Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
 
@@ -197,7 +197,7 @@ namespace OpenMetaverse
 
         public void Yaw(float angle)
         {
-            Quaternion q = Quaternion.CreateFromAxisAngle(zAxis, angle);
+            OMVQuaternion q = OMVQuaternion.CreateFromAxisAngle(zAxis, angle);
             Matrix4 m = Matrix4.CreateFromQuaternion(q);
             Rotate(m);
 

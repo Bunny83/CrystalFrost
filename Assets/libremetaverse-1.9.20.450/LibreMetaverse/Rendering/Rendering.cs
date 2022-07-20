@@ -155,7 +155,7 @@ namespace OpenMetaverse.Rendering
     {
         public OMVVector3 Position;
         public Vector2 Scale;
-        public Quaternion Rotation;
+        public OMVQuaternion Rotation;
         public float TexT;
     }
 

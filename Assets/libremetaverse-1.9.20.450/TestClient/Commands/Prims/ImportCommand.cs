@@ -102,8 +102,8 @@ namespace OpenMetaverse.TestClient_
                     currentPosition = linkset.RootPrim.Position;
 
                     // Rez the root prim with no rotation
-                    Quaternion rootRotation = linkset.RootPrim.Rotation;
-                    linkset.RootPrim.Rotation = Quaternion.Identity;
+                    OMVQuaternion rootRotation = linkset.RootPrim.Rotation;
+                    linkset.RootPrim.Rotation = OMVQuaternion.Identity;
 
                     Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.PrimData, GroupID,
                         linkset.RootPrim.Position, linkset.RootPrim.Scale, linkset.RootPrim.Rotation);

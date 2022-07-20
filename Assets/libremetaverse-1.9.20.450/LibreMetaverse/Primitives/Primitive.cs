@@ -799,7 +799,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public OMVVector3 Scale;
         /// <summary></summary>
-        public Quaternion Rotation = Quaternion.Identity;
+        public OMVQuaternion Rotation = OMVQuaternion.Identity;
         /// <summary></summary>
         public OMVVector3 Velocity;
         /// <summary></summary>

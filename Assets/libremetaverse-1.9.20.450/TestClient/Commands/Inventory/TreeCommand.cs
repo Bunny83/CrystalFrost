@@ -24,7 +24,7 @@ namespace OpenMetaverse.TestClient_
 		            treePosition.Z += 3.0f;
 
 		            Client.Objects.AddTree(Client.Network.CurrentSim, new OMVVector3(0.5f, 0.5f, 0.5f),
-		                Quaternion.Identity, treePosition, tree, Client.GroupID, false);
+		                OMVQuaternion.Identity, treePosition, tree, Client.GroupID, false);
 
 		            return "Attempted to rez a " + treeName + " tree";
 		        }

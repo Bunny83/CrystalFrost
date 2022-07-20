@@ -4242,7 +4242,7 @@ namespace OpenMetaverse.Messages.Linden
             public Material Material;
             public string Name;
             public OMVVector3 Position;
-            public Quaternion Rotation;
+            public OMVQuaternion Rotation;
             public OMVVector3 Scale;
             public float PathBegin;
             public int PathCurve;

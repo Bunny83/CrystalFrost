@@ -230,9 +230,9 @@ namespace OpenMetaverse
         /// Convert this matrix to a quaternion rotation
         /// </summary>
         /// <returns>A quaternion representation of this rotation matrix</returns>
-        public Quaternion GetQuaternion()
+        public OMVQuaternion GetQuaternion()
         {
-            Quaternion quat = new Quaternion();
+            OMVQuaternion quat = new OMVQuaternion();
             float trace = Trace() + 1f;
 
             if (trace > Single.Epsilon)
@@ -278,7 +278,7 @@ namespace OpenMetaverse
             return quat;
         }
 
-        public bool Decompose(out OMVVector3 scale, out Quaternion rotation, out OMVVector3 translation)
+        public bool Decompose(out OMVVector3 scale, out OMVQuaternion rotation, out OMVVector3 translation)
         {
             translation.X = this.M41;
             translation.Y = this.M42;
@@ -294,7 +294,7 @@ namespace OpenMetaverse
 
             if (scale.X == 0.0 || scale.Y == 0.0 || scale.Z == 0.0)
             {
-                rotation = Quaternion.Identity;
+                rotation = OMVQuaternion.Identity;
                 return false;
             }
 
@@ -303,7 +303,7 @@ namespace OpenMetaverse
                                      this.M31 / scale.Z, M32 / scale.Z, M33 / scale.Z, 0,
                                      0, 0, 0, 1);
 
-            rotation = Quaternion.CreateFromRotationMatrix(m1);
+            rotation = OMVQuaternion.CreateFromRotationMatrix(m1);
             return true;
         }	
 
@@ -417,7 +417,7 @@ namespace OpenMetaverse
             return m;
         }
 
-        public static Matrix4 CreateFromQuaternion(Quaternion quaternion)
+        public static Matrix4 CreateFromQuaternion(OMVQuaternion quaternion)
         {
             Matrix4 matrix;
 
@@ -847,7 +847,7 @@ namespace OpenMetaverse
             return matrix;
         }
 
-        public static Matrix4 Transform(Matrix4 value, Quaternion rotation)
+        public static Matrix4 Transform(Matrix4 value, OMVQuaternion rotation)
         {
             Matrix4 matrix;
 

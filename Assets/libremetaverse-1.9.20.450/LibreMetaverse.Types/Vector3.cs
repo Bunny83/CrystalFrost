@@ -27,6 +27,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Globalization;
+using UnityEngine;
 
 namespace OpenMetaverse
 {
@@ -92,6 +93,13 @@ namespace OpenMetaverse
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
+        }
+
+        public OMVVector3(Vector3 vector)
+        {
+            X = vector.x;
+            Y = vector.z;
+            Z = vector.y;
         }
 
         #endregion Constructors
@@ -376,7 +384,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="a">Normalized directional vector (such as 1,0,0 for forward facing)</param>
         /// <param name="b">Normalized target vector</param>
-        public static Quaternion RotationBetween(OMVVector3 a, OMVVector3 b)
+        public static OMVQuaternion RotationBetween(OMVVector3 a, OMVVector3 b)
         {
             float dotProduct = Dot(a, b);
             OMVVector3 crossProduct = Cross(a, b);
@@ -385,7 +393,7 @@ namespace OpenMetaverse
             OMVVector3 axis = Normalize(crossProduct);
             float s = (float)Math.Sin(angle / 2d);
 
-            return new Quaternion(
+            return new OMVQuaternion(
                 axis.X * s,
                 axis.Y * s,
                 axis.Z * s,
@@ -458,6 +466,17 @@ namespace OpenMetaverse
             return String.Format(Utils.EnUsCulture, "<{0}, {1}, {2}>", X, Y, Z);
         }
 
+        public Vector3 ToVector3()
+        {
+            return new Vector3(X, Z, Y);
+        }
+
+
+        public Vector3 ToUnity()
+        {
+            return new Vector3(X, Z, Y);
+        }
+
         /// <summary>
         /// Get a string representation of the vector elements with up to three
         /// decimal digits and separated by spaces only
@@ -527,7 +546,7 @@ namespace OpenMetaverse
             return value;
         }
 
-        public static OMVVector3 operator *(OMVVector3 vec, Quaternion rot)
+        public static OMVVector3 operator *(OMVVector3 vec, OMVQuaternion rot)
         {
             float rw = -rot.X * vec.X - rot.Y * vec.Y - rot.Z * vec.Z;
             float rx = rot.W * vec.X + rot.Y * vec.Z - rot.Z * vec.Y;

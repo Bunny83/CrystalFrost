@@ -429,15 +429,15 @@ namespace OpenMetaverse
             /// typing and editing</summary>
             public AgentState State = AgentState.None;
             /// <summary></summary>
-            public Quaternion BodyRotation = Quaternion.Identity;
+            public OMVQuaternion BodyRotation = OMVQuaternion.Identity;
             /// <summary></summary>
-            public Quaternion HeadRotation = Quaternion.Identity;
+            public OMVQuaternion HeadRotation = OMVQuaternion.Identity;
 
             #region Change tracking
             /// <summary></summary>
-            private Quaternion LastBodyRotation;
+            private OMVQuaternion LastBodyRotation;
             /// <summary></summary>
-            private Quaternion LastHeadRotation;
+            private OMVQuaternion LastHeadRotation;
             /// <summary></summary>
             private OMVVector3 LastCameraCenter;
             /// <summary></summary>
@@ -530,7 +530,7 @@ namespace OpenMetaverse
             {
                 if (Client.Settings.SEND_AGENT_UPDATES)
                 {
-                    Quaternion parentRot = Quaternion.Identity;
+                    OMVQuaternion parentRot = OMVQuaternion.Identity;
 
                     if (Client.Self.SittingOn > 0)
                     {
@@ -542,8 +542,8 @@ namespace OpenMetaverse
                         else parentRot = Client.Network.CurrentSim.ObjectsPrimitives[Client.Self.SittingOn].Rotation;
                     }
 
-                    Quaternion between = OMVVector3.RotationBetween(OMVVector3.UnitX, OMVVector3.Normalize(target - Client.Self.SimPosition));
-                    Quaternion rot = between * (Quaternion.Identity / parentRot);
+                    OMVQuaternion between = OMVVector3.RotationBetween(OMVVector3.UnitX, OMVVector3.Normalize(target - Client.Self.SimPosition));
+                    OMVQuaternion rot = between * (OMVQuaternion.Identity / parentRot);
 
                     BodyRotation = rot;
                     HeadRotation = rot;
@@ -671,7 +671,7 @@ namespace OpenMetaverse
             /// <param name="flags"></param>
             /// <param name="state"></param>
             public void SendManualUpdate(AgentManager.ControlFlags controlFlags, OMVVector3 position, OMVVector3 forwardAxis,
-                OMVVector3 leftAxis, OMVVector3 upAxis, Quaternion bodyRotation, Quaternion headRotation, float farClip,
+                OMVVector3 leftAxis, OMVVector3 upAxis, OMVQuaternion bodyRotation, OMVQuaternion headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)
             {
                 // Since version 1.40.4 of the Linden simulator, sending this update

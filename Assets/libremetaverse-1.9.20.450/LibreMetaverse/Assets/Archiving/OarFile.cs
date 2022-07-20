@@ -864,7 +864,7 @@ namespace OpenMetaverse.Assets
             writer.WriteEndElement();
         }
 
-        static void WriteQuaternion(XmlTextWriter writer, string name, Quaternion quat)
+        static void WriteQuaternion(XmlTextWriter writer, string name, OMVQuaternion quat)
         {
             writer.WriteStartElement(name);
             writer.WriteElementString("X", quat.X.ToString(Utils.EnUsCulture));

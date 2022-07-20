@@ -32,6 +32,7 @@ using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
+using UnityEngine;
 
 namespace OpenMetaverse
 {
@@ -149,7 +150,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public OMVVector3 Acceleration;
         /// <summary></summary>
-        public Quaternion Rotation;
+        public OMVQuaternion Rotation;
         /// <summary></summary>
         public OMVVector3 AngularVelocity;
         /// <summary></summary>
@@ -941,7 +942,7 @@ namespace OpenMetaverse
         /// function will not set textures, light and flexible data, or other 
         /// extended primitive properties</remarks>
         public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, OMVVector3 position,
-            OMVVector3 scale, Quaternion rotation)
+            OMVVector3 scale, OMVQuaternion rotation)
         {
             AddPrim(simulator, prim, groupID, position, scale, rotation, PrimFlags.CreateSelected);
         }
@@ -964,7 +965,7 @@ namespace OpenMetaverse
         /// function will not set textures, light and flexible data, or other 
         /// extended primitive properties</remarks>
         public void AddPrim(Simulator simulator, Primitive.ConstructionData prim, UUID groupID, OMVVector3 position,
-            OMVVector3 scale, Quaternion rotation, PrimFlags createFlags)
+            OMVVector3 scale, OMVQuaternion rotation, PrimFlags createFlags)
         {
             ObjectAddPacket packet = new ObjectAddPacket();
 
@@ -1020,7 +1021,7 @@ namespace OpenMetaverse
         /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
         /// or UUID.Zero if no group is to be set</param>
         /// <param name="newTree">true to use the "new" Linden trees, false to use the old</param>
-        public void AddTree(Simulator simulator, OMVVector3 scale, Quaternion rotation, OMVVector3 position,
+        public void AddTree(Simulator simulator, OMVVector3 scale, OMVQuaternion rotation, OMVVector3 position,
             Tree treeType, UUID groupOwner, bool newTree)
         {
             ObjectAddPacket add = new ObjectAddPacket();
@@ -1052,7 +1053,7 @@ namespace OpenMetaverse
         /// <param name="grassType">The type of grass from the <seealso cref="Grass"/> enum</param>
         /// <param name="groupOwner">The <seealso cref="UUID"/> of the group to set the tree to, 
         /// or UUID.Zero if no group is to be set</param>
-        public void AddGrass(Simulator simulator, OMVVector3 scale, Quaternion rotation, OMVVector3 position,
+        public void AddGrass(Simulator simulator, OMVVector3 scale, OMVQuaternion rotation, OMVVector3 position,
             Grass grassType, UUID groupOwner)
         {
             ObjectAddPacket add = new ObjectAddPacket();
@@ -1279,7 +1280,7 @@ namespace OpenMetaverse
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="rotation">The new rotation of the object</param>
-        public void SetRotation(Simulator simulator, uint localID, Quaternion rotation)
+        public void SetRotation(Simulator simulator, uint localID, OMVQuaternion rotation)
         {
             ObjectRotationPacket objRotPacket = new ObjectRotationPacket();
             objRotPacket.AgentData.AgentID = Client.Self.AgentID;
@@ -1370,7 +1371,7 @@ namespace OpenMetaverse
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="attachPoint">The point on the avatar the object will be attached</param>
         /// <param name="rotation">The rotation of the attached object</param>
-        public void AttachObject(Simulator simulator, uint localID, AttachmentPoint attachPoint, Quaternion rotation)
+        public void AttachObject(Simulator simulator, uint localID, AttachmentPoint attachPoint, OMVQuaternion rotation)
         {
             ObjectAttachPacket attach = new ObjectAttachPacket();
             attach.AgentData.AgentID = Client.Self.AgentID;
@@ -1485,7 +1486,7 @@ namespace OpenMetaverse
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         /// <param name="quat">The new scale of the object</param>
         /// <param name="childOnly">If true, will change rotation of this prim only, not entire linkset</param>
-        public void SetRotation(Simulator simulator, uint localID, Quaternion quat, bool childOnly)
+        public void SetRotation(Simulator simulator, uint localID, OMVQuaternion quat, bool childOnly)
         {
             UpdateType type = UpdateType.Rotation;
 
@@ -1915,7 +1916,7 @@ namespace OpenMetaverse
                         objectupdate.Acceleration = new OMVVector3(block.ObjectData, pos);
                         pos += 12;
                         // Rotation (theta)
-                        objectupdate.Rotation = new Quaternion(block.ObjectData, pos, true);
+                        objectupdate.Rotation = new OMVQuaternion(block.ObjectData, pos, true);
                         pos += 12;
                         // Angular velocity (omega)
                         objectupdate.AngularVelocity = new OMVVector3(block.ObjectData, pos);
@@ -1950,7 +1951,7 @@ namespace OpenMetaverse
                             Utils.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
                         pos += 6;
                         // Rotation (theta)
-                        objectupdate.Rotation = new Quaternion(
+                        objectupdate.Rotation = new OMVQuaternion(
                             Utils.UInt16ToFloat(block.ObjectData, pos, -1.0f, 1.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
                             Utils.UInt16ToFloat(block.ObjectData, pos + 4, -1.0f, 1.0f),
@@ -1986,7 +1987,7 @@ namespace OpenMetaverse
                             Utils.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
                         pos += 3;
                         // Rotation
-                        objectupdate.Rotation = new Quaternion(
+                        objectupdate.Rotation = new OMVQuaternion(
                             Utils.ByteToFloat(block.ObjectData, pos, -1.0f, 1.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 1, -1.0f, 1.0f),
                             Utils.ByteToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
@@ -2304,7 +2305,7 @@ namespace OpenMetaverse
                         Utils.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
                     pos += 6;
                     // Rotation (theta)
-                    update.Rotation = new Quaternion(
+                    update.Rotation = new OMVQuaternion(
                         Utils.UInt16ToFloat(block.Data, pos, -1.0f, 1.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 2, -1.0f, 1.0f),
                         Utils.UInt16ToFloat(block.Data, pos + 4, -1.0f, 1.0f),
@@ -2439,7 +2440,7 @@ namespace OpenMetaverse
                     prim.Position = new OMVVector3(block.Data, i);
                     i += 12;
                     // Rotation
-                    prim.Rotation = new Quaternion(block.Data, i, true);
+                    prim.Rotation = new OMVQuaternion(block.Data, i, true);
                     i += 12;
                     // Compressed flags
                     CompressedFlags flags = (CompressedFlags)Utils.BytesToUInt(block.Data, i);
@@ -3282,7 +3283,7 @@ namespace OpenMetaverse
                                     omega = (float)Math.Sqrt(omega);
                                     float angle = omega * adjSeconds;
                                     angVel *= 1.0f / omega;
-                                    Quaternion dQ = Quaternion.CreateFromAxisAngle(angVel, angle);
+                                    OMVQuaternion dQ = OMVQuaternion.CreateFromAxisAngle(angVel, angle);
 
                                     prim.Rotation *= dQ;
                                 }

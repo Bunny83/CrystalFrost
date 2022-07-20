@@ -47,7 +47,11 @@ public class Login : MonoBehaviour
         Jenny.Console.textOutput = console;
         ClientManager.client = new GridClient();
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
+        ClientManager.client.Settings.ALWAYS_REQUEST_OBJECTS = true;
+        ClientManager.client.Settings.ALWAYS_DECODE_OBJECTS = true;
+        ClientManager.client.Settings.OBJECT_TRACKING = true;
         loginUI.SetActive(true);
+        //ClientManager.client.Objects.
     }
 
     public void TryLogin()

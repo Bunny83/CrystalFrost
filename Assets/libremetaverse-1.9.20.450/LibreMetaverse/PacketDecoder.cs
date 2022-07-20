@@ -232,7 +232,7 @@ namespace OpenMetaverse.Packets
             // Rotation (theta)
             result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
                 "Rotation",
-                new Quaternion(
+                new OMVQuaternion(
                     Utils.UInt16ToFloat(block, i, -1.0f, 1.0f),
                     Utils.UInt16ToFloat(block, i + 2, -1.0f, 1.0f),
                     Utils.UInt16ToFloat(block, i + 4, -1.0f, 1.0f),
@@ -656,7 +656,7 @@ namespace OpenMetaverse.Packets
                 OMVVector3 offset = OMVVector3.Zero;
                 OMVVector3 vel = OMVVector3.Zero;
                 OMVVector3 acc = OMVVector3.Zero;
-                Quaternion q = Quaternion.Identity;
+                OMVQuaternion q = OMVQuaternion.Identity;
                 OMVVector3 angvel = OMVVector3.Zero;
 
                 col.FromBytes(data, 0);
@@ -699,7 +699,7 @@ namespace OpenMetaverse.Packets
                 OMVVector3 offset = OMVVector3.Zero;
                 OMVVector3 vel = OMVVector3.Zero;
                 OMVVector3 acc = OMVVector3.Zero;
-                Quaternion q = Quaternion.Identity;
+                OMVQuaternion q = OMVQuaternion.Identity;
                 OMVVector3 angvel = OMVVector3.Zero;
 
                 offset.FromBytes(data, 0);

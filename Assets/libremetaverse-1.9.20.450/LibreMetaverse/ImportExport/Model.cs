@@ -76,7 +76,7 @@ namespace OpenMetaverse.ImportExport
         public OMVVector3 BoundMax = new OMVVector3(float.MinValue, float.MinValue, float.MinValue);
         public OMVVector3 Position;
         public OMVVector3 Scale;
-        public Quaternion Rotation = Quaternion.Identity;
+        public OMVQuaternion Rotation = OMVQuaternion.Identity;
         public List<ModelFace> Faces = new List<ModelFace>();
         public string ID;
         public byte[] Asset;

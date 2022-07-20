@@ -427,9 +427,9 @@ namespace OpenMetaverse.Assets
             return vec;
         }
 
-        static Quaternion ReadQuaternion(XmlTextReader reader, string name)
+        static OMVQuaternion ReadQuaternion(XmlTextReader reader, string name)
         {
-            Quaternion quat;
+            OMVQuaternion quat;
 
             reader.ReadStartElement(name);
             quat.X = reader.ReadElementContentAsFloat("X", String.Empty);
@@ -816,8 +816,8 @@ namespace OpenMetaverse.Assets
         public UUID ID;
         public bool AllowedDrop;
         public OMVVector3 AttachmentPosition;
-        public Quaternion AttachmentRotation;
-        public Quaternion BeforeAttachmentRotation;
+        public OMVQuaternion AttachmentRotation;
+        public OMVQuaternion BeforeAttachmentRotation;
         public string Name;
         public string Description;
         public uint PermsBase;
@@ -837,13 +837,13 @@ namespace OpenMetaverse.Assets
         public uint LocalID;
         public uint ParentID;
         public OMVVector3 Position;
-        public Quaternion Rotation;
+        public OMVQuaternion Rotation;
         public OMVVector3 Velocity;
         public OMVVector3 AngularVelocity;
         public OMVVector3 Acceleration;
         public OMVVector3 Scale;
         public OMVVector3 SitOffset;
-        public Quaternion SitRotation;
+        public OMVQuaternion SitRotation;
         public OMVVector3 CameraEyeOffset;
         public OMVVector3 CameraAtOffset;
         public int State;

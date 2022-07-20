@@ -2319,7 +2319,7 @@ namespace OpenMetaverse
         /// <param name="rotation">Rotation of the object when rezzed</param>
         /// <param name="position">Vector of where to place object</param>
         /// <param name="item">InventoryItem object containing item details</param>
-        public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, OMVVector3 position,
+        public UUID RequestRezFromInventory(Simulator simulator, OMVQuaternion rotation, OMVVector3 position,
             InventoryItem item)
         {
             return RequestRezFromInventory(simulator, rotation, position, item, Client.Self.ActiveGroup,
@@ -2334,7 +2334,7 @@ namespace OpenMetaverse
         /// <param name="position">Vector of where to place object</param>
         /// <param name="item">InventoryItem object containing item details</param>
         /// <param name="groupOwner">UUID of group to own the object</param>
-        public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, OMVVector3 position,
+        public UUID RequestRezFromInventory(Simulator simulator, OMVQuaternion rotation, OMVVector3 position,
             InventoryItem item, UUID groupOwner)
         {
             return RequestRezFromInventory(simulator, rotation, position, item, groupOwner, UUID.Random(), true);
@@ -2351,7 +2351,7 @@ namespace OpenMetaverse
         /// <param name="queryID">User defined queryID to correlate replies</param>
         /// <param name="rezSelected">If set to true, the CreateSelected flag
         /// will be set on the rezzed object</param>        
-        public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, OMVVector3 position,
+        public UUID RequestRezFromInventory(Simulator simulator, OMVQuaternion rotation, OMVVector3 position,
             InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
         {
             return RequestRezFromInventory(simulator, UUID.Zero, rotation, position, item, groupOwner, queryID,
@@ -2370,7 +2370,7 @@ namespace OpenMetaverse
         /// <param name="queryID">User defined queryID to correlate replies</param>
         /// <param name="rezSelected">If set to true, the CreateSelected flag
         /// will be set on the rezzed object</param>        
-        public UUID RequestRezFromInventory(Simulator simulator, UUID taskID, Quaternion rotation, OMVVector3 position,
+        public UUID RequestRezFromInventory(Simulator simulator, UUID taskID, OMVQuaternion rotation, OMVVector3 position,
             InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
         {
             var add = new RezObjectPacket

@@ -93,7 +93,7 @@ namespace OpenMetaverse.StructuredData
         public virtual OMVVector3 AsVector3() { return OMVVector3.Zero; }
         public virtual Vector3d AsVector3d() { return Vector3d.Zero; }
         public virtual Vector4 AsVector4() { return Vector4.Zero; }
-        public virtual Quaternion AsQuaternion() { return Quaternion.Identity; }
+        public virtual OMVQuaternion AsQuaternion() { return OMVQuaternion.Identity; }
         public virtual Color4 AsColor4() { return Color4.Black; }
         public virtual OSD Copy() { return new OSD(); }
 
@@ -161,7 +161,7 @@ namespace OpenMetaverse.StructuredData
             return array;
         }
 
-        public static OSD FromQuaternion(Quaternion value)
+        public static OSD FromQuaternion(OMVQuaternion value)
         {
             OSDArray array = new OSDArray
             {
@@ -231,7 +231,7 @@ namespace OpenMetaverse.StructuredData
                     return FromVector3d(vector3D);
                 case Vector4 vector4:
                     return FromVector4(vector4);
-                case Quaternion quaternion:
+                case OMVQuaternion quaternion:
                     return FromQuaternion(quaternion);
                 case Color4 color4:
                     return FromColor4(color4);
@@ -307,11 +307,11 @@ namespace OpenMetaverse.StructuredData
                     return ((OSDArray)value).AsVector4();
                 return Vector4.Zero;
             }
-            if (type == typeof(Quaternion))
+            if (type == typeof(OMVQuaternion))
             {
                 if (value.Type == OSDType.Array)
                     return ((OSDArray)value).AsQuaternion();
-                return Quaternion.Identity;
+                return OMVQuaternion.Identity;
             }
             if (type == typeof(OSDArray))
             {
@@ -352,7 +352,7 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator OSD(OMVVector3 value) { return FromVector3(value); }
         public static implicit operator OSD(Vector3d value) { return FromVector3d(value); }
         public static implicit operator OSD(Vector4 value) { return FromVector4(value); }
-        public static implicit operator OSD(Quaternion value) { return FromQuaternion(value); }
+        public static implicit operator OSD(OMVQuaternion value) { return FromQuaternion(value); }
         public static implicit operator OSD(Color4 value) { return FromColor4(value); }
 
         public static implicit operator bool(OSD value) { return value.AsBoolean(); }
@@ -371,7 +371,7 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator OMVVector3(OSD value) { return value.AsVector3(); }
         public static implicit operator Vector3d(OSD value) { return value.AsVector3d(); }
         public static implicit operator Vector4(OSD value) { return value.AsVector4(); }
-        public static implicit operator Quaternion(OSD value) { return value.AsQuaternion(); }
+        public static implicit operator OMVQuaternion(OSD value) { return value.AsQuaternion(); }
         public static implicit operator Color4(OSD value) { return value.AsColor4(); }
 
         #endregion Implicit Conversions
@@ -1088,9 +1088,9 @@ namespace OpenMetaverse.StructuredData
             return vector;
         }
 
-        public override Quaternion AsQuaternion()
+        public override OMVQuaternion AsQuaternion()
         {
-            Quaternion quaternion = Quaternion.Identity;
+            OMVQuaternion quaternion = OMVQuaternion.Identity;
 
             if (Count == 4)
             {

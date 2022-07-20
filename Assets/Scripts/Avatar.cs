@@ -5,36 +5,94 @@ using OpenMetaverse;
 
 public class Avatar : MonoBehaviour
 {
-    [SerializeField]
-    Transform myAvatar;
+    public Transform myAvatar;
 
-    public string simName;
-    public string simOwner;
     public Vector3 simPos;
+    public string firstName;
+    public string lastName;
+
+    public bool fly = false;
+    //public string displayName;
 
     GridClient client;
+    AgentManager self;
     // Start is called before the first frame update
     void Start()
     {
         client = ClientManager.client;
+        self = client.Self;
+        StartCoroutine(TimerRoutine());
+    }
+
+    void SetFlyMode(bool b)
+    {
+        if(client.Settings.SEND_AGENT_APPEARANCE)
+        {
+            client.Self.Movement.Fly = b;
+            //client.Self.Movement.SendUpdate(true);
+        }
+    }
+
+    void SetAlwaysRunMode(bool b)
+    {
+        if (client.Settings.SEND_AGENT_APPEARANCE)
+        {
+            client.Self.Movement.AlwaysRun = b;
+            //client.Self.Movement.SendUpdate(true);
+        }
+    }
+
+    void SetSit(bool b)
+    {
+        client.Self.Movement.SitOnGround = b;
+        client.Self.Movement.StandUp = !b;
+        //client.Self.Movement.SendUpdate(true);
+    }
+
+    void Jump(bool b)
+    {
+        client.Self.Movement.UpPos = b;
+        client.Self.Movement.FastUp = b;
+    }
+
+    void Crouch(bool b)
+    {
+        client.Self.Movement.UpNeg = true;
+    }
+
+    void MoveToTarget(Vector3 v)
+    {
+        OMVVector3 _v = new OMVVector3(v);
+        client.Self.Movement.TurnToward(_v);
+        client.Self.AutoPilotCancel();
+        client.Self.AutoPilot(_v.X, _v.Y, _v.Z);
+    }
+
+    void TeleportHome()
+    {
+        client.Self.Teleport(UUID.Zero);
+    }
+
+    void Teleport(string sim, Vector3 pos, Vector3 localLookAt)
+    {
+        client.Self.Teleport(sim,new OMVVector3(pos),new OMVVector3(localLookAt));
     }
 
     // Update is called once per frame
-    void Update()
+    IEnumerator TimerRoutine()
     {
-        if(ClientManager.active)
+        while (true)
         {
-            Debug.Log("active");
-            if(client.Settings.SEND_AGENT_UPDATES)
+            if (client.Settings.SEND_AGENT_UPDATES && ClientManager.active)
             {
                 //OpenMetaverse.Vector3;
-                simPos = new Vector3(client.Self.SimPosition.X, client.Self.SimPosition.Z, client.Self.SimPosition.Y);
+                simPos = self.SimPosition.ToVector3();
                 myAvatar.position = simPos;
+                firstName = self.FirstName;
+                lastName = self.LastName;
+                //displayName = "Not Implemented";
             }
-        }
-        else
-        {
-            Debug.Log("inactive");
+            yield return new WaitForSeconds(5f);
         }
     }
 }

@@ -25,6 +25,7 @@
  */
 
 using System;
+using UnityEngine;
 
 namespace OpenMetaverse
 {
@@ -2213,7 +2214,7 @@ namespace OpenMetaverse.Packets
             public UUID ObjectID;
             public byte[] ObjectName;
             public OMVVector3 TelehubPos;
-            public Quaternion TelehubRot;
+            public OMVQuaternion TelehubRot;
 
             public override int Length
             {
@@ -14371,7 +14372,7 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Quaternion Rotation;
+            public OMVQuaternion Rotation;
 
             public override int Length
             {
@@ -18847,7 +18848,7 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            public Quaternion Rotation;
+            public OMVQuaternion Rotation;
 
             public override int Length
             {
@@ -21043,7 +21044,7 @@ namespace OpenMetaverse.Packets
         public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
-            public Quaternion Rotation;
+            public OMVQuaternion Rotation;
 
             public override int Length
             {
@@ -40516,7 +40517,7 @@ namespace OpenMetaverse.Packets
             public UUID RequestID;
             public UUID SearchID;
             public OMVVector3 SearchPos;
-            public Quaternion SearchDir;
+            public OMVQuaternion SearchDir;
             public byte[] SearchName;
             public int Type;
             public float Range;
@@ -40703,7 +40704,7 @@ namespace OpenMetaverse.Packets
             public UUID GroupID;
             public OMVVector3 Position;
             public OMVVector3 Velocity;
-            public Quaternion Rotation;
+            public OMVQuaternion Rotation;
             public byte[] Name;
             public int Type;
             public float Range;
@@ -71489,7 +71490,7 @@ namespace OpenMetaverse.Packets
             public UUID RayTargetID;
             public byte RayEndIsIntersection;
             public OMVVector3 Scale;
-            public Quaternion Rotation;
+            public OMVQuaternion Rotation;
             public byte State;
 
             public override int Length
@@ -74715,8 +74716,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID AgentID;
             public UUID SessionID;
-            public Quaternion BodyRotation;
-            public Quaternion HeadRotation;
+            public OMVQuaternion BodyRotation;
+            public OMVQuaternion HeadRotation;
             public byte State;
             public OMVVector3 CameraCenter;
             public OMVVector3 CameraAtAxis;
@@ -79465,7 +79466,7 @@ namespace OpenMetaverse.Packets
         {
             public bool AutoPilot;
             public OMVVector3 SitPosition;
-            public Quaternion SitRotation;
+            public OMVQuaternion SitRotation;
             public OMVVector3 CameraEyeOffset;
             public OMVVector3 CameraAtOffset;
             public bool ForceMouselook;
@@ -80185,8 +80186,8 @@ namespace OpenMetaverse.Packets
             public float Aspect;
             public byte[] Throttles;
             public uint LocomotionState;
-            public Quaternion HeadRotation;
-            public Quaternion BodyRotation;
+            public OMVQuaternion HeadRotation;
+            public OMVQuaternion BodyRotation;
             public uint ControlFlags;
             public float EnergyLevel;
             public byte GodLevel;

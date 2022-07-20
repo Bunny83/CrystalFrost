@@ -1357,7 +1357,7 @@ namespace OpenMetaverse
         public OMVVector3 RelativePosition { get { return relativePosition; } set { relativePosition = value; } }
         /// <summary>Current rotation of the agent as a relative rotation from
         /// the simulator, or the parent object if we are sitting on something</summary>
-        public Quaternion RelativeRotation { get { return relativeRotation; } set { relativeRotation = value; } }
+        public OMVQuaternion RelativeRotation { get { return relativeRotation; } set { relativeRotation = value; } }
         /// <summary>Current position of the agent in the simulator</summary>
         public OMVVector3 SimPosition
         {
@@ -1412,9 +1412,9 @@ namespace OpenMetaverse
             }
         }
         /// <summary>
-        /// A <seealso cref="Quaternion"/> representing the agents current rotation
+        /// A <seealso cref="OMVQuaternion"/> representing the agents current rotation
         /// </summary>
-        public Quaternion SimRotation
+        public OMVQuaternion SimRotation
         {
             get
             {
@@ -1460,7 +1460,7 @@ namespace OpenMetaverse
 
         internal uint localID;
         internal OMVVector3 relativePosition;
-        internal Quaternion relativeRotation = Quaternion.Identity;
+        internal OMVQuaternion relativeRotation = OMVQuaternion.Identity;
         internal Vector4 collisionPlane;
         internal OMVVector3 velocity;
         internal OMVVector3 acceleration;
@@ -3554,7 +3554,7 @@ namespace OpenMetaverse
                     Range = range,
                     RegionHandle = sim.Handle,
                     RequestID = requestID,
-                    SearchDir = Quaternion.Identity,
+                    SearchDir = OMVQuaternion.Identity,
                     SearchID = searchID,
                     SearchName = Utils.StringToBytes(name),
                     SearchPos = OMVVector3.Zero,
@@ -5506,7 +5506,7 @@ namespace OpenMetaverse
         public float Range { get; }
 
         /// <summary>Get the rotation of the primitive sending the sensor</summary>
-        public Quaternion Rotation { get; }
+        public OMVQuaternion Rotation { get; }
 
         /// <summary>Get the type of sensor the primitive sent</summary>
         public ScriptSensorTypeFlags Type { get; }
@@ -5528,7 +5528,7 @@ namespace OpenMetaverse
         /// <param name="type">The type of sensor the primitive sent</param>
         /// <param name="velocity">The velocity of the primitive sending the sensor</param>
         public ScriptSensorReplyEventArgs(UUID requestorID, UUID groupID, string name,
-            UUID objectID, UUID ownerID, OMVVector3 position, float range, Quaternion rotation,
+            UUID objectID, UUID ownerID, OMVVector3 position, float range, OMVQuaternion rotation,
             ScriptSensorTypeFlags type, OMVVector3 velocity)
         {
             RequestorID = requestorID;
@@ -5566,11 +5566,11 @@ namespace OpenMetaverse
         public OMVVector3 SitPosition { get; }
 
         /// <summary>Get the rotation of the agent when seated</summary>
-        public Quaternion SitRotation { get; }
+        public OMVQuaternion SitRotation { get; }
 
         /// <summary>Construct a new instance of the AvatarSitResponseEventArgs object</summary>
         public AvatarSitResponseEventArgs(UUID objectID, bool autoPilot, OMVVector3 cameraAtOffset,
-            OMVVector3 cameraEyeOffset, bool forceMouselook, OMVVector3 sitPosition, Quaternion sitRotation)
+            OMVVector3 cameraEyeOffset, bool forceMouselook, OMVVector3 sitPosition, OMVQuaternion sitRotation)
         {
             ObjectID = objectID;
             Autopilot = autoPilot;
