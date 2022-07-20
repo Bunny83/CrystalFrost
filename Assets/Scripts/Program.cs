@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CommandLine.Utility_;
+using UnityEngine;
 
 namespace OpenMetaverse.TestClient_
 {
@@ -50,7 +51,7 @@ namespace OpenMetaverse.TestClient_
                 LoginURI = arguments["loginuri"];
             if (string.IsNullOrEmpty(LoginURI))
                 LoginURI = Settings.AGNI_LOGIN_SERVER;
-            Logger.Log("Using login URI " + LoginURI, Helpers.LogLevel.Info);
+            Debug.Log("Using login URI " + LoginURI);//, Helpers.LogLevel.Info);
 
             if (arguments["gettextures"] != null)
                 getTextures = true;
@@ -63,7 +64,7 @@ namespace OpenMetaverse.TestClient_
                 scriptFile = arguments["scriptfile"];
                 if (!File.Exists(scriptFile))
                 {
-                    Logger.Log($"File {scriptFile} Does not exist", Helpers.LogLevel.Error);
+                    Debug.LogError($"File {scriptFile} Does not exist");//, Helpers.LogLevel.Error);
                     return;
                 }
             }
@@ -74,7 +75,7 @@ namespace OpenMetaverse.TestClient_
 
                 if (!File.Exists(file))
                 {
-                    Logger.Log($"File {file} Does not exist", Helpers.LogLevel.Error);
+                    Debug.LogError($"File {file} Does not exist");//, Helpers.LogLevel.Error);
                     return;
                 }
 
@@ -122,7 +123,7 @@ namespace OpenMetaverse.TestClient_
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Error reading from " + args[1], Helpers.LogLevel.Error, ex);
+                    Debug.LogError("Error reading from " + args[1]);//, Helpers.LogLevel.Error, ex);
                     return;
                 }
             }
@@ -131,8 +132,8 @@ namespace OpenMetaverse.TestClient_
                 // Taking a single login off the command-line
                 account = new LoginDetails
                 {
-                    FirstName = arguments["first"], 
-                    LastName = arguments["last"], 
+                    FirstName = arguments["first"],
+                    LastName = arguments["last"],
                     Password = arguments["pass"]
                 };
 

@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using UnityEngine;
 
 namespace OpenMetaverse.TestClient_
 {
@@ -86,8 +87,8 @@ namespace OpenMetaverse.TestClient_
 
             LoginDetails account = new LoginDetails
             {
-                FirstName = args[0], 
-                LastName = args[1], 
+                FirstName = args[0],
+                LastName = args[1],
                 Password = args[2]
             };
 
@@ -148,7 +149,7 @@ namespace OpenMetaverse.TestClient_
 
             TestClient client = new TestClient(this);
             client.Network.LoginProgress +=
-                delegate(object sender, LoginProgressEventArgs e)
+                delegate (object sender, LoginProgressEventArgs e)
                 {
                     Logger.Log($"Login {e.Status}: {e.Message}", Helpers.LogLevel.Info, client);
 
@@ -165,12 +166,12 @@ namespace OpenMetaverse.TestClient_
                                 if (dpe.QueryID != query) { return; }
                                 if (dpe.MatchedPeople.Count != 1)
                                 {
-                                    Logger.Log($"Unable to resolve master key from {client.MasterName}", Helpers.LogLevel.Warning);
+                                    Debug.LogWarning($"Unable to resolve master key from {client.MasterName}");//, Helpers.LogLevel.Warning);
                                 }
                                 else
                                 {
                                     client.MasterKey = dpe.MatchedPeople[0].AgentID;
-                                    Logger.Log($"Master key resolved to {client.MasterKey}", Helpers.LogLevel.Info);
+                                    Debug.Log($"Master key resolved to {client.MasterKey}");//, Helpers.LogLevel.Info);
                                 }
                             }
 
@@ -178,13 +179,13 @@ namespace OpenMetaverse.TestClient_
                             query = client.Directory.StartPeopleSearch(client.MasterName, 0);
                         }
 
-                        Logger.Log($"Logged in {client}", Helpers.LogLevel.Info);
+                        Debug.Log($"Logged in {client}");//, Helpers.LogLevel.Info);
                         --PendingLogins;
                     }
                     else if (e.Status == LoginStatus.Failed)
                     {
-                        Logger.Log($"Failed to login {account.FirstName} {account.LastName}: {client.Network.LoginMessage}", 
-                            Helpers.LogLevel.Warning);
+                        Debug.Log($"Failed to login {account.FirstName} {account.LastName}: {client.Network.LoginMessage}");//, 
+                                                                                                                            //Helpers.LogLevel.Warning);
                         --PendingLogins;
                     }
                 };
@@ -196,7 +197,7 @@ namespace OpenMetaverse.TestClient_
             client.Throttle.Task = 1000000;
 
             client.GroupCommands = account.GroupCommands;
-			client.MasterName = account.MasterName;
+            client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
             client.AllowObjectMaster = client.MasterKey != UUID.Zero; // Require UUID for object master.
 
@@ -226,7 +227,8 @@ namespace OpenMetaverse.TestClient_
                     Thread.Sleep(2 * 1000);
                 }
             }
-            else {
+            else
+            {
                 Jenny.Console.WriteLine("Type quit to exit.  Type help for a command list.");
 
                 while (Running)
@@ -266,7 +268,7 @@ namespace OpenMetaverse.TestClient_
             string[] tokens = cmd.Trim().Split(' ', '\t');
             if (tokens.Length == 0)
                 return;
-            
+
             string firstToken = tokens[0].ToLower();
             if (string.IsNullOrEmpty(firstToken))
                 return;
@@ -275,22 +277,26 @@ namespace OpenMetaverse.TestClient_
             if (firstToken[0] == ';' || firstToken[0] == '#')
                 return;
 
-            if ('@' == firstToken[0]) {
+            if ('@' == firstToken[0])
+            {
                 onlyAvatar = string.Empty;
-                if (tokens.Length == 3) {
-                    onlyAvatar = tokens[1]+" "+tokens[2];
+                if (tokens.Length == 3)
+                {
+                    onlyAvatar = tokens[1] + " " + tokens[2];
                     bool found = Clients.Values.Any(client => (client.ToString() == onlyAvatar) && (client.Network.Connected));
 
-                    Logger.Log(
+                    Debug.Log(
                         found
                             ? $"Commanding only {onlyAvatar} now"
-                            : $"Commanding nobody now. Avatar {onlyAvatar} is offline", Helpers.LogLevel.Info);
-                } else {
-                    Logger.Log("Commanding all avatars now", Helpers.LogLevel.Info);
+                            : $"Commanding nobody now. Avatar {onlyAvatar} is offline");//, Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    Debug.Log("Commanding all avatars now");//, Helpers.LogLevel.Info);
                 }
                 return;
             }
-            
+
             string[] args = new string[tokens.Length - 1];
             if (args.Length > 0)
                 Array.Copy(tokens, 1, args, 0, args.Length);
@@ -323,7 +329,7 @@ namespace OpenMetaverse.TestClient_
             {
                 // No reason to pass this to all bots, and we also want to allow it when there are no bots
                 ScriptCommand command = new ScriptCommand(null);
-                Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+                Debug.Log(command.Execute(args, UUID.Zero));//, Helpers.LogLevel.Info);
             }
             else if (firstToken == "waitforlogin")
             {
@@ -331,11 +337,11 @@ namespace OpenMetaverse.TestClient_
                 if (ClientManager.Instance.PendingLogins > 0)
                 {
                     WaitForLoginCommand command = new WaitForLoginCommand(null);
-                    Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+                    Debug.Log(command.Execute(args, UUID.Zero));//, Helpers.LogLevel.Info);
                 }
                 else
                 {
-                    Logger.Log("No pending logins", Helpers.LogLevel.Info);
+                    Debug.Log("No pending logins");//, Helpers.LogLevel.Info);
                 }
             }
             else
@@ -348,22 +354,28 @@ namespace OpenMetaverse.TestClient_
                 foreach (TestClient client in clientsCopy.Values)
                 {
                     ThreadPool.QueueUserWorkItem(
-                        delegate(object state)
+                        delegate (object state)
                         {
                             TestClient testClient = (TestClient)state;
-                            if ((string.Empty == onlyAvatar) || (testClient.ToString() == onlyAvatar)) {
-                                if (testClient.Commands.ContainsKey(firstToken)) {
+                            if ((string.Empty == onlyAvatar) || (testClient.ToString() == onlyAvatar))
+                            {
+                                if (testClient.Commands.ContainsKey(firstToken))
+                                {
                                     string result;
-                                    try {
+                                    try
+                                    {
                                         result = testClient.Commands[firstToken].Execute(args, fromAgentID);
-                                        Logger.Log(result, Helpers.LogLevel.Info, testClient);
-                                    } catch(Exception e) {
-                                        Logger.Log($"{firstToken} raised exception {e}",
-                                                   Helpers.LogLevel.Error,
-                                                   testClient);
+                                        Debug.Log(result);//, Helpers.LogLevel.Info, testClient);
                                     }
-                                } else
-                                    Logger.Log($"Unknown command {firstToken}", Helpers.LogLevel.Warning);
+                                    catch (Exception e)
+                                    {
+                                        Debug.Log($"{firstToken} raised exception {e}");//,
+                                                                                        //Helpers.LogLevel.Error,
+                                                                                        //testClient);
+                                    }
+                                }
+                                else
+                                    Debug.Log($"Unknown command {firstToken}");//, Helpers.LogLevel.Warning);
                             }
 
                             ++completed;
