@@ -49,9 +49,9 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
         ClientManager.client.Settings.ALWAYS_REQUEST_OBJECTS = true;
         ClientManager.client.Settings.ALWAYS_DECODE_OBJECTS = true;
-        
         ClientManager.client.Settings.OBJECT_TRACKING = true;
         loginUI.SetActive(true);
+        ClientManager.texturePipeline = new TexturePipeline(ClientManager.client);
         //ClientManager.client.Objects.
     }
 
@@ -63,9 +63,18 @@ public class Login : MonoBehaviour
         //loginDetails.Password = password.text;
         //loginURI = Settings.AGNI_LOGIN_SERVER;
 
-        string text;
-        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log in to Myra Loveless");
-        if(ClientManager.client.Network.Login(firstName.text, lastName.text, password.text, "CrystalFrost", "0.1"))
+        StartCoroutine(_TryLogin());
+
+        //StartCoroutine(LogOut(30));
+        //NetworkManager.    
+
+    }
+
+    IEnumerator _TryLogin()
+    {
+        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log in to Myra Loveless.");
+        yield return null;
+        if (ClientManager.client.Network.Login(firstName.text, lastName.text, password.text, "CrystalFrost", "0.1"))
         {
             Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
             loginUI.SetActive(false);
@@ -77,19 +86,22 @@ public class Login : MonoBehaviour
             loginUI.SetActive(true);
             ClientManager.active = false;
         }
-
-        //StartCoroutine(LogOut(30));
-        //NetworkManager.    
-
     }
 
     public void LogOut()
     {
-        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log out.");
+        StartCoroutine(_LogOut());
+        //Destroy(ClientManager.client.);
+    }
+
+    IEnumerator _LogOut()
+    {
+        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log out. When you see the login screen, stop running and rerun it before logging back in.");
+        yield return null;
         ClientManager.client.Network.Logout();
         loginUI.SetActive(true);
         ClientManager.active = false;
-
+        Application.Quit();
     }
 
     public UUID GroupID = UUID.Zero;

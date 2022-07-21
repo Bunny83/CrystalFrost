@@ -7,7 +7,7 @@ using UnityEngine;
 using OpenMetaverse;
 using Rendering = OpenMetaverse.Rendering;
 using OpenMetaverse.Rendering;
-
+using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
 
 
@@ -31,6 +31,8 @@ public class SimManager : MonoBehaviour
 
     Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
 
+    Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
+
 
     void Start()
     {
@@ -45,6 +47,8 @@ public class SimManager : MonoBehaviour
         ObjectsUpdate();
         TerseObjectUpdates();
     }
+
+    Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
     void ObjectsUpdate()
     {
@@ -124,8 +128,8 @@ public class SimManager : MonoBehaviour
 
                     Mesh mesh = new Mesh();
                     Mesh subMesh = new Mesh();
-                    MeshFilter meshFilter = go.GetComponent<MeshFilter>();
-                    MeshRenderer rendr = go.GetComponent<MeshRenderer>();
+                    MeshFilter meshFilter;// = go.GetComponent<MeshFilter>();
+                    MeshRenderer rendr;
 
                     int i;
                     int j;
@@ -141,44 +145,75 @@ public class SimManager : MonoBehaviour
                         v += fmesh.faces[i].Vertices.Count;
                     }
 
-                    Debug.Log($"Cylinder {prim.LocalID.ToString()} has {v} vertices");
+                    //Debug.Log($"Cylinder {prim.LocalID.ToString()} has {v} vertices");
 
                     vertices = new Vector3[v];
                     indices = new int[vertices.Length];
                     normals = new Vector3[vertices.Length];
                     uvs = new Vector2[vertices.Length];
-                    mesh.subMeshCount = fmesh.faces.Count;
+                    //mesh.subMeshCount = fmesh.faces.Count;
                     v = 0;
+                    GameObject gomesh;// = Instantiate(blank);
 
                     for (j = 0; j < fmesh.faces.Count; j++)
                     {
+                        gomesh = Instantiate(cube);
+                        gomesh.name = $"face {j.ToString()}";
+                        gomesh.transform.position = go.transform.position;
+                        gomesh.transform.rotation = go.transform.rotation;
+                        gomesh.transform.parent = go.transform;
+                        gomesh.transform.localScale = Vector3.one;
+                        
+                        vertices = new Vector3[fmesh.faces[j].Vertices.Count];
+                        //indices = new int[fmesh.faces[j].Indices.Length];
+                        normals = new Vector3[fmesh.faces[j].Vertices.Count];
+                        uvs = new Vector2[fmesh.faces[j].Vertices.Count];
+
+                        rendr = gomesh.GetComponent<MeshRenderer>();
+                        meshFilter = gomesh.GetComponent<MeshFilter>();
+                        go.GetComponent<MeshRenderer>().enabled = false;
                         for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
                         {
-                            vertices[v] = fmesh.faces[j].Vertices[i].Position.ToUnity();
+                            vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
                             //indices[i] = fmesh.faces[j].Indices[i];
-                            normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity();
+                            normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
                             uvs[i] = fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
                             v++;
                         }
                         //Debug.Log()
                         //mesh.SetTriangles(fmesh.faces[j].Indices, j);
+                        mesh = new Mesh();
+                        mesh.vertices = vertices;
+                        mesh.normals = normals;
+                        //mesh.RecalculateNormals();
+                        mesh.uv = uvs;
+                        mesh.SetIndices(fmesh.faces[j].Indices,MeshTopology.Triangles,0);
+                        meshFilter.mesh = ReverseWind(mesh);
+                        rendr.material = new Material(blankMaterial);
+
                     }
-                    mesh.vertices = vertices;
-                    mesh.normals = normals;
-                    mesh.uv = uvs;
-                    rendr.materials = new Material[fmesh.faces.Count];
 
 
-                    for (j=0;j<fmesh.faces.Count;j++)
+                    /*for (j=0;j<fmesh.faces.Count;j++)
                     {
                         //mesh.SetVertices()
                         //Debug.Log($"mesh has {mesh.vertices.")
-                        mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, j);
+                        int buffer=0;
+                        if (j > 0) buffer = fmesh.faces[j - 1].Vertices.Count;
+                        mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, j, false, buffer);
+                        //ClientManager.texturePipeline.RequestTexture(fmesh.faces[j].TextureFace.TextureID, ImageType.Normal, 1f, 0, 0,TextureCallback(),true);
+                        string id = fmesh.faces[j].TextureFace.TextureID.ToString();
+                        //if (cmaterials.ContainsKey(id]))
+                        //{
+                        //    rendr.materials[j] = cmaterials[id];
+                        //}
                         rendr.materials[j] = Instantiate(blankMaterial);
-                    }
+                        rendr.materials[j].name = fmesh.faces[j].TextureFace.TextureID.ToString();
+                        //Texture texture = prim.Textures.FaceTextures[face];
+                    }*/
 
 
-                    meshFilter.mesh = mesh;
+                    //meshFilter.mesh = mesh;
 #endif
                 }
             }
@@ -187,9 +222,62 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    Mesh ReverseWind(Mesh mesh)
+    {
+        //C# or UnityScript
+        var indices = mesh.triangles;
+        var triangleCount = indices.Length / 3;
+        for (var i = 0; i < triangleCount; i++)
+        {
+            var tmp = indices[i * 3];
+            indices[i * 3] = indices[i * 3 + 1];
+            indices[i * 3 + 1] = tmp;
+        }
+        mesh.triangles = indices;
+        // additionally flip the vertex normals to get the correct lighting
+        var normals = mesh.normals;
+        for (var n = 0; n < normals.Length; n++)
+        {
+            normals[n] = -normals[n];
+        }
+        mesh.normals = normals;
+
+        return mesh;
+    }
+
+    void TextureCallback(TextureRequestState state, AssetTexture assetTexture)
+    {
+        int h = assetTexture.Image.Height;
+        int w = assetTexture.Image.Width;
+        Texture2D texture = new Texture2D(h, w, TextureFormat.ARGB32, false);
+
+        int x = 0;
+        int y = 0;
+        int z = 0;
+        for(x=0; x<w; x++)
+        {
+            for (y = 0; y < h; y++)
+            {
+                texture.SetPixel(x, y, new Color((float)assetTexture.Image.Red[z] * 0.003921568627451f, (float)assetTexture.Image.Green[z] * 0.003921568627451f, (float)assetTexture.Image.Blue[z] * 0.003921568627451f));
+                z++;
+            }
+        }
+
+        /*if(!textures.ContainsKey(assetTexture.AssetID))
+        {
+            textures.Add(assetTexture.AssetID, texture);
+        }
+        else
+        {
+            textures[assetTexture.AssetID] = texture;
+        }*/ 
+        
+
+    }
+
     void TerseObjectUpdates()
     {
-        Debug.Log("TerseObjectUpdate");
+        //Debug.Log("TerseObjectUpdate");
         while (objectsToRez.Count > 0)
         {
             Primitive prim = terseRobjectsUpdates[0].Prim;
