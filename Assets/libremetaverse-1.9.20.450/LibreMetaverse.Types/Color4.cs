@@ -440,6 +440,11 @@ namespace OpenMetaverse
 
         #endregion Overrides
 
+        public UnityEngine.Color ToUnity()
+        {
+            return new UnityEngine.Color(R, G, B, A);
+        }
+
         #region Operators
 
         public static bool operator ==(Color4 lhs, Color4 rhs)

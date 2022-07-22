@@ -27,6 +27,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using UnityEngine;
 
 namespace OpenMetaverse.Imaging
 {
@@ -45,6 +46,8 @@ namespace OpenMetaverse.Imaging
         {
             NearestNeighbor
         }
+
+        public Texture2D texture2D;
 
         /// <summary>
         /// Image width
@@ -129,6 +132,8 @@ namespace OpenMetaverse.Imaging
             Height = bitmap.Height;
 
             int pixelCount = Width * Height;
+            float byteMult = 0.003921568627451f;
+            texture2D = new Texture2D(Width, Height);
 
             if (bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
@@ -152,7 +157,9 @@ namespace OpenMetaverse.Imaging
                         Green[i] = *(pixel++);
                         Red[i] = *(pixel++);
                         Alpha[i] = *(pixel++);
+                        texture2D.SetPixel(i % Width, i / Width, new UnityEngine.Color(Red[i] * byteMult, Green[i] * byteMult, Blue[i] * byteMult));
                     }
+                    texture2D.Apply();
                 }
 
                 bitmap.UnlockBits(bd);
@@ -184,7 +191,9 @@ namespace OpenMetaverse.Imaging
                         Blue[i] = *(pixel++);
                         Green[i] = *(pixel++);
                         Red[i] = *(pixel++);
+                        texture2D.SetPixel(i % Width, i / Width, new UnityEngine.Color(Red[i] * byteMult, Green[i] * byteMult, Blue[i] * byteMult));
                     }
+                    texture2D.Apply();
                 }
 
                 bitmap.UnlockBits(bd);
@@ -210,10 +219,12 @@ namespace OpenMetaverse.Imaging
 						Green[i] = *(pixel++);
 						Red[i] = *(pixel++);
 						pixel++;	// Skip over the empty byte where the Alpha info would normally be
-					}
-				}
+                        texture2D.SetPixel(i % Width, i / Width, new UnityEngine.Color(Red[i] * byteMult, Green[i] * byteMult, Blue[i] * byteMult));
+                    }
+                    texture2D.Apply();
+                }
 
-				bitmap.UnlockBits(bd);
+                bitmap.UnlockBits(bd);
 			}
 			else
             {

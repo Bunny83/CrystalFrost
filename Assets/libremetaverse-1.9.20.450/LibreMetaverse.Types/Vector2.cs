@@ -460,7 +460,7 @@ namespace OpenMetaverse
 
         public UnityEngine.Vector2 ToUnity()
         {
-            return new UnityEngine.Vector2(X, Y);
+            return new UnityEngine.Vector2(X, 1f-Y);
         }
     }
 }

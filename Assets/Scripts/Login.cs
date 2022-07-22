@@ -50,8 +50,12 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.ALWAYS_REQUEST_OBJECTS = true;
         ClientManager.client.Settings.ALWAYS_DECODE_OBJECTS = true;
         ClientManager.client.Settings.OBJECT_TRACKING = true;
+        ClientManager.client.Settings.USE_HTTP_TEXTURES = true;
+        ClientManager.client.Settings.ASSET_CACHE_DIR = $"{Application.persistentDataPath}/cache";
+        ClientManager.client.Settings.SEND_PINGS = true;
         loginUI.SetActive(true);
-        ClientManager.texturePipeline = new TexturePipeline(ClientManager.client);
+        //ClientManager.texturePipeline = new TexturePipeline(ClientManager.client);
+        ClientManager.assetManager = new CrystalFrost.AssetManager();
         //ClientManager.client.Objects.
     }
 
@@ -73,11 +77,11 @@ public class Login : MonoBehaviour
     IEnumerator _TryLogin()
     {
         Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log in to Myra Loveless.");
+        loginUI.SetActive(false);
         yield return null;
         if (ClientManager.client.Network.Login(firstName.text, lastName.text, password.text, "CrystalFrost", "0.1"))
         {
             Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
-            loginUI.SetActive(false);
             ClientManager.active = true;
         }
         else

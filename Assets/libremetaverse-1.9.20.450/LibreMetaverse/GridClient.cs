@@ -86,7 +86,7 @@ namespace OpenMetaverse
         /// <summary>Group subsystem</summary>
         public GroupManager Groups;
         /// <summary>Asset subsystem</summary>
-        public AssetManager Assets;
+        public OMVAssetManager Assets;
         /// <summary>Inventory AIS client</summary>
         public InventoryAISClient AisClient;
         /// <summary>Appearance subsystem</summary>
@@ -120,7 +120,7 @@ namespace OpenMetaverse
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
-            Assets = new AssetManager(this);
+            Assets = new OMVAssetManager(this);
             AisClient = new InventoryAISClient(this);
             Appearance = new AppearanceManager(this);
             Inventory = new InventoryManager(this);
