@@ -196,7 +196,7 @@ namespace OpenMetaverse
         public StatusCode Status;
         public float Priority;
         public Simulator Simulator;
-        public OMVAssetManager.AssetReceivedCallback Callback;
+        public AssetManager.AssetReceivedCallback Callback;
 
         public int nextPacket;
         public InternalDictionary<int, byte[]> outOfOrderPackets;
@@ -279,7 +279,7 @@ namespace OpenMetaverse
     /// <summary>
     /// 
     /// </summary>
-    public class OMVAssetManager
+    public class AssetManager
     {
         /// <summary>Number of milliseconds to wait for a transfer header packet if out of order data was received</summary>
         const int TRANSFER_HEADER_TIMEOUT = 1000 * 15;
@@ -453,7 +453,7 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">A reference to the GridClient object</param>
-        public OMVAssetManager(GridClient client)
+        public AssetManager(GridClient client)
         {
             Client = client;
             Cache = new AssetCache(client);

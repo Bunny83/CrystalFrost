@@ -487,7 +487,7 @@ namespace OpenMetaverse.Assets
             settings.ToXML(Path.Combine(settingsPath, sim.Name + ".xml"));
         }
 
-        public static void SavePrims(OMVAssetManager manager, IList<AssetPrim> prims, string primsPath, string assetsPath)
+        public static void SavePrims(AssetManager manager, IList<AssetPrim> prims, string primsPath, string assetsPath)
         {
             Dictionary<UUID, UUID> textureList = new Dictionary<UUID, UUID>();
 
@@ -563,7 +563,7 @@ namespace OpenMetaverse.Assets
             Thread.Sleep(100);
         }
 
-        public static void SaveAssets(OMVAssetManager assetManager, AssetType assetType, IList<UUID> assets, string assetsPath)
+        public static void SaveAssets(AssetManager assetManager, AssetType assetType, IList<UUID> assets, string assetsPath)
         {
             int count = 0;
 
@@ -626,7 +626,7 @@ namespace OpenMetaverse.Assets
             Logger.Log("Copied " + count + " textures to the asset archive folder", Helpers.LogLevel.Info);
         }
 
-        public static void SaveSimAssets(OMVAssetManager assetManager, AssetType assetType, UUID assetID, UUID itemID, UUID primID, string assetsPath)
+        public static void SaveSimAssets(AssetManager assetManager, AssetType assetType, UUID assetID, UUID itemID, UUID primID, string assetsPath)
         {
             int count = 0;
 
