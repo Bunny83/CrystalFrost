@@ -178,7 +178,7 @@ namespace CrystalFrost
         {
             //Primitive prim = meshPrims[assetMesh.AssetID];
             FacetedMesh fmesh;
-            if (FacetedMesh.TryDecodeFromAsset(prim, assetMesh, DetailLevel.Highest, out fmesh))
+            if (FacetedMesh.TryDecodeFromAsset(prim, assetMesh, DetailLevel.Medium, out fmesh))
             {
 
                 Mesh[] meshes = new Mesh[fmesh.faces.Count];
