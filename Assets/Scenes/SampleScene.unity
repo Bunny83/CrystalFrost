@@ -24,7 +24,7 @@ RenderSettings:
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 4
+  m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 2156.1807, g: 2267.3652, b: 3312.0586, a: 1}
+  m_IndirectSpecularColor: {r: 2159.168, g: 2272.0703, b: 3323.754, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2618,9 +2618,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simName: 
   simOwner: 
-  cube: {fileID: 1000786071683992839, guid: 562dc5aa407ba88408d91663bdf1db5e, type: 3}
-  blank: {fileID: 4496982478774450889, guid: eaee10028c01edf4491bdb52eaf4c89f, type: 3}
-  blankMaterial: {fileID: 2100000, guid: cd03da26d8fbce840882a2f5adf2bc1e, type: 2}
+  cube: {fileID: 1000786071683992839, guid: f258d820a038dac4aa1670dfc0214a52, type: 3}
+  blank: {fileID: 4496982478774450889, guid: 28c4e7f727eccf841a9f2e20aa6f1f95, type: 3}
+  opaqueMat: {fileID: 2100000, guid: 28e28fd58e4c3a1469f9d13b56e409f7, type: 2}
+  opaqueFullBrightMat: {fileID: 2100000, guid: 9a88bd453f6ec2a4bbeadfa900354a87, type: 2}
+  alphaMat: {fileID: 2100000, guid: 93144d013d2a9674f8c25578e2cf5b78, type: 2}
+  alphaFullBrightMat: {fileID: 2100000, guid: f810afad7eeb15f4dbf63ada95ab95d5, type: 2}
 --- !u!1 &1418594294
 GameObject:
   m_ObjectHideFlags: 0
@@ -4682,72 +4685,3 @@ MonoBehaviour:
       enableFptlForForwardOpaque: 0
       enableBigTilePrepass: 0
       isFptlEnabled: 0
---- !u!1001 &3165364750472445618
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4496982478774450889, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_Name
-      value: GameObject
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 113.931885
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 59.191383
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 205.90657
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8747667216426700095, guid: eaee10028c01edf4491bdb52eaf4c89f,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: eaee10028c01edf4491bdb52eaf4c89f, type: 3}

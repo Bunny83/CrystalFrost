@@ -27,6 +27,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using UnityEngine;
 
 namespace OpenMetaverse.Imaging
 {
@@ -45,6 +46,8 @@ namespace OpenMetaverse.Imaging
         {
             NearestNeighbor
         }
+
+        //public Texture2D texture2D;
 
         /// <summary>
         /// Image width
@@ -129,6 +132,8 @@ namespace OpenMetaverse.Imaging
             Height = bitmap.Height;
 
             int pixelCount = Width * Height;
+            float byteMult = 0.003921568627451f;
+            //texture2D = new Texture2D(Width, Height);
 
             if (bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
@@ -152,7 +157,9 @@ namespace OpenMetaverse.Imaging
                         Green[i] = *(pixel++);
                         Red[i] = *(pixel++);
                         Alpha[i] = *(pixel++);
+                        //texture2D.SetPixel(i % Width, i / Width, new UnityEngine.Color(Red[i] * byteMult, Green[i] * byteMult, Blue[i] * byteMult));
                     }
+                    //texture2D.Apply();
                 }
 
                 bitmap.UnlockBits(bd);
@@ -184,7 +191,9 @@ namespace OpenMetaverse.Imaging
                         Blue[i] = *(pixel++);
                         Green[i] = *(pixel++);
                         Red[i] = *(pixel++);
+                        //texture2D.SetPixel(i % Width, i / Width, new UnityEngine.Color(Red[i] * byteMult, Green[i] * byteMult, Blue[i] * byteMult));
                     }
+                   // texture2D.Apply();
                 }
 
                 bitmap.UnlockBits(bd);
@@ -210,14 +219,16 @@ namespace OpenMetaverse.Imaging
 						Green[i] = *(pixel++);
 						Red[i] = *(pixel++);
 						pixel++;	// Skip over the empty byte where the Alpha info would normally be
-					}
-				}
+                        //texture2D.SetPixel(i % Width, i / Width, new UnityEngine.Color(Red[i] * byteMult, Green[i] * byteMult, Blue[i] * byteMult));
+                    }
+                    //texture2D.Apply();
+                }
 
-				bitmap.UnlockBits(bd);
+                bitmap.UnlockBits(bd);
 			}
 			else
             {
-                throw new NotSupportedException("Unrecognized pixel format: " + bitmap.PixelFormat.ToString());
+                //throw new NotSupportedException("Unrecognized pixel format: " + bitmap.PixelFormat.ToString());
             }
         }
 #endif
@@ -377,6 +388,63 @@ namespace OpenMetaverse.Imaging
             }
 
             return raw;
+        }
+
+        /// <summary>
+        /// Create a Texture2D suitable for feeding directly into Unity
+        /// </summary>
+        /// <returns>A Texture2D containing texture data</returns>
+        public Texture2D ExportUnity()
+        {
+            //byte[] raw = new byte[Width * Height * 4];
+            Texture2D texture = new Texture2D(Width, Height, TextureFormat.RGBA32, false);
+            if ((Channels & ImageChannels.Alpha) != 0)
+            {
+                if ((Channels & ImageChannels.Color) != 0)
+                {
+                    // RGBA
+                    for (int h = 0; h < Height; h++)
+                    {
+                        for (int w = 0; w < Width; w++)
+                        {
+                            int pos = (Height - 1 - h) * Width + w;
+                            int srcPos = h * Width + w;
+
+                            texture.SetPixel(w, h, new UnityEngine.Color(Red[srcPos] * 0.003921568627451f, Green[srcPos] * 0.003921568627451f, Blue[srcPos] * 0.003921568627451f, Alpha[srcPos] * 0.003921568627451f));
+                        }
+                    }
+                }
+                else
+                {
+                    // Alpha only
+                    for (int h = 0; h < Height; h++)
+                    {
+                        for (int w = 0; w < Width; w++)
+                        {
+                            int pos = (Height - 1 - h) * Width + w;
+                            int srcPos = h * Width + w;
+
+                            texture.SetPixel(w, h, new UnityEngine.Color(Red[srcPos] * 0.003921568627451f, Green[srcPos] * 0.003921568627451f, Blue[srcPos] * 0.003921568627451f, 1f));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // RGB
+                for (int h = 0; h < Height; h++)
+                {
+                    for (int w = 0; w < Width; w++)
+                    {
+                        int pos = (Height - 1 - h) * Width + w;
+                        int srcPos = h * Width + w;
+
+                        texture.SetPixel(w, h, new UnityEngine.Color(Red[srcPos] * 0.003921568627451f, Green[srcPos] * 0.003921568627451f, Blue[srcPos] * 0.003921568627451f, 1f));
+                    }
+                }
+            }
+
+            return texture;
         }
 
         /// <summary>

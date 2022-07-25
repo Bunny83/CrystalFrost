@@ -80,5 +80,6 @@ namespace OpenMetaverse.Assets
         /// </summary>
         /// <returns>True if the asset decoding succeeded, otherwise false</returns>
         public abstract bool Decode();
+        //public abstract bool Decode(UUID uuid);
     }
 }

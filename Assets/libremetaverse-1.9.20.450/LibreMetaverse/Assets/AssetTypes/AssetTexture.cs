@@ -97,7 +97,10 @@ namespace OpenMetaverse.Assets
             using (var reader = new OpenJpegDotNet.IO.Reader(AssetData))
             {
                 // *hack: decode from ManagedImage directly or better yet, get rid of ManagedImage entirely!
-                if (!reader.ReadHeader()) { return false; }
+                if (!reader.ReadHeader())
+                {
+                    return false;
+                }
                 Image = new ManagedImage(reader.DecodeToBitmap());
             }
 

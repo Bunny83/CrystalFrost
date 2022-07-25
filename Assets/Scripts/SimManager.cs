@@ -24,36 +24,93 @@ public class SimManager : MonoBehaviour
     [SerializeField]
     GameObject blank;
     [SerializeField]
-    Material blankMaterial;
+    Material opaqueMat;
+    [SerializeField]
+    Material opaqueFullBrightMat;
+    [SerializeField]
+    Material alphaMat;
+    [SerializeField]
+    Material alphaFullBrightMat;
 
     List<PrimEventArgs> objectsToRez = new List<PrimEventArgs>();
     List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
+
 
     Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
 
     Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
 
+    Dictionary<UUID, List<GameObject>> meshObjects = new Dictionary<UUID, List<GameObject>>();
 
+    private void Awake()
+    {
+        ClientManager.assetManager.simManager = this;
+    }
     void Start()
     {
         client = ClientManager.client;
-        StartCoroutine(TimerRoutine());
-        client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
+        //StartCoroutine(TimerRoutine());
+        //client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
         client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_ObjectUpdate);
+
+        //StartCoroutine(ObjectsUpdate());
+        //StartCoroutine(MeshUpdates());
     }
 
     private void Update()
     {
         ObjectsUpdate();
-        TerseObjectUpdates();
+        //TerseObjectUpdates();
     }
+
+
 
     Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
+    public struct MeshUpdate
+    {
+        public GameObject go;
+        public Mesh[] meshes;
+        public Primitive prim;
+    }
+
+    public List<MeshUpdate> meshUpdates = new List<MeshUpdate>();
+
+    IEnumerator MeshUpdates()
+    {
+        while (true)
+        {
+            if (meshUpdates.Count == 0)
+            {
+                yield return new WaitForSeconds(1.0f);
+                continue;
+            }
+            ParseMeshes(meshUpdates[0].meshes, meshUpdates[0].go, meshUpdates[0].prim);
+            meshUpdates.Remove(meshUpdates[0]);
+            yield return null;
+        }
+    }
+
+    //IEnumerator ObjectsUpdate()
     void ObjectsUpdate()
     {
-        while (objectsToRez.Count > 0)
+        int counter = 0;
+        while (objectsToRez.Count>0)
         {
+
+            /*if (objectsToRez.Count == 0)
+            {
+                yield return null;// new WaitForSeconds(0.1f);
+                continue;
+            }
+
+            counter++;
+            if (counter == 10)
+            {
+                counter = 0;
+                yield return null;// new WaitForEndOfFrame();
+            }*/
+
             Primitive prim = objectsToRez[0].Prim;
 
             if (!objects.ContainsKey(prim.LocalID) || objectsToRez[0].IsNew)
@@ -62,7 +119,7 @@ public class SimManager : MonoBehaviour
                 GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
                 GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
                 go.transform.parent = bgo.transform;
-                objects.Add(prim.LocalID, go);
+                objects.TryAdd(prim.LocalID, go);
 
                 //Handle scaling and parenting;
                 go.transform.localScale = prim.Scale.ToVector3();
@@ -84,46 +141,15 @@ public class SimManager : MonoBehaviour
                 }
                 go.name = prim.Type.ToString();
 
-                /*if(prim.Type == PrimType.Mesh)
-                {
-                    OMVMesh omvMesh = null;
-                    //omvMesh = Rendering.
-
-                }
-                else*/
                 if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
                 //if(prim.Type == PrimType.Cylinder)
                 {
-                    Rendering.SimpleMesh omesh = new Rendering.SimpleMesh();//(OMV.Primitive prim, OMVR.DetailLevel lod);
-                    omesh.Prim = prim;
-                    //Rendering.IRendering mesher = null;
-                    //prim.PrimData
-                    //go.name = prim.Type.ToString();
-                    /*primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
-                    Mesh mesh = new Mesh();
-                    mesh.Clear();
-                    Vector3[] vertices = new Vector3[primMesh.coords.Count];
-                    //mesh.vertices = vertices;
-                    int i;
-                    for(i=0; i<=primMesh.coords.Count;i++)// Coord coord in primMesh.coords)
-                    {
-                        mesh.vertices[i] = primMesh.coords[i].ToUnity();
-                    }
-
-                    //mesh.SetTriangles()
-                    //mesh.triangles = new int[primMesh.faces.Count];
-                    //primMesh.
-                    for(i=0; i<=mesh.triangles.Length; i++)
-                    {
-                    //    mesh.triangles[i] = primMesh.faces[i].n1
-                    }*/
-
-                    //Debug.Log(prim.PrimData.ProfileBegin.ToString());
 
 #if true
                     //PrimMesh primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
                     MeshmerizerR mesher = new MeshmerizerR();
-                    FacetedMesh fmesh = mesher.GenerateFacetedMesh(prim, DetailLevel.Highest);
+                    FacetedMesh fmesh;
+                    fmesh = mesher.GenerateFacetedMesh(prim, DetailLevel.Highest);
                     //Jenny.Console.WriteLine($"Cylinder has {fmesh.faces.Count.ToString()} faces");
 
                     Mesh mesh = new Mesh();
@@ -133,17 +159,17 @@ public class SimManager : MonoBehaviour
 
                     int i;
                     int j;
-                    int v=0;
+                    int v = 0;
 
                     Vector3[] vertices;
                     int[] indices;
                     Vector3[] normals;
                     Vector2[] uvs;
-                    
-                    for(i=0;i<fmesh.faces.Count;i++)
-                    {
-                        v += fmesh.faces[i].Vertices.Count;
-                    }
+
+                    //for (i = 0; i < fmesh.faces.Count; i++)
+                    //{
+                    //    v += fmesh.faces[i].Vertices.Count;
+                    //}
 
                     //Debug.Log($"Cylinder {prim.LocalID.ToString()} has {v} vertices");
 
@@ -154,7 +180,6 @@ public class SimManager : MonoBehaviour
                     //mesh.subMeshCount = fmesh.faces.Count;
                     v = 0;
                     GameObject gomesh;// = Instantiate(blank);
-
                     for (j = 0; j < fmesh.faces.Count; j++)
                     {
                         gomesh = Instantiate(cube);
@@ -163,7 +188,7 @@ public class SimManager : MonoBehaviour
                         gomesh.transform.rotation = go.transform.rotation;
                         gomesh.transform.parent = go.transform;
                         gomesh.transform.localScale = Vector3.one;
-                        
+
                         vertices = new Vector3[fmesh.faces[j].Vertices.Count];
                         //indices = new int[fmesh.faces[j].Indices.Length];
                         normals = new Vector3[fmesh.faces[j].Vertices.Count];
@@ -172,25 +197,97 @@ public class SimManager : MonoBehaviour
                         rendr = gomesh.GetComponent<MeshRenderer>();
                         meshFilter = gomesh.GetComponent<MeshFilter>();
                         go.GetComponent<MeshRenderer>().enabled = false;
+                        Primitive.TextureEntryFace textureEntryFace;
+                        textureEntryFace = prim.Textures.GetFace((uint)j);
+                        mesher.TransformTexCoords(fmesh.faces[j].Vertices, fmesh.faces[j].Center, textureEntryFace, prim.Scale);
                         for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
                         {
                             vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
                             //indices[i] = fmesh.faces[j].Indices[i];
                             normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
-                            uvs[i] = fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                            uvs[i] = /*Quaternion.Euler(0, 0, (textureEntryFace.Rotation * 57.2957795f)) * */ fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
                             v++;
                         }
-                        //Debug.Log()
-                        //mesh.SetTriangles(fmesh.faces[j].Indices, j);
+
                         mesh = new Mesh();
                         mesh.vertices = vertices;
                         mesh.normals = normals;
                         //mesh.RecalculateNormals();
                         mesh.uv = uvs;
-                        mesh.SetIndices(fmesh.faces[j].Indices,MeshTopology.Triangles,0);
+                        mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0);
                         meshFilter.mesh = ReverseWind(mesh);
-                        rendr.material = new Material(blankMaterial);
+                        Material clonemat;// = null;
 
+                        textureEntryFace.GetOSD(j);
+                        //ImageType.
+                        Color color = textureEntryFace.RGBA.ToUnity();
+                        if (color.a < 0.0001f)
+                        {
+                            //rendr.enabled = false;
+                            //continue;
+                        }
+                        string texturestring = "_BaseColorMap";
+                        string colorstring = "_BaseColor";
+                        if (color.a < 0.999f)
+                        {
+                            if (!textureEntryFace.Fullbright)
+                            {
+                                clonemat = new Material(alphaMat);
+                            }
+                            else
+                            {
+                                texturestring = "_UnlitColorMap";
+                                colorstring = "_UnlitColor";
+                                clonemat = new Material(alphaFullBrightMat);
+                            }
+                        }
+                        else if (!textureEntryFace.Fullbright)
+                        {
+                            clonemat = new Material(opaqueMat);
+                        }
+                        else
+                        {
+                            texturestring = "_UnlitColorMap";
+                            colorstring = "_UnlitColor";
+                            clonemat = new Material(opaqueFullBrightMat);
+                        }
+                        //color.a = 0.5f;
+
+                        rendr.material = clonemat;
+                        rendr.material.SetColor(colorstring, color);
+                        //prim.Properties.
+                        //if (prim!=null)
+                        //if (prim.Textures!=null)
+                        //if (prim.Textures.FaceTextures!=null)
+                        //if (prim.Textures.FaceTextures[j]!=null)
+                        //if (prim.Textures.FaceTextures[j].TextureID!=null)
+                        //{
+                        UUID tuuid = textureEntryFace.TextureID;//prim.Textures.FaceTextures[j];
+                                                                //Texture2D _texture = ClientManager.assetManager.RequestTexture(tuuid);
+                                                                //bool isfullbright = 
+                                                                //Texture2D _texture = ClientManager.assetManager.RequestTexture(tuuid, rendr, textureEntryFace.Fullbright);
+
+                        if (!textureEntryFace.Fullbright)
+                            rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestTexture(tuuid, rendr));
+                        else
+                            rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestFullbrightTexture(tuuid, rendr));
+
+
+                        if (textureEntryFace.TexMapType == MappingType.Default)
+                        {
+                            //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU * -2f, (textureEntryFace.OffsetV * -2f)));
+                            //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (textureEntryFace.OffsetV)));
+                            //rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
+                        }
+                        else
+                        {
+                            //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (-textureEntryFace.OffsetV)));
+                            //rendr.material.SetTextureScale(texturestring, new Vector2(1f / textureEntryFace.RepeatU,(textureEntryFace.RepeatV)));
+                            //rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
+                        }
+
+                        //yield return null;// new WaitForEndOfFrame();
+                        //}
                     }
 
 
@@ -216,9 +313,121 @@ public class SimManager : MonoBehaviour
                     //meshFilter.mesh = mesh;
 #endif
                 }
+                else if(prim.Type == PrimType.Sculpt)
+                {
+                    ClientManager.assetManager.RequestSculpt(prim.ID, prim, go.GetComponent<MeshRenderer>());
+                    //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
+
+                }
+#if false
+                else
+                if (prim.Type == PrimType.Mesh)
+                {
+                    //meshObjects.TryAdd(prim.Sculpt.SculptTexture, new List<GameObject>());
+                    //meshObjects[prim.Sculpt.SculptTexture].Add(go);
+                    go.GetComponent<MeshRenderer>().enabled = false;
+                    if (prim.Sculpt != null && prim.Sculpt.SculptTexture != UUID.Zero)
+                    {
+                        if (prim.Sculpt.Type == SculptType.Mesh)
+                        {
+
+                            //Debug.Log(l);
+                            if(prim.Sculpt.SculptTexture != null)
+                            ClientManager.assetManager.RequestMesh(prim.Sculpt.SculptTexture, prim, go);
+                            //go.GetComponent<MeshFilter>().mesh = 
+                        }
+                    }
+                }
+#endif
             }
             //Do not add code to manipulate the object below this line
-            objectsToRez.Remove(objectsToRez[0]);
+            //if (objectsToRez.Count > 0)
+           objectsToRez.Remove(objectsToRez[0]);
+            // else
+            //     break;
+
+            
+        }
+
+    }
+
+    public void ParseMeshes(Mesh[]meshes, GameObject go, Primitive prim)
+    {
+        int k;
+        for (k = 0; k < meshes.Length; k++)
+        {
+            GameObject mo = Instantiate(cube);
+            mo.name = $"face {k.ToString()}";
+            mo.transform.position = go.transform.position;
+            mo.transform.rotation = go.transform.rotation;
+            mo.transform.parent = go.transform;
+            mo.transform.localScale = Vector3.one;
+
+            mo.GetComponent<MeshFilter>().mesh = meshes[k];
+
+            MeshRenderer rendr = mo.GetComponent<MeshRenderer>();
+
+            Material clonemat;// = null;
+            Primitive.TextureEntryFace textureEntryFace;
+            textureEntryFace = prim.Textures.GetFace((uint)k);
+
+            textureEntryFace.GetOSD(k);
+            Color color = textureEntryFace.RGBA.ToUnity();
+            if (color.a < 0.0001f)
+            {
+                rendr.enabled = false;
+                continue;
+            }
+            string texturestring = "_BaseColorMap";
+            string colorstring = "_BaseColor";
+            if (color.a >= 0.999f)
+            {
+                if (!textureEntryFace.Fullbright)
+                {
+                    clonemat = opaqueMat;
+                }
+                else
+                {
+                    texturestring = "_UnlitColorMap";
+                    colorstring = "_UnlitColor";
+                    clonemat = opaqueFullBrightMat;
+                }
+            }
+            else if (!textureEntryFace.Fullbright)
+            {
+                clonemat = alphaMat;
+            }
+            else
+            {
+                clonemat = alphaFullBrightMat;
+            }
+            //color.a = 0.5f;
+
+            rendr.material = Instantiate(clonemat);
+            rendr.material.SetColor(colorstring, color);
+            //prim.Properties.
+            //if (prim!=null)
+            //if (prim.Textures!=null)
+            //if (prim.Textures.FaceTextures!=null)
+            //if (prim.Textures.FaceTextures[j]!=null)
+            //if (prim.Textures.FaceTextures[j].TextureID!=null)
+            //{
+            UUID tuuid = textureEntryFace.TextureID;//prim.Textures.FaceTextures[j];
+            if(!textureEntryFace.Fullbright)
+                rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestTexture(tuuid, rendr));
+            else
+                rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestFullbrightTexture(tuuid, rendr));
+
+            if (textureEntryFace.TexMapType == MappingType.Default)
+            {
+                rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU * -2f, (textureEntryFace.OffsetV * -2f)));
+                rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
+            }
+            else
+            {
+                rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (-textureEntryFace.OffsetV)));
+                rendr.material.SetTextureScale(texturestring, new Vector2((1f / textureEntryFace.RepeatU)*.1f, (1f / (textureEntryFace.RepeatV))*.1f));
+            }
         }
     }
 
@@ -277,10 +486,11 @@ public class SimManager : MonoBehaviour
 
     void TerseObjectUpdates()
     {
+#if false
         //Debug.Log("TerseObjectUpdate");
-        while (objectsToRez.Count > 0)
+        while (false && objectsToRez.Count > 0)
         {
-            Primitive prim = terseRobjectsUpdates[0].Prim;
+            Primitive prim = objectsToRez[0].Prim;
 
             uint i = prim.LocalID;
             if (objects.ContainsKey(i))
@@ -320,11 +530,13 @@ public class SimManager : MonoBehaviour
             //Do not add code to manipulate the object below this line
             objectsToRez.Remove(objectsToRez[0]);
         }
+        yield return null;
+#endif
     }
 
     void ScanForOrphans(PrimEventArgs _event)
     {
-        int i;
+        //int i;
         foreach(KeyValuePair<uint, GameObject> entry in objects)
         {
             Transform t = entry.Value.transform;
@@ -358,7 +570,7 @@ public class SimManager : MonoBehaviour
         if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
             return;
 
-        UpdatePrim(_event.Prim);
+        //UpdatePrim(_event.Prim);
     }
 
     void Objects_ObjectUpdate(PrimEventArgs _event)
