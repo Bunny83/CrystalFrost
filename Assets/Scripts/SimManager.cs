@@ -9,7 +9,7 @@ using Rendering = OpenMetaverse.Rendering;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
-
+using UnityEngine.Rendering.HighDefinition;
 
 public class SimManager : MonoBehaviour
 {
@@ -339,6 +339,27 @@ public class SimManager : MonoBehaviour
                     }
                 }
 #endif
+
+                //prim.Light.GetOSD();
+                if(prim.Light != null)
+                {
+                    Debug.Log("light");
+                    GameObject golight = Instantiate<GameObject>(Resources.Load<GameObject>("Point Light"));
+                    golight.transform.parent = go.transform;
+                    golight.transform.localPosition = Vector3.zero;
+                    golight.transform.localRotation = Quaternion.identity;
+                    Light light = golight.GetComponent<Light>();
+                    HDAdditionalLightData hdlight = light.GetComponent<HDAdditionalLightData>();
+
+                    //light. = prim.Light.Radius;
+                    hdlight.color = prim.Light.Color.ToUnity();
+                    hdlight.intensity = prim.Light.Intensity * 160000f;
+                }
+                else
+                {
+                    //Debug.Log("no light");
+                }
+
             }
             //Do not add code to manipulate the object below this line
             //if (objectsToRez.Count > 0)
