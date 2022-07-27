@@ -44,6 +44,8 @@ public class Login : MonoBehaviour
 
     void Awake()
     {
+        ClientManager.mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+
         Jenny.Console.textOutput = console;
         ClientManager.client = new GridClient();
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;

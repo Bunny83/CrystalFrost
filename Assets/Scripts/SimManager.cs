@@ -315,13 +315,13 @@ public class SimManager : MonoBehaviour
                 }
                 else if(prim.Type == PrimType.Sculpt)
                 {
-                    ClientManager.assetManager.RequestSculpt(prim.ID, prim, go.GetComponent<MeshRenderer>());
+                    go.name += $" {prim.Sculpt.SculptTexture}";
+                    ClientManager.assetManager.RequestSculpt(go, prim);
                     //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
 
                 }
 #if false
-                else
-                if (prim.Type == PrimType.Mesh)
+                else if (prim.Type == PrimType.Mesh)
                 {
                     //meshObjects.TryAdd(prim.Sculpt.SculptTexture, new List<GameObject>());
                     //meshObjects[prim.Sculpt.SculptTexture].Add(go);
@@ -343,7 +343,7 @@ public class SimManager : MonoBehaviour
                 //prim.Light.GetOSD();
                 if(prim.Light != null)
                 {
-                    Debug.Log("light");
+                    //Debug.Log("light");
                     GameObject golight = Instantiate<GameObject>(Resources.Load<GameObject>("Point Light"));
                     golight.transform.parent = go.transform;
                     golight.transform.localPosition = Vector3.zero;
@@ -353,7 +353,9 @@ public class SimManager : MonoBehaviour
 
                     //light. = prim.Light.Radius;
                     hdlight.color = prim.Light.Color.ToUnity();
-                    hdlight.intensity = prim.Light.Intensity * 160000f;
+                    hdlight.intensity = prim.Light.Intensity * 10000f;
+                    hdlight.range = prim.Light.Radius;
+                    //hdlight.fadeDistance = prim.Light.Radius * (1f - prim.Light.Falloff)
                 }
                 else
                 {
