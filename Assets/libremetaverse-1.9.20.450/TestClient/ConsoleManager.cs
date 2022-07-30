@@ -12,6 +12,7 @@ namespace Jenny
         public static void WriteLine(string input)
         {
             textOutput.text += "\n" + input;
+            //textOutput.
         }
         public static void Write(string input)
         {

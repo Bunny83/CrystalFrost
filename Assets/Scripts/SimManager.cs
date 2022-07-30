@@ -59,9 +59,14 @@ public class SimManager : MonoBehaviour
         //StartCoroutine(TimerRoutine());
         client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
         client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_ObjectUpdate);
-
+        client.Objects.KillObject += new EventHandler<KillObjectEventArgs>(KillObjectEventHandler);
         StartCoroutine(ObjectsLODUpdate());
         StartCoroutine(MeshRequests());
+    }
+
+    void KillObjectEventHandler(object sender, KillObjectEventArgs e)
+    {
+
     }
 
     private void Update()
@@ -164,6 +169,8 @@ public class SimManager : MonoBehaviour
                 rez = go.GetComponent<RezzedPrimStuff>();
                 rez.children.Add(bgo);
                 rez.bgo = bgo;
+                rez.meshHolder = go;
+                bgo.GetComponent<RezzedPrimStuff>().meshHolder = go;
                 rez.simMan = this;
                 objects.TryAdd(prim.LocalID, bgo);
                 objectData.Add(new ObjectData { gameObject = bgo, primitive = prim });
@@ -442,19 +449,30 @@ public class SimManager : MonoBehaviour
 
     void Objects_TerseObjectUpdate(object sender, TerseObjectUpdateEventArgs e)
     {
-        //Debug.Log($"TerseObjectUpdate: {_event.Prim.LocalID.ToString()}");
+        if(!ClientManager.IsMainThread)
+        {
+            //Debug.Log("Terse update not on main thread");
+            UnityMainThreadDispatcher.Instance().Enqueue(() => Objects_TerseObjectUpdate(sender, e));
+        }
+        if (!objects.ContainsKey(e.Prim.LocalID)) return;
+            //Debug.Log($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
+            //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State}");
+            //Debug.Log($"TerseObjectUpdate: {_event.Prim.LocalID.ToString()}");
         if (e.Simulator.Handle != client.Network.CurrentSim.Handle) return;
         if (e.Prim.ID == client.Self.AgentID)
         {
             //Debug.Log("My Avatar");
-            updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
+            //updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
         }
         else
         {
             //Debug.Log()
         }
         GameObject go = objects[e.Prim.LocalID];
-        Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
+        go.transform.position = e.Prim.Position.ToUnity();
+        go.transform.rotation = e.Prim.Rotation.ToUnity();
+        //go.transform.localScale = e.Prim.Scale.ToUnity();
+        //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
 
         //e.GetType();
 

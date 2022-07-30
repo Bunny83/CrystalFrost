@@ -22,6 +22,7 @@ public class RezzedPrimStuff : MonoBehaviour
     public string primName;
     public string description;
     public SimManager simMan;
+    public GameObject meshHolder;
 
     public void Enable()
     {
@@ -253,8 +254,8 @@ public class RezzedPrimStuff : MonoBehaviour
 
                     //Debug.Log(l);
                     if (prim.Sculpt.SculptTexture != null)
-                        simMan.RequestMesh(gameObject, prim);
-                    Debug.Log("Requesting Mesh");
+                        simMan.RequestMesh(meshHolder, prim);
+                    //Debug.Log("Requesting Mesh");
                     //go.GetComponent<MeshFilter>().mesh = 
                 }
             }

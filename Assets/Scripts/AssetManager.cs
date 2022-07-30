@@ -747,7 +747,7 @@ namespace CrystalFrost
                         gomesh.transform.position = requestedMeshes[id][i].gameObject.transform.position;
                         gomesh.transform.rotation = requestedMeshes[id][i].gameObject.transform.rotation;
                         gomesh.transform.parent = requestedMeshes[id][i].gameObject.transform;
-                        gomesh.transform.localScale = prim.Scale.ToUnity();
+                        gomesh.transform.localScale = Vector3.one;
 
                         gomesh.name = $"Mesh Face {j.ToString()}";
                         _rendr = gomesh.GetComponent<MeshRenderer>();
@@ -854,7 +854,7 @@ namespace CrystalFrost
                 //indices = new int[vertices.Length];
                 //normals = new Vector3[vertices.Length];
                 //uvs = new Vector2[vertices.Length];
-
+                Vector2 uv;
                 for (j = 0; j < fmesh.faces.Count; j++)
                 {
 
@@ -868,7 +868,10 @@ namespace CrystalFrost
                     {
                         vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
                         normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
-                        uvs[i] = fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                        uv = fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                        uv.x = uv.x * textureEntryFace.RepeatU;
+                        uv.y = uv.y * textureEntryFace.RepeatV;
+                        uvs[i] = Quaternion.Euler(0, 0, (textureEntryFace.Rotation * 57.2957795f)) * uv; //fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
                         //uvs[i].y *= -1f;
                     }
                     mesh = new Mesh();
