@@ -20,6 +20,8 @@ public class SimManager : MonoBehaviour
     GameObject updatedGO;
 
     [SerializeField]
+    Transform player;
+    [SerializeField]
     GameObject cube;
     [SerializeField]
     GameObject blank;
@@ -31,16 +33,21 @@ public class SimManager : MonoBehaviour
     Material alphaMat;
     [SerializeField]
     Material alphaFullBrightMat;
+    
 
-    List<PrimEventArgs> objectsToRez = new List<PrimEventArgs>();
-    List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
+    //List<prims>
+
+    Queue<PrimEventArgs> objectsToRez = new Queue<PrimEventArgs>();
+    //List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
 
 
     Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
 
-    Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
+    //Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
 
-    Dictionary<UUID, List<GameObject>> meshObjects = new Dictionary<UUID, List<GameObject>>();
+
+
+    //Dictionary<UUID, List<GameObject>> meshObjects = new Dictionary<UUID, List<GameObject>>();
 
     private void Awake()
     {
@@ -53,8 +60,8 @@ public class SimManager : MonoBehaviour
         //client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
         client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_ObjectUpdate);
 
-        //StartCoroutine(ObjectsUpdate());
-        //StartCoroutine(MeshUpdates());
+        StartCoroutine(ObjectsLODUpdate());
+        StartCoroutine(MeshRequests());
     }
 
     private void Update()
@@ -74,306 +81,155 @@ public class SimManager : MonoBehaviour
         public Primitive prim;
     }
 
-    public List<MeshUpdate> meshUpdates = new List<MeshUpdate>();
+    //public List<MeshUpdate> meshUpdates = new List<MeshUpdate>();
 
-    IEnumerator MeshUpdates()
+    public struct MeshRequestData
+    {
+        public GameObject gameObject;
+        public Primitive primitive;
+    }
+
+    public Queue<MeshRequestData> meshRequests = new Queue<MeshRequestData>();
+
+    public void RequestMesh(GameObject go, Primitive prim)
+    {
+        meshRequests.Enqueue(new SimManager.MeshRequestData { gameObject = go, primitive = prim });
+    }
+
+    public struct ObjectData
+    {
+        public Primitive primitive;
+        public GameObject gameObject;
+    }
+
+    List<ObjectData> objectData = new List<ObjectData>();
+
+
+    int meshRequestCounter = 0;
+    IEnumerator MeshRequests()
     {
         while (true)
         {
-            if (meshUpdates.Count == 0)
+            if (meshRequests.Count == 0)
             {
                 yield return new WaitForSeconds(1.0f);
                 continue;
             }
-            ParseMeshes(meshUpdates[0].meshes, meshUpdates[0].go, meshUpdates[0].prim);
-            meshUpdates.Remove(meshUpdates[0]);
-            yield return null;
+
+            int i;
+            //Debug.Log($"{meshRequests.Count} meshes in queue");
+            while (meshRequests.Count > 0 && meshRequestCounter < 10)
+            {
+                if (meshRequestCounter == meshRequests.Count)
+                {
+                    break;
+                }
+                MeshRequestData data = meshRequests.Dequeue();
+                ClientManager.assetManager.RequestMeshHighest(data.gameObject, data.primitive);
+                meshRequestCounter++;
+            }
+            //Debug.Log($"Frame:{Time.frameCount}. {meshRequests.Count} meshes left in queue");
+            meshRequestCounter = 0;
+            float waitTime = 1f;
+            //if (meshRequests.Count < 5) waitTime = 1f;
+            yield return new WaitForSeconds(waitTime);
+            //ParseMeshes(meshUpdates[0].meshes, meshUpdates[0].go, meshUpdates[0].prim);
+            //meshUpdates.Remove(meshUpdates[0]);
+        }
+    }
+
+    /// <summary>
+    //BGO represents the unscaled parent, which is in the correct position and rotation but has a scale of Vector3.one
+    //
+    //GO represents the place holder cube object for rendering. It is given the same position and rotation as the BGO.
+    //
+    //Faces are built by the RezzedObject script located in the GO
+    //Faces are added to BGO, not to GO, and given the same rotation and position as the GO, then locally scaled
+    //to the prim.Scale.ToUnity() vector and then lastly parented to the BGO
+    /// </summary>
+    void ObjectsUpdate()
+    {
+        int counter = 0;
+        RezzedPrimStuff rez;
+        RezzedPrimStuff brez;
+        while (objectsToRez.Count > 0)
+        {
+            counter++;
+            PrimEventArgs primevent = objectsToRez.Dequeue();
+            Primitive prim = primevent.Prim;
+            if ((!objects.ContainsKey(prim.LocalID) || primevent.IsNew))
+            {
+                GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
+                GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
+                rez = go.GetComponent<RezzedPrimStuff>();
+                rez.children.Add(bgo);
+                rez.bgo = bgo;
+                rez.simMan = this;
+                objects.TryAdd(prim.LocalID, bgo);
+                objectData.Add(new ObjectData { gameObject = bgo, primitive = prim });
+                go.transform.position = prim.Position.ToUnity();
+                go.transform.rotation = prim.Rotation.ToUnity();
+                go.transform.localScale = prim.Scale.ToUnity();
+                go.transform.parent = bgo.transform;
+                MakeParent(prim.LocalID, prim.ParentID);
+            }
+
+            //objectsToRez.RemoveAt(0);
+            if (counter > 10) break;
+        }
+    }
+
+    void MakeParent(uint id, uint parent)
+    {
+        if (objects.ContainsKey(parent) && parent != id)
+        {
+            GameObject bgo = objects[id];
+            GameObject bgoParent = objects[parent];
+            RezzedPrimStuff rez = bgoParent.GetComponent<RezzedPrimStuff>();
+            rez.children.Add(bgo);
+            bgo.transform.position = (bgoParent.transform.rotation * bgo.transform.position) + (bgoParent.transform.position);
+            bgo.transform.parent = bgoParent.transform;
+            bgo.transform.rotation = bgo.transform.parent.rotation * bgo.transform.rotation;
         }
     }
 
     //IEnumerator ObjectsUpdate()
-    void ObjectsUpdate()
+#if true
+    IEnumerator ObjectsLODUpdate()
     {
         int counter = 0;
-        while (objectsToRez.Count>0)
+        while(true)
         {
-
-            /*if (objectsToRez.Count == 0)
+            foreach (ObjectData obj in objectData)
             {
-                yield return null;// new WaitForSeconds(0.1f);
-                continue;
-            }
+                counter++;
 
-            counter++;
-            if (counter == 10)
-            {
-                counter = 0;
-                yield return null;// new WaitForEndOfFrame();
-            }*/
+                Primitive prim = obj.primitive;
 
-            Primitive prim = objectsToRez[0].Prim;
+                RezzedPrimStuff rez = obj.gameObject.GetComponent<RezzedPrimStuff>();
 
-            if (!objects.ContainsKey(prim.LocalID) || objectsToRez[0].IsNew)
-            {
-                //Debug.LogWarning($"TerseObjectUpdate on non-existant object {prim.LocalID}");
-                GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
-                GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
-                go.transform.parent = bgo.transform;
-                objects.TryAdd(prim.LocalID, go);
-
-                //Handle scaling and parenting;
-                go.transform.localScale = prim.Scale.ToVector3();
-                if (objects.ContainsKey(prim.ParentID) && prim.ParentID != prim.LocalID)
+                if ((Vector3.Distance(obj.gameObject.transform.position, player.position) < ClientManager.viewDistance))
                 {
+                    rez.Enable();
 
-                    //go.transform.position = (objects[prim.ParentID].transform.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.position);
-                    //o.transform.rotation = prim.Rotation.ToUnity() * objects[prim.ParentID].transform.rotation;
-                    //go.transform.rotation = objects[prim.ParentID].transform.rotation * prim.Rotation.ToUnity() ;
+                    if (rez.isPopulated)
+                    {
+                        continue;
+                    }
+                    rez.simMan = this;
+                    rez.Populate(prim);
 
-                    go.transform.position = (objects[prim.ParentID].transform.parent.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.parent.position);
-                    go.transform.parent = objects[prim.ParentID].transform.parent;
-                    go.transform.rotation = go.transform.parent.rotation * prim.Rotation.ToUnity();
-                    Destroy(bgo);
                 }
                 else
                 {
-
+                    rez.Disable();
                 }
-                go.name = prim.Type.ToString();
-
-                if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
-                //if(prim.Type == PrimType.Cylinder)
-                {
-
-#if true
-                    //PrimMesh primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
-                    MeshmerizerR mesher = new MeshmerizerR();
-                    FacetedMesh fmesh;
-                    fmesh = mesher.GenerateFacetedMesh(prim, DetailLevel.Highest);
-                    //Jenny.Console.WriteLine($"Cylinder has {fmesh.faces.Count.ToString()} faces");
-
-                    Mesh mesh = new Mesh();
-                    Mesh subMesh = new Mesh();
-                    MeshFilter meshFilter;// = go.GetComponent<MeshFilter>();
-                    MeshRenderer rendr;
-
-                    int i;
-                    int j;
-                    int v = 0;
-
-                    Vector3[] vertices;
-                    int[] indices;
-                    Vector3[] normals;
-                    Vector2[] uvs;
-
-                    //for (i = 0; i < fmesh.faces.Count; i++)
-                    //{
-                    //    v += fmesh.faces[i].Vertices.Count;
-                    //}
-
-                    //Debug.Log($"Cylinder {prim.LocalID.ToString()} has {v} vertices");
-
-                    vertices = new Vector3[v];
-                    indices = new int[vertices.Length];
-                    normals = new Vector3[vertices.Length];
-                    uvs = new Vector2[vertices.Length];
-                    //mesh.subMeshCount = fmesh.faces.Count;
-                    v = 0;
-                    GameObject gomesh;// = Instantiate(blank);
-                    for (j = 0; j < fmesh.faces.Count; j++)
-                    {
-                        gomesh = Instantiate(cube);
-                        gomesh.name = $"face {j.ToString()}";
-                        gomesh.transform.position = go.transform.position;
-                        gomesh.transform.rotation = go.transform.rotation;
-                        gomesh.transform.parent = go.transform;
-                        gomesh.transform.localScale = Vector3.one;
-
-                        vertices = new Vector3[fmesh.faces[j].Vertices.Count];
-                        //indices = new int[fmesh.faces[j].Indices.Length];
-                        normals = new Vector3[fmesh.faces[j].Vertices.Count];
-                        uvs = new Vector2[fmesh.faces[j].Vertices.Count];
-
-                        rendr = gomesh.GetComponent<MeshRenderer>();
-                        meshFilter = gomesh.GetComponent<MeshFilter>();
-                        go.GetComponent<MeshRenderer>().enabled = false;
-                        Primitive.TextureEntryFace textureEntryFace;
-                        textureEntryFace = prim.Textures.GetFace((uint)j);
-                        mesher.TransformTexCoords(fmesh.faces[j].Vertices, fmesh.faces[j].Center, textureEntryFace, prim.Scale);
-                        for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
-                        {
-                            vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
-                            //indices[i] = fmesh.faces[j].Indices[i];
-                            normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
-                            uvs[i] = /*Quaternion.Euler(0, 0, (textureEntryFace.Rotation * 57.2957795f)) * */ fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
-                            v++;
-                        }
-
-                        mesh = new Mesh();
-                        mesh.vertices = vertices;
-                        mesh.normals = normals;
-                        //mesh.RecalculateNormals();
-                        mesh.uv = uvs;
-                        mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0);
-                        meshFilter.mesh = ReverseWind(mesh);
-                        Material clonemat;// = null;
-
-                        textureEntryFace.GetOSD(j);
-                        //ImageType.
-                        Color color = textureEntryFace.RGBA.ToUnity();
-                        if (color.a < 0.0001f)
-                        {
-                            //rendr.enabled = false;
-                            //continue;
-                        }
-                        string texturestring = "_BaseColorMap";
-                        string colorstring = "_BaseColor";
-                        if (color.a < 0.999f)
-                        {
-                            if (!textureEntryFace.Fullbright)
-                            {
-                                clonemat = new Material(alphaMat);
-                            }
-                            else
-                            {
-                                texturestring = "_UnlitColorMap";
-                                colorstring = "_UnlitColor";
-                                clonemat = new Material(alphaFullBrightMat);
-                            }
-                        }
-                        else if (!textureEntryFace.Fullbright)
-                        {
-                            clonemat = new Material(opaqueMat);
-                        }
-                        else
-                        {
-                            texturestring = "_UnlitColorMap";
-                            colorstring = "_UnlitColor";
-                            clonemat = new Material(opaqueFullBrightMat);
-                        }
-                        //color.a = 0.5f;
-
-                        rendr.material = clonemat;
-                        rendr.material.SetColor(colorstring, color);
-                        //prim.Properties.
-                        //if (prim!=null)
-                        //if (prim.Textures!=null)
-                        //if (prim.Textures.FaceTextures!=null)
-                        //if (prim.Textures.FaceTextures[j]!=null)
-                        //if (prim.Textures.FaceTextures[j].TextureID!=null)
-                        //{
-                        UUID tuuid = textureEntryFace.TextureID;//prim.Textures.FaceTextures[j];
-                                                                //Texture2D _texture = ClientManager.assetManager.RequestTexture(tuuid);
-                                                                //bool isfullbright = 
-                                                                //Texture2D _texture = ClientManager.assetManager.RequestTexture(tuuid, rendr, textureEntryFace.Fullbright);
-
-                        if (!textureEntryFace.Fullbright)
-                            rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestTexture(tuuid, rendr));
-                        else
-                            rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestFullbrightTexture(tuuid, rendr));
-
-
-                        if (textureEntryFace.TexMapType == MappingType.Default)
-                        {
-                            //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU * -2f, (textureEntryFace.OffsetV * -2f)));
-                            //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (textureEntryFace.OffsetV)));
-                            //rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
-                        }
-                        else
-                        {
-                            //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (-textureEntryFace.OffsetV)));
-                            //rendr.material.SetTextureScale(texturestring, new Vector2(1f / textureEntryFace.RepeatU,(textureEntryFace.RepeatV)));
-                            //rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
-                        }
-
-                        //yield return null;// new WaitForEndOfFrame();
-                        //}
-                    }
-
-
-                    /*for (j=0;j<fmesh.faces.Count;j++)
-                    {
-                        //mesh.SetVertices()
-                        //Debug.Log($"mesh has {mesh.vertices.")
-                        int buffer=0;
-                        if (j > 0) buffer = fmesh.faces[j - 1].Vertices.Count;
-                        mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, j, false, buffer);
-                        //ClientManager.texturePipeline.RequestTexture(fmesh.faces[j].TextureFace.TextureID, ImageType.Normal, 1f, 0, 0,TextureCallback(),true);
-                        string id = fmesh.faces[j].TextureFace.TextureID.ToString();
-                        //if (cmaterials.ContainsKey(id]))
-                        //{
-                        //    rendr.materials[j] = cmaterials[id];
-                        //}
-                        rendr.materials[j] = Instantiate(blankMaterial);
-                        rendr.materials[j].name = fmesh.faces[j].TextureFace.TextureID.ToString();
-                        //Texture texture = prim.Textures.FaceTextures[face];
-                    }*/
-
-
-                    //meshFilter.mesh = mesh;
-#endif
-                }
-                else if(prim.Type == PrimType.Sculpt)
-                {
-                    go.name += $" {prim.Sculpt.SculptTexture}";
-                    ClientManager.assetManager.RequestSculpt(go, prim);
-                    //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
-
-                }
-#if false
-                else if (prim.Type == PrimType.Mesh)
-                {
-                    //meshObjects.TryAdd(prim.Sculpt.SculptTexture, new List<GameObject>());
-                    //meshObjects[prim.Sculpt.SculptTexture].Add(go);
-                    go.GetComponent<MeshRenderer>().enabled = false;
-                    if (prim.Sculpt != null && prim.Sculpt.SculptTexture != UUID.Zero)
-                    {
-                        if (prim.Sculpt.Type == SculptType.Mesh)
-                        {
-
-                            //Debug.Log(l);
-                            if(prim.Sculpt.SculptTexture != null)
-                            ClientManager.assetManager.RequestMesh(prim.Sculpt.SculptTexture, prim, go);
-                            //go.GetComponent<MeshFilter>().mesh = 
-                        }
-                    }
-                }
-#endif
-
-                //prim.Light.GetOSD();
-                if(prim.Light != null)
-                {
-                    //Debug.Log("light");
-                    GameObject golight = Instantiate<GameObject>(Resources.Load<GameObject>("Point Light"));
-                    golight.transform.parent = go.transform;
-                    golight.transform.localPosition = Vector3.zero;
-                    golight.transform.localRotation = Quaternion.identity;
-                    Light light = golight.GetComponent<Light>();
-                    HDAdditionalLightData hdlight = light.GetComponent<HDAdditionalLightData>();
-
-                    //light. = prim.Light.Radius;
-                    hdlight.color = prim.Light.Color.ToUnity();
-                    hdlight.intensity = prim.Light.Intensity * 10000f;
-                    hdlight.range = prim.Light.Radius;
-                    //hdlight.fadeDistance = prim.Light.Radius * (1f - prim.Light.Falloff)
-                }
-                else
-                {
-                    //Debug.Log("no light");
-                }
-
             }
-            //Do not add code to manipulate the object below this line
-            //if (objectsToRez.Count > 0)
-           objectsToRez.Remove(objectsToRez[0]);
-            // else
-            //     break;
-
-            
+            yield return new WaitForSeconds(1f);
         }
 
     }
-
+#endif
     public void ParseMeshes(Mesh[]meshes, GameObject go, Primitive prim)
     {
         int k;
@@ -613,7 +469,7 @@ public class SimManager : MonoBehaviour
             if (!objects.ContainsKey(_event.Prim.LocalID))
             {
                 //Debug.Log($"New Object: {_event.Prim.LocalID}");
-                UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Add(_event));
+                UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Enqueue(_event));
                 //GameObject go = Instantiate(cube, Vector3.zero, Quaternion.identity);
                 //objects.Add(_event.Prim.ID, null);
 
@@ -634,7 +490,7 @@ public class SimManager : MonoBehaviour
         //Debug.Log("ObjectUpdate");
         if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
 
-        UnityMainThreadDispatcher.Instance().Enqueue(() => terseRobjectsUpdates.Add(_event));
+        //UnityMainThreadDispatcher.Instance().Enqueue(() => terseRobjectsUpdates.Add(_event));
         /*if (_event.Prim.ID == client.Self.AgentID)
         {
             updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;

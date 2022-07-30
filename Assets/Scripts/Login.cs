@@ -55,6 +55,7 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.USE_HTTP_TEXTURES = true;
         ClientManager.client.Settings.ASSET_CACHE_DIR = $"{Application.persistentDataPath}/cache";
         ClientManager.client.Settings.SEND_PINGS = true;
+        ClientManager.client.Settings.ENABLE_CAPS = true;
         loginUI.SetActive(true);
         //ClientManager.texturePipeline = new TexturePipeline(ClientManager.client);
         ClientManager.assetManager = new CrystalFrost.AssetManager();

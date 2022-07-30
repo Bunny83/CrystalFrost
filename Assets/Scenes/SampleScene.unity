@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 2155.248, g: 2265.875, b: 3307.8203, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2618,6 +2618,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   simName: 
   simOwner: 
+  player: {fileID: 1658423706208245216}
   cube: {fileID: 1000786071683992839, guid: f258d820a038dac4aa1670dfc0214a52, type: 3}
   blank: {fileID: 4496982478774450889, guid: 28c4e7f727eccf841a9f2e20aa6f1f95, type: 3}
   opaqueMat: {fileID: 2100000, guid: 28e28fd58e4c3a1469f9d13b56e409f7, type: 2}
