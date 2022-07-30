@@ -26,7 +26,7 @@ public class Login : MonoBehaviour
     }
 
     [SerializeField]
-    Button logoutButton;
+    GameObject loggedInUI;
     [SerializeField]
     TMPro.TMP_InputField firstName;
     [SerializeField]
@@ -48,6 +48,7 @@ public class Login : MonoBehaviour
 
     void Awake()
     {
+        loggedInUI.SetActive(false);
         ClientManager.mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 
         Jenny.Console.textOutput = console;
@@ -111,11 +112,12 @@ public class Login : MonoBehaviour
     {
         Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: Attempting to log in to {firstName.text} {lastName.text}.");
         loginUI.SetActive(false);
-        logoutButton.enabled = true;
+        loggedInUI.SetActive(true);
         yield return null;
         if (ClientManager.client.Network.Login(firstName.text, lastName.text, password.text, "CrystalFrost", "0.1"))
         {
             Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
+            Console.WriteLine("Retrieving and preparing simulator objects. It may take a minute or more to finish, especially if there are a lot of mesh objects.");
             ClientManager.active = true;
         }
         else
@@ -123,7 +125,7 @@ public class Login : MonoBehaviour
             Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
             loginUI.SetActive(true);
             ClientManager.active = false;
-            logoutButton.enabled = false;
+            loggedInUI.SetActive(false);
         }
     }
 
@@ -136,7 +138,7 @@ public class Login : MonoBehaviour
     IEnumerator _LogOut()
     {
         Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log out. When you see the login screen, stop running and rerun it before logging back in.");
-        logoutButton.enabled = false;
+        loggedInUI.SetActive(false);
         yield return null;
         ClientManager.client.Network.Logout();
         loginUI.SetActive(true);

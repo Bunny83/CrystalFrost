@@ -57,7 +57,7 @@ public class SimManager : MonoBehaviour
     {
         client = ClientManager.client;
         //StartCoroutine(TimerRoutine());
-        //client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
+        client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
         client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_ObjectUpdate);
 
         StartCoroutine(ObjectsLODUpdate());
@@ -432,22 +432,36 @@ public class SimManager : MonoBehaviour
         }
     }
 
-    void Objects_TerseObjectUpdate(object sender, TerseObjectUpdateEventArgs _event)
+    struct TerseUpdateData
+    {
+        object sender;
+        TerseObjectUpdateEventArgs terseEvent;
+    }
+
+    Queue<TerseUpdateData> terseUpdates = new Queue<TerseUpdateData>();
+
+    void Objects_TerseObjectUpdate(object sender, TerseObjectUpdateEventArgs e)
     {
         //Debug.Log($"TerseObjectUpdate: {_event.Prim.LocalID.ToString()}");
-        if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
-        if (_event.Prim.ID == client.Self.AgentID)
+        if (e.Simulator.Handle != client.Network.CurrentSim.Handle) return;
+        if (e.Prim.ID == client.Self.AgentID)
         {
-            Debug.Log("My Avatar");
+            //Debug.Log("My Avatar");
             updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
         }
         else
         {
             //Debug.Log()
         }
-        
-        if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
+        GameObject go = objects[e.Prim.LocalID];
+        Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
+
+        //e.GetType();
+
+        if (e.Prim.PrimData.PCode == PCode.Avatar && e.Update.Textures == null)
             return;
+
+
 
         //UpdatePrim(_event.Prim);
     }
