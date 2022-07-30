@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using LibreMetaverse;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
@@ -23,6 +25,8 @@ public class Login : MonoBehaviour
         public string URI;
     }
 
+    [SerializeField]
+    Button logoutButton;
     [SerializeField]
     TMPro.TMP_InputField firstName;
     [SerializeField]
@@ -62,6 +66,32 @@ public class Login : MonoBehaviour
         //ClientManager.client.Objects.
     }
 
+    EventSystem system;
+
+    private void Start()
+    {
+        system = EventSystem.current;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            Selectable next = system.currentSelectedGameObject.GetComponent<Selectable>().FindSelectableOnDown();
+
+            if (next != null)
+            {
+
+                InputField inputfield = next.GetComponent<InputField>();
+                if (inputfield != null) inputfield.OnPointerClick(new PointerEventData(system));  //if it's an input field, also set the text caret
+
+                system.SetSelectedGameObject(next.gameObject, new BaseEventData(system));
+            }
+            //else Debug.Log("next nagivation element not found");
+
+        }
+    }
+
     public void TryLogin()
     {
         //Debug.Log($"Login\nFirst Name: {firstName.text}\nLast Name: {lastName.text}\nPassword: {password.text}");
@@ -79,8 +109,9 @@ public class Login : MonoBehaviour
 
     IEnumerator _TryLogin()
     {
-        Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log in to Myra Loveless.");
+        Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: Attempting to log in to {firstName.text} {lastName.text}.");
         loginUI.SetActive(false);
+        logoutButton.enabled = true;
         yield return null;
         if (ClientManager.client.Network.Login(firstName.text, lastName.text, password.text, "CrystalFrost", "0.1"))
         {
@@ -92,6 +123,7 @@ public class Login : MonoBehaviour
             Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
             loginUI.SetActive(true);
             ClientManager.active = false;
+            logoutButton.enabled = false;
         }
     }
 
@@ -104,6 +136,7 @@ public class Login : MonoBehaviour
     IEnumerator _LogOut()
     {
         Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": Attempting to log out. When you see the login screen, stop running and rerun it before logging back in.");
+        logoutButton.enabled = false;
         yield return null;
         ClientManager.client.Network.Logout();
         loginUI.SetActive(true);

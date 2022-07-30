@@ -865,6 +865,7 @@ namespace CrystalFrost
                     Primitive.TextureEntryFace textureEntryFace = prim.Textures.GetFace((uint)j);
 
                     //mesher.TransformTexCoords(fmesh.faces[j].Vertices, fmesh.faces[j].Center, textureEntryFace, prim.Scale);
+                    //FacetedMesh. TransformTexCoords(fmesh.faces[j].Vertices, fmesh.faces[j].Center, textureEntryFace, prim.Scale);
 
                     for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
                     {
