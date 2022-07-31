@@ -23,6 +23,8 @@ namespace CrystalFrost
     {
         private static float byteMult = 0.003921568627451f;
 
+        int queuedMeshes = 0;
+
         public SimManager simManager;
         //static Dictionary<UUID, Material> materials = new Dictionary<UUID, Material>();
         static Dictionary<UUID, Texture2D> textures = new Dictionary<UUID, Texture2D>();
@@ -81,6 +83,29 @@ namespace CrystalFrost
             return textures[uuid];
         }
 
+        public Texture2D RequestTerrainTexture(UUID uuid)
+        {
+            if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
+            //Don't bother requesting a texture if it's already cached in memory;
+            if (textures.ContainsKey(uuid))
+            {
+                return textures[uuid];
+            }
+
+            //Debug.Log($"Requesting texture {uuid.ToString()}");
+            //Make a blank texture for use right this second. It'll be updated though;
+            Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            texture.SetPixels(new Color[1] { Color.magenta });
+            texture.name = $"Texture: {uuid.ToString()}";
+            //texture.isReadable = true;
+            texture.Apply();
+            textures.Add(uuid, texture);
+
+            ClientManager.client.Assets.RequestImage(uuid, CallbackTerrainTexture);
+
+            return textures[uuid];
+        }
+
         public Texture2D RequestFullbrightTexture(UUID uuid, MeshRenderer rendr)
         {
             if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
@@ -123,6 +148,58 @@ namespace CrystalFrost
             public GameObject gameObject;
             public Primitive prim;
         }
+
+
+#if false
+        private void UpdateHeightmap(LandPatchReceivedEventArgs e)
+        {
+            ulong handle = e.Simulator.Handle;
+
+            /*lock (mMappedParcels)
+            {
+                if (!mMappedParcels.ContainsKey(handle))
+                    mMappedParcels.Add(handle, new HashSet<string>());
+                mMappedParcels[handle].Add(e.X + "," + e.Y);
+            }*/
+
+            int x = e.X * 16;
+            int y = e.Y * 16;
+
+            uint globalX, globalY;
+            Utils.LongToUInts(handle, out globalX, out globalY);
+
+            float[,] terrainHeight = new float[16, 16];
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    terrainHeight[i, j] = e.HeightMap[j * 16 + i];
+                }
+            }
+
+            while (!mLoggedIn)
+                Thread.Sleep(500);
+
+            x += (int)globalX - mStartLocation.X;
+            y += (int)globalY - mStartLocation.Y;
+            mCoordinator.SetHeightmapSection(terrainHeight, x, y, mMappedParcels[handle].Count > 250);
+
+            int w = mCoordinator.Heightmap.GetLength(0) / 256;
+            int h = mCoordinator.Heightmap.GetLength(1) / 256;
+            int numRegions = w * h;
+
+            lock (mMappedParcels)
+            {
+                if (mMappedParcels[handle].Count == 256)
+                {
+                    mFinishedRegions.Add(handle);
+                    ThisLogger.Info("Finished mapping " + e.Simulator.Name);
+                }
+                if (mFinishedRegions.Count == numRegions && mConfig.AutoLogout)
+                    Logout();
+            }
+        }
+#endif
 
         Dictionary<UUID, List<SculptData>> requestedSculpts = new Dictionary<UUID, List<SculptData>>();
 
@@ -395,10 +472,58 @@ namespace CrystalFrost
 
         }
 
+        public void CallbackTerrainTexture(TextureRequestState state, AssetTexture assetTexture)
+        {
+            bool isMainThread = ClientManager.IsMainThread;
+            if (!components.ContainsKey(assetTexture.AssetID)) components.Add(assetTexture.AssetID, 0);
+
+            //FIXME Replace this decode with the native code DLL version
+            bool success = false;
+
+            try
+            {
+                success = assetTexture.Decode();
+            }
+            catch (Exception e)
+            {
+                UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.LogError($"decoding of {assetTexture.AssetID} is cursed"));
+                Debug.LogException(e);
+                return;
+            }
+
+            components[assetTexture.AssetID] = assetTexture.Components;
+
+            if (!success)
+            {
+                Debug.LogWarning($"did not successfully decode image {assetTexture.AssetID}");
+                return;
+            }
+            //Debug.Log($"successfully decoded image {assetTexture.AssetID}");
+
+            if (assetTexture.Image == null)
+            {
+                Debug.LogWarning($"image {assetTexture.AssetID.ToString()} is null");
+                return;
+            }
+
+            if (!isMainThread)
+            {
+                UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components));
+                return;
+            }
+
+            MainThreadTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components);
+
+
+        }
+
         public void MainThreadTextureReinitialize(Texture2D texture2D, UUID uuid, int components)
         {
             //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
-            textures[uuid].Reinitialize(texture2D.width, texture2D.height, TextureFormat.RGBA32, false);
+            if(components==3)
+                textures[uuid].Reinitialize(texture2D.width, texture2D.height, TextureFormat.RGB24, false);
+            else
+                textures[uuid].Reinitialize(texture2D.width, texture2D.height, TextureFormat.RGBA32, false);
             textures[uuid].SetPixels(texture2D.GetPixels());
             textures[uuid].name = $"{uuid} Comp:{components.ToString()}";
             textures[uuid].Apply();
@@ -519,6 +644,7 @@ namespace CrystalFrost
 
         public void RequestMeshHighest(GameObject gameObject, Primitive prim)
         {
+            queuedMeshes++;
             if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
             {
                 MainThreadhMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
@@ -813,6 +939,7 @@ namespace CrystalFrost
                 {
                     //Debug.Log($"Sculpt Mesh {rendr.gameObject.name} empty: {counter} / {vertexcount}");
                 }
+                queuedMeshes--;
             }
 
             //requestedMeshes.Remove(id, out meshData);

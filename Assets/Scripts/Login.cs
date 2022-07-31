@@ -119,6 +119,51 @@ public class Login : MonoBehaviour
             Console.WriteLine(System.DateTime.UtcNow.ToShortTimeString() + ": " + ClientManager.client.Network.LoginMessage);
             Console.WriteLine("Retrieving and preparing simulator objects. It may take a minute or more to finish, especially if there are a lot of mesh objects.");
             ClientManager.active = true;
+
+            ClientManager.client.Estate.RequestInfo();
+            Simulator sim = ClientManager.client.Network.CurrentSim;
+
+            //Debug.Log($"Low texture: {sim.TerrainBase0}");
+            //Debug.Log($"MidLow texture: {sim.TerrainBase1}");
+            //Debug.Log($"MidHigh texture: {sim.TerrainBase2}");
+            //Debug.Log($"High texture: {sim.TerrainBase3}");
+            //ClientManager.client.Assets.RequestEstateAsset();
+            //ClientManager.client.Assets.
+            ClientManager.simManager.terrain.terrainData.terrainLayers[0].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase0, null);
+            //ClientManager.simManager.terrain.terrainData.terrainLayers[0].smoothness = 0f;
+
+            ClientManager.simManager.terrain.terrainData.terrainLayers[1].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase1, null);
+            //ClientManager.simManager.terrain.terrainData.terrainLayers[1].smoothness = 0f;
+
+            ClientManager.simManager.terrain.terrainData.terrainLayers[2].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase2, null);
+            //ClientManager.simManager.terrain.terrainData.terrainLayers[2].smoothness = 0f;
+
+            ClientManager.simManager.terrain.terrainData.terrainLayers[3].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase3, null);
+            //ClientManager.simManager.terrain.terrainData.terrainLayers[3].smoothness = 0f;
+
+            //ClientManager.client.Network.CurrentSim.
+            Debug.Log($"SouthWestLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight00}");
+            Debug.Log($"SouthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange00}");
+            Debug.Log($"NorthWestLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight01}");
+            Debug.Log($"NorthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange01}");
+            Debug.Log($"SouthEastLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight10}");
+            Debug.Log($"SouthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange10}");
+            Debug.Log($"NorthEastLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight11}");
+            Debug.Log($"NorthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange11}");
+
+            //Debug.Log($"highStart {ClientManager.client.Network.CurrentSim.TerrainStartHeight11}");
+            //Debug.Log($"midHighHeightRange {ClientManager.client.Network.CurrentSim.TerrainHeightRange10}");
+            //Debug.Log($"highHeightRange {ClientManager.client.Network.CurrentSim.TerrainHeightRange11}");
+            /*
+                        SplatPrototype[] splats = new SplatPrototype[4];
+                        int i;
+                        for (i = 0; i < 4; i++)
+                        {
+                            splats[i].texture = ClientManager.assetManager.RequestTexture(e.Simulator.TerrainBase0, null);
+                            splats[i].tileSize = new Vector2(1f, 1f);
+                            splats[i].smoothness = 0.5f;
+                        }
+            */
         }
         else
         {

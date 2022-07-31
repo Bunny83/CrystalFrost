@@ -7,8 +7,9 @@ public static class ClientManager
     public static TexturePipeline texturePipeline;
     public static bool active = false;
     public static AssetManager assetManager;
+    public static SimManager simManager;
     public static int mainThreadId;
-    public static float viewDistance = 64f;
+    public static float viewDistance = 32f;
     // In Main method:
 
 // If called in the non main thread, will return false;
