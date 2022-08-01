@@ -56,11 +56,17 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
         ClientManager.client.Settings.ALWAYS_REQUEST_OBJECTS = true;
         ClientManager.client.Settings.ALWAYS_DECODE_OBJECTS = true;
-        ClientManager.client.Settings.OBJECT_TRACKING = true;
+        //ClientManager.client.Settings.OBJECT_TRACKING = true;
         ClientManager.client.Settings.USE_HTTP_TEXTURES = true;
         ClientManager.client.Settings.ASSET_CACHE_DIR = $"{Application.persistentDataPath}/cache";
         ClientManager.client.Settings.SEND_PINGS = true;
         ClientManager.client.Settings.ENABLE_CAPS = true;
+        ClientManager.client.Settings.STORE_LAND_PATCHES = true;
+        ClientManager.client.Settings.ENABLE_SIMSTATS = true;
+        //ClientManager.client.Settings.= true;
+        ClientManager.client.Settings.SEND_AGENT_THROTTLE = true;
+        ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
+
         loginUI.SetActive(true);
         //ClientManager.texturePipeline = new TexturePipeline(ClientManager.client);
         ClientManager.assetManager = new CrystalFrost.AssetManager();
@@ -129,27 +135,26 @@ public class Login : MonoBehaviour
             //Debug.Log($"High texture: {sim.TerrainBase3}");
             //ClientManager.client.Assets.RequestEstateAsset();
             //ClientManager.client.Assets.
+            /*
             ClientManager.simManager.terrain.terrainData.terrainLayers[0].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase0, null);
-            //ClientManager.simManager.terrain.terrainData.terrainLayers[0].smoothness = 0f;
-
             ClientManager.simManager.terrain.terrainData.terrainLayers[1].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase1, null);
-            //ClientManager.simManager.terrain.terrainData.terrainLayers[1].smoothness = 0f;
-
             ClientManager.simManager.terrain.terrainData.terrainLayers[2].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase2, null);
-            //ClientManager.simManager.terrain.terrainData.terrainLayers[2].smoothness = 0f;
-
             ClientManager.simManager.terrain.terrainData.terrainLayers[3].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainBase3, null);
-            //ClientManager.simManager.terrain.terrainData.terrainLayers[3].smoothness = 0f;
+            */
+            ClientManager.simManager.terrain.terrainData.terrainLayers[0].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainDetail0, null);
+            ClientManager.simManager.terrain.terrainData.terrainLayers[1].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainDetail1, null);
+            ClientManager.simManager.terrain.terrainData.terrainLayers[2].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainDetail2, null);
+            ClientManager.simManager.terrain.terrainData.terrainLayers[3].diffuseTexture = ClientManager.assetManager.RequestTexture(sim.TerrainDetail3, null);
 
             //ClientManager.client.Network.CurrentSim.
-            Debug.Log($"SouthWestLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight00}");
+            /*Debug.Log($"SouthWestLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight00}");
             Debug.Log($"SouthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange00}");
             Debug.Log($"NorthWestLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight01}");
             Debug.Log($"NorthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange01}");
             Debug.Log($"SouthEastLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight10}");
             Debug.Log($"SouthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange10}");
             Debug.Log($"NorthEastLow {ClientManager.client.Network.CurrentSim.TerrainStartHeight11}");
-            Debug.Log($"NorthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange11}");
+            Debug.Log($"NorthWestHigh {ClientManager.client.Network.CurrentSim.TerrainHeightRange11}");*/
 
             //Debug.Log($"highStart {ClientManager.client.Network.CurrentSim.TerrainStartHeight11}");
             //Debug.Log($"midHighHeightRange {ClientManager.client.Network.CurrentSim.TerrainHeightRange10}");

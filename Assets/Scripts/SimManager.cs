@@ -63,6 +63,8 @@ public class SimManager : MonoBehaviour
             client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
             client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_ObjectUpdate);
             client.Objects.KillObject += new EventHandler<KillObjectEventArgs>(KillObjectEventHandler);
+            client.Objects.ObjectDataBlockUpdate += new EventHandler<ObjectDataBlockUpdateEventArgs>(ObjectDataBlockUpdateEvent);
+            //client.Objects. += new EventHandler<ObjectDataBlockUpdateEventArgs>(ObjectDataBlockUpdateEvent);
         }
         client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(TerrainEventHandler);
         StartCoroutine(ObjectsLODUpdate());
@@ -70,6 +72,25 @@ public class SimManager : MonoBehaviour
 
         //SplatPrototype[] splats = new SplatPrototype[4];
 
+    }
+
+    void ObjectDataBlockUpdateEvent(object sender, ObjectDataBlockUpdateEventArgs e)
+    {
+        if(!ClientManager.IsMainThread)
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(() => ObjectDataBlockUpdateEvent(sender, e));
+            return;
+        }
+        //Debug.Log(e.Update.Position);
+        if (objects.ContainsKey(e.Prim.LocalID))
+        {
+            objects[e.Prim.LocalID].transform.position = e.Prim.Position.ToUnity();
+            objects[e.Prim.LocalID].transform.rotation = e.Prim.Rotation.ToUnity();
+            GameObject bgo = objects[e.Prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
+            if (bgo.transform.localScale != e.Prim.Scale.ToUnity()) Debug.Log("Scale does not match in ObjectDataBlockUpdateEvent");
+            bgo.transform.localScale = e.Prim.Scale.ToUnity();
+
+        }
     }
 
     void KillObjectEventHandler(object sender, KillObjectEventArgs e)
@@ -188,9 +209,18 @@ public class SimManager : MonoBehaviour
                 go.transform.parent = bgo.transform;
                 MakeParent(prim.LocalID, prim.ParentID);
             }
+            else if (objects.ContainsKey(prim.LocalID))
+            {
+                objects[prim.LocalID].transform.position = prim.Position.ToUnity();
+                objects[prim.LocalID].transform.rotation = prim.Rotation.ToUnity();
+                GameObject bgo = objects[prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
+                if (bgo.transform.localScale != prim.Scale.ToUnity()) Debug.Log("Scale does not match in ObjectsUpdate");
+                objects[prim.LocalID].GetComponent<RezzedPrimStuff>().bgo.transform.localScale = prim.Scale.ToUnity();
+
+            }
 
             //objectsToRez.RemoveAt(0);
-            if (counter > 10) break;
+            if (counter > 100) break;
         }
     }
 
@@ -349,12 +379,19 @@ public class SimManager : MonoBehaviour
         float neHigh = ClientManager.client.Network.CurrentSim.TerrainHeightRange11;
         float startLerp = 0;
         float rangeLerp = 0;
+        float globalXpercent, globalYpercent;
+        Vector2 global_position;
+        Vector2 vec;
+        float low_freq;
+        float high_freq;
+        float noise;
 
-        /*vec = global_position * 0.20319f;
-        low_freq = perlin_noise2(vec.X * 0.222222, vec.Y * 0.222222) * 6.5;
-        high_freq = perlin_turbulence2(vec.X, vec.Y, 2) * 2.25;
-        noise = (low_freq + high_freq) * 2;*/
         float height;
+        float value;
+
+        float verticalblend;
+        float dist;
+        float modheight;
         for (j = 0; j < 16; j++)
         {
             for (i = 0; i < 16; i++)
@@ -362,23 +399,40 @@ public class SimManager : MonoBehaviour
                 height = (e.HeightMap[j * 16 + i]);
                 terrainHeight[j, i] = height * 0.00390625f;
 
+                globalXpercent = (x + i) * 0.00390625f;
+                globalYpercent = (y + j) * 0.00390625f;
 
-                startLerp = QuadLerp(swLow, nwLow, seLow, neLow, i, j);
-                rangeLerp = QuadLerp(swHigh, nwHigh, seHigh, neHigh, i, j);
-                Debug.Log($"low:{startLerp}, height:{height}");
+                global_position = new Vector2(y + j, x + i);
+                vec = global_position * 0.20319f;
+                low_freq = Mathf.PerlinNoise(vec.y * 0.222222f, vec.x * 0.222222f) * 6.5f;
+                high_freq = PerlinTurbulence2(vec, 2f) * 2.25f;
+                noise = (low_freq + high_freq) * 2;
+
+                startLerp = QuadLerp(swLow, nwLow, seLow, neLow, globalYpercent, globalXpercent);
+                rangeLerp = QuadLerp(swHigh, nwHigh, seHigh, neHigh, globalYpercent, globalXpercent);
+
+                value = (height + noise - startLerp) * 4 / rangeLerp;
+
+                modheight = height + value;//* value;
+
+                dist = (rangeLerp - startLerp);
+
+                verticalblend = ((modheight - startLerp) / dist);
+
+                //Debug.Log($"noise: {value}");
                 //Debug.Log({startLerp}")
-                if (height < startLerp)
+                if (modheight < (startLerp))
                 {
-                    terrainSplats[j, i, 0] = 1f;
-                    terrainSplats[j, i, 1] = 0f;
+                    terrainSplats[j, i, 0] = 1;
+                    terrainSplats[j, i, 1] = verticalblend;
                     terrainSplats[j, i, 2] = 0f;
                     terrainSplats[j, i, 3] = 0f;
                 }
-                else
+                else// if(height*value < rangeLerp)
                 {
                     terrainSplats[j, i, 0] = 0f;
-                    terrainSplats[j, i, 1] = 1f;
-                    terrainSplats[j, i, 2] = 0f;
+                    terrainSplats[j, i, 1] = 1 - verticalblend;
+                    terrainSplats[j, i, 2] = verticalblend;
                     terrainSplats[j, i, 3] = 0f;
                 }
 
@@ -421,7 +475,7 @@ public class SimManager : MonoBehaviour
 
 #if true
 
-		
+
 
 #endif
     }
@@ -435,61 +489,75 @@ public class SimManager : MonoBehaviour
 
     }
 
-    Mesh ReverseWind(Mesh mesh)
-{
-    //C# or UnityScript
-    var indices = mesh.triangles;
-    var triangleCount = indices.Length / 3;
-    for (var i = 0; i < triangleCount; i++)
+    float PerlinTurbulence2(Vector2 v, float freq)
     {
-        var tmp = indices[i * 3];
-        indices[i * 3] = indices[i * 3 + 1];
-        indices[i * 3 + 1] = tmp;
-    }
-    mesh.triangles = indices;
-    // additionally flip the vertex normals to get the correct lighting
-    var normals = mesh.normals;
-    for (var n = 0; n < normals.Length; n++)
-    {
-        normals[n] = -normals[n];
-    }
-    mesh.normals = normals;
+        float t;
+        Vector2 vec;
 
-    return mesh;
-}
-
-void TextureCallback(TextureRequestState state, AssetTexture assetTexture)
-{
-    int h = assetTexture.Image.Height;
-    int w = assetTexture.Image.Width;
-    Texture2D texture = new Texture2D(h, w, TextureFormat.ARGB32, false);
-
-    int x = 0;
-    int y = 0;
-    int z = 0;
-    for (x = 0; x < w; x++)
-    {
-        for (y = 0; y < h; y++)
+        for (t = 0; freq >= 1; freq *= 0.5f)
         {
-            texture.SetPixel(x, y, new Color((float)assetTexture.Image.Red[z] * 0.003921568627451f, (float)assetTexture.Image.Green[z] * 0.003921568627451f, (float)assetTexture.Image.Blue[z] * 0.003921568627451f));
-            z++;
+            vec.x = freq * v.x;
+            vec.y = freq * v.y;
+            t += Mathf.PerlinNoise(vec.x, vec.y) / freq;
         }
+        return t;
     }
 
-    /*if(!textures.ContainsKey(assetTexture.AssetID))
+    Mesh ReverseWind(Mesh mesh)
     {
-        textures.Add(assetTexture.AssetID, texture);
+        //C# or UnityScript
+        var indices = mesh.triangles;
+        var triangleCount = indices.Length / 3;
+        for (var i = 0; i < triangleCount; i++)
+        {
+            var tmp = indices[i * 3];
+            indices[i * 3] = indices[i * 3 + 1];
+            indices[i * 3 + 1] = tmp;
+        }
+        mesh.triangles = indices;
+        // additionally flip the vertex normals to get the correct lighting
+        var normals = mesh.normals;
+        for (var n = 0; n < normals.Length; n++)
+        {
+            normals[n] = -normals[n];
+        }
+        mesh.normals = normals;
+
+        return mesh;
     }
-    else
+
+    void TextureCallback(TextureRequestState state, AssetTexture assetTexture)
     {
-        textures[assetTexture.AssetID] = texture;
-    }*/
+        int h = assetTexture.Image.Height;
+        int w = assetTexture.Image.Width;
+        Texture2D texture = new Texture2D(h, w, TextureFormat.ARGB32, false);
+
+        int x = 0;
+        int y = 0;
+        int z = 0;
+        for (x = 0; x < w; x++)
+        {
+            for (y = 0; y < h; y++)
+            {
+                texture.SetPixel(x, y, new Color((float)assetTexture.Image.Red[z] * 0.003921568627451f, (float)assetTexture.Image.Green[z] * 0.003921568627451f, (float)assetTexture.Image.Blue[z] * 0.003921568627451f));
+                z++;
+            }
+        }
+
+        /*if(!textures.ContainsKey(assetTexture.AssetID))
+        {
+            textures.Add(assetTexture.AssetID, texture);
+        }
+        else
+        {
+            textures[assetTexture.AssetID] = texture;
+        }*/
 
 
-}
+    }
 
-void TerseObjectUpdates()
-{
+    void TerseObjectUpdates()
+    {
 #if false
         //Debug.Log("TerseObjectUpdate");
         while (false && objectsToRez.Count > 0)
@@ -536,197 +604,203 @@ void TerseObjectUpdates()
         }
         yield return null;
 #endif
-}
+    }
 
-void ScanForOrphans(PrimEventArgs _event)
-{
-    //int i;
-    foreach (KeyValuePair<uint, GameObject> entry in objects)
+    void ScanForOrphans(PrimEventArgs _event)
     {
-        Transform t = entry.Value.transform;
-        if (t.parent == null)
+        //int i;
+        foreach (KeyValuePair<uint, GameObject> entry in objects)
         {
-            if (objects.ContainsKey(_event.Prim.LocalID))
+            Transform t = entry.Value.transform;
+            if (t.parent == null)
             {
-                Primitive prim = _event.Prim;
-                t.position = (objects[prim.ParentID].transform.parent.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.parent.position);
-                t.parent = objects[prim.ParentID].transform.parent;
-                t.parent = objects[prim.LocalID].transform;
+                if (objects.ContainsKey(_event.Prim.LocalID))
+                {
+                    Primitive prim = _event.Prim;
+                    t.position = (objects[prim.ParentID].transform.parent.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.parent.position);
+                    t.parent = objects[prim.ParentID].transform.parent;
+                    t.parent = objects[prim.LocalID].transform;
+                }
             }
         }
     }
-}
 
-struct TerseUpdateData
-{
-    object sender;
-    TerseObjectUpdateEventArgs terseEvent;
-}
-
-Queue<TerseUpdateData> terseUpdates = new Queue<TerseUpdateData>();
-
-void Objects_TerseObjectUpdate(object sender, TerseObjectUpdateEventArgs e)
-{
-    if (!ClientManager.IsMainThread)
+    struct TerseUpdateData
     {
-        //Debug.Log("Terse update not on main thread");
-        UnityMainThreadDispatcher.Instance().Enqueue(() => Objects_TerseObjectUpdate(sender, e));
+        object sender;
+        TerseObjectUpdateEventArgs terseEvent;
     }
-    if (!objects.ContainsKey(e.Prim.LocalID)) return;
-    //Debug.Log($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
-    //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State}");
-    //Debug.Log($"TerseObjectUpdate: {_event.Prim.LocalID.ToString()}");
-    if (e.Simulator.Handle != client.Network.CurrentSim.Handle) return;
-    if (e.Prim.ID == client.Self.AgentID)
+
+    Queue<TerseUpdateData> terseUpdates = new Queue<TerseUpdateData>();
+
+    void Objects_TerseObjectUpdate(object sender, TerseObjectUpdateEventArgs e)
     {
-        //Debug.Log("My Avatar");
-        //updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
-    }
-    else
-    {
-        //Debug.Log()
-    }
-    GameObject go = objects[e.Prim.LocalID];
-    go.transform.position = e.Prim.Position.ToUnity();
-    go.transform.rotation = e.Prim.Rotation.ToUnity();
-    //go.transform.localScale = e.Prim.Scale.ToUnity();
-    //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
-
-    //e.GetType();
-
-    if (e.Prim.PrimData.PCode == PCode.Avatar && e.Update.Textures == null)
-        return;
-
-
-
-    //UpdatePrim(_event.Prim);
-}
-
-void Objects_ObjectUpdate(PrimEventArgs _event)
-{
-    if (_event.Prim.IsAttachment) return;
-    //if (_event.Prim.Type == PrimType.Unknown) return;
-    //Debug.Log("ObjectUpdate");
-    if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
-    if (_event.Prim.ID == client.Self.AgentID)
-    {
-        updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
-    }
-    //if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
-    //    return;
-    if (_event.IsNew)
-    {
-        if (!objects.ContainsKey(_event.Prim.LocalID))
+        if (!ClientManager.IsMainThread)
         {
-            //Debug.Log($"New Object: {_event.Prim.LocalID}");
-            UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Enqueue(_event));
-            //GameObject go = Instantiate(cube, Vector3.zero, Quaternion.identity);
-            //objects.Add(_event.Prim.ID, null);
-
+            //Debug.Log("Terse update not on main thread");
+            UnityMainThreadDispatcher.Instance().Enqueue(() => Objects_TerseObjectUpdate(sender, e));
+        }
+        if (!objects.ContainsKey(e.Prim.LocalID)) return;
+        //Debug.Log($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
+        //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State}");
+        //Debug.Log($"TerseObjectUpdate: {_event.Prim.LocalID.ToString()}");
+        if (e.Simulator.Handle != client.Network.CurrentSim.Handle) return;
+        if (e.Prim.ID == client.Self.AgentID)
+        {
+            //Debug.Log("My Avatar");
+            //updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
         }
         else
         {
-            Debug.LogError("New object but object already exists.");
+            //Debug.Log()
         }
+        GameObject go = objects[e.Prim.LocalID];
+        GameObject bgo = objects[e.Prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
+        if (bgo == null) Debug.Log("null bgo");
+        go.transform.position = e.Prim.Position.ToUnity();
+        go.transform.rotation = e.Prim.Rotation.ToUnity();
+        //if (go.transform.localScale != e.Prim.Scale.ToUnity()) Debug.Log($"Scale does not match in Objects_TerseObjectUpdate {go.transform.lossyScale} {e.Prim.Scale.ToUnity()}");
+
+        //go.transform.localScale = e.Prim.Scale.ToUnity();
+
+        //go.transform.localScale = e.Prim.Scale.ToUnity();
+        //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
+
+        //e.GetType();
+
+        if (e.Prim.PrimData.PCode == PCode.Avatar && e.Update.Textures == null)
+            return;
+
+
+
+        //UpdatePrim(_event.Prim);
     }
-    //UpdatePrim(_event.Prim);
-}
 
-
-void Objects_ObjectUpdate(TerseObjectUpdateEventArgs _event)
-{
-    if (_event.Prim.IsAttachment) return;
-    //if (_event.Prim.Type == PrimType.Unknown) return;
-    //Debug.Log("ObjectUpdate");
-    if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
-
-    //UnityMainThreadDispatcher.Instance().Enqueue(() => terseRobjectsUpdates.Add(_event));
-    /*if (_event.Prim.ID == client.Self.AgentID)
+    void Objects_ObjectUpdate(PrimEventArgs _event)
     {
-        updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
-    }
-    //if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
-    //    return;
-    if (_event.IsNew)
-    {
-        if (!objects.ContainsKey(_event.Prim.LocalID))
+        if (_event.Prim.IsAttachment) return;
+        //if (_event.Prim.Type == PrimType.Unknown) return;
+        //Debug.Log("ObjectUpdate");
+        if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
+        if (_event.Prim.ID == client.Self.AgentID)
         {
-            Debug.Log($"New Object: {_event.Prim.LocalID}");
-            UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Add(_event));
-            //GameObject go = Instantiate(cube, Vector3.zero, Quaternion.identity);
-            //objects.Add(_event.Prim.ID, null);
-
+            updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
         }
-        else
+        //if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
+        //    return;
+        if (_event.IsNew)
         {
-            Debug.LogError("New object but object already exists.");
+            if (!objects.ContainsKey(_event.Prim.LocalID))
+            {
+                //Debug.Log($"New Object: {_event.Prim.LocalID}");
+                UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Enqueue(_event));
+                //GameObject go = Instantiate(cube, Vector3.zero, Quaternion.identity);
+                //objects.Add(_event.Prim.ID, null);
+
+            }
+            else
+            {
+                Debug.LogError("New object but object already exists.");
+            }
         }
-    }*/
-    //UpdatePrim(_event.Prim);
-}
-
-void Objects_ObjectUpdate(object sender, PrimEventArgs _event)
-{
-    UnityMainThreadDispatcher.Instance().Enqueue(() => Objects_ObjectUpdate(_event));
-    //UpdatePrim(_event.Prim);
-}
-
-void NewAvatar(OpenMetaverse.Avatar av)
-{
-
-}
-
-void UpdatePrim(Primitive prim)
-{
-    //if (!objects[prim.ID].active) return;
-
-    if (prim.PrimData.PCode == PCode.Avatar)
-    {
-        NewAvatar(client.Network.CurrentSim.ObjectsAvatars[prim.LocalID]);
-        return;
+        //UpdatePrim(_event.Prim);
     }
 
-    // Skip foliage
-    if (prim.PrimData.PCode != PCode.Prim) return;
-    //if (!RenderSettings.PrimitiveRenderingEnabled) return;
 
-    //if (prim.Textures == null) return;
-
-    //RenderPrimitive rPrim = null;
-    if (prim.IsAttachment) return;
-
-    //if (!objects.ContainsKey(prim.ID)) objects.Add(prim.ID, GameObject.Instantiate<GameObject>(cube));
-    objects[prim.LocalID].transform.position = prim.Position.ToVector3();
-    objects[prim.LocalID].transform.localScale = prim.Scale.ToVector3();
-    //if (Prims.TryGetValue(prim.LocalID, out rPrim))
-    //{
-    //prim.atta
-    //    rPrim.AttachedStateKnown = false;
-    //}
-    //else
-    //{
-    //    rPrim = new RenderPrimitive();
-    //    rPrim.Meshed = false;
-    //    rPrim.BoundingVolume = new BoundingVolume();
-    //    rPrim.BoundingVolume.FromScale(prim.Scale);
-    //}
-
-    //rPrim.BasePrim = prim;
-    //lock (Prims) Prims[prim.LocalID] = rPrim;
-}
-
-IEnumerator TimerRoutine()
-{
-    while (true)
+    void Objects_ObjectUpdate(TerseObjectUpdateEventArgs _event)
     {
-        if (client.Settings.SEND_AGENT_UPDATES && ClientManager.active)
-        {
+        if (_event.Prim.IsAttachment) return;
+        //if (_event.Prim.Type == PrimType.Unknown) return;
+        //Debug.Log("ObjectUpdate");
+        if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
 
-            simName = client.Network.CurrentSim.Name.ToString();
-            simOwner = client.Network.CurrentSim.SimOwner.ToString();
+        //UnityMainThreadDispatcher.Instance().Enqueue(() => terseRobjectsUpdates.Add(_event));
+        /*if (_event.Prim.ID == client.Self.AgentID)
+        {
+            updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
         }
-        yield return new WaitForSeconds(5f);
+        //if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
+        //    return;
+        if (_event.IsNew)
+        {
+            if (!objects.ContainsKey(_event.Prim.LocalID))
+            {
+                Debug.Log($"New Object: {_event.Prim.LocalID}");
+                UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Add(_event));
+                //GameObject go = Instantiate(cube, Vector3.zero, Quaternion.identity);
+                //objects.Add(_event.Prim.ID, null);
+
+            }
+            else
+            {
+                Debug.LogError("New object but object already exists.");
+            }
+        }*/
+        //UpdatePrim(_event.Prim);
     }
-}
+
+    void Objects_ObjectUpdate(object sender, PrimEventArgs _event)
+    {
+        UnityMainThreadDispatcher.Instance().Enqueue(() => Objects_ObjectUpdate(_event));
+        //UpdatePrim(_event.Prim);
+    }
+
+    void NewAvatar(OpenMetaverse.Avatar av)
+    {
+
+    }
+
+    void UpdatePrim(Primitive prim)
+    {
+        //if (!objects[prim.ID].active) return;
+
+        if (prim.PrimData.PCode == PCode.Avatar)
+        {
+            NewAvatar(client.Network.CurrentSim.ObjectsAvatars[prim.LocalID]);
+            return;
+        }
+
+        // Skip foliage
+        if (prim.PrimData.PCode != PCode.Prim) return;
+        //if (!RenderSettings.PrimitiveRenderingEnabled) return;
+
+        //if (prim.Textures == null) return;
+
+        //RenderPrimitive rPrim = null;
+        if (prim.IsAttachment) return;
+
+        //if (!objects.ContainsKey(prim.ID)) objects.Add(prim.ID, GameObject.Instantiate<GameObject>(cube));
+        objects[prim.LocalID].transform.position = prim.Position.ToVector3();
+        objects[prim.LocalID].transform.localScale = prim.Scale.ToVector3();
+        //if (Prims.TryGetValue(prim.LocalID, out rPrim))
+        //{
+        //prim.atta
+        //    rPrim.AttachedStateKnown = false;
+        //}
+        //else
+        //{
+        //    rPrim = new RenderPrimitive();
+        //    rPrim.Meshed = false;
+        //    rPrim.BoundingVolume = new BoundingVolume();
+        //    rPrim.BoundingVolume.FromScale(prim.Scale);
+        //}
+
+        //rPrim.BasePrim = prim;
+        //lock (Prims) Prims[prim.LocalID] = rPrim;
+    }
+
+    IEnumerator TimerRoutine()
+    {
+        while (true)
+        {
+            if (client.Settings.SEND_AGENT_UPDATES && ClientManager.active)
+            {
+
+                simName = client.Network.CurrentSim.Name.ToString();
+                simOwner = client.Network.CurrentSim.SimOwner.ToString();
+            }
+            yield return new WaitForSeconds(5f);
+        }
+    }
 
 }

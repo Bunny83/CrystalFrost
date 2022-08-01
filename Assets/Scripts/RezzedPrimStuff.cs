@@ -105,8 +105,8 @@ public class RezzedPrimStuff : MonoBehaviour
                 gomesh.name = $"face {j.ToString()}";
                 gomesh.transform.position = gameObject.transform.position;
                 gomesh.transform.rotation = gameObject.transform.rotation;
-                gomesh.transform.parent = gameObject.transform;
-                gomesh.transform.localScale = prim.Scale.ToUnity();
+                gomesh.transform.parent = meshHolder.transform;
+                gomesh.transform.localScale = Vector3.one;//prim.Scale.ToUnity();
                 faces.Add(gomesh);
 
                 vertices = new Vector3[fmesh.faces[j].Vertices.Count];
@@ -236,7 +236,7 @@ public class RezzedPrimStuff : MonoBehaviour
         else if (prim.Type == PrimType.Sculpt)
         {
             //go.name += $" {prim.Sculpt.SculptTexture}";
-            ClientManager.assetManager.RequestSculpt(gameObject, prim);
+            ClientManager.assetManager.RequestSculpt(meshHolder, prim);
             //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
 
         }

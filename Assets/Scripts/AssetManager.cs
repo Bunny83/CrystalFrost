@@ -342,7 +342,7 @@ namespace CrystalFrost
                     gomesh.transform.position = requestedSculpts[id][i].gameObject.transform.position;
                     gomesh.transform.rotation = requestedSculpts[id][i].gameObject.transform.rotation;
                     gomesh.transform.parent = requestedSculpts[id][i].gameObject.transform;
-                    gomesh.transform.localScale = prim.Scale.ToUnity();//requestedSculpts[id][i].gameObject.transform.localScale;
+                    gomesh.transform.localScale = Vector3.one;//prim.Scale.ToUnity();//requestedSculpts[id][i].gameObject.transform.localScale;
                     requestedSculpts[id][i].gameObject.GetComponent<RezzedPrimStuff>().faces.Add(gomesh);
 
                     gomesh.name = $"Sculpt Face {j.ToString()}";
