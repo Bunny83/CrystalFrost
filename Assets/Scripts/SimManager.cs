@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq; // used for Sum of array
 //using System.Threading;
 using UnityEngine;
@@ -69,9 +70,54 @@ public class SimManager : MonoBehaviour
         client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(TerrainEventHandler);
         StartCoroutine(ObjectsLODUpdate());
         StartCoroutine(MeshRequests());
-
+        StartCoroutine(MeshQueueParsing());
         //SplatPrototype[] splats = new SplatPrototype[4];
 
+    }
+
+    IEnumerator MeshQueueParsing()
+    {
+        CrystalFrost.AssetManager.MeshQueue meshItem;
+        Mesh[] meshes;
+        int i;
+        while (true)
+        {
+            //Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
+            if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
+            {
+                yield return new WaitForSeconds(0.001f);
+                //Debug.Log("DeQueing mesh stage 2");
+                if (meshItem.uuid != null)
+                {
+                    //Debug.Log("DeQueing mesh stage 3");
+                    //CrystalFrost.AssetManager.meshCache.TryAdd()
+                    meshes = new Mesh[meshItem.vertices.Count];
+                    for (i = 0; i < meshes.Length; i++)
+                    {
+                        meshes[i] = new Mesh();
+                        meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
+                        meshes[i].vertices = meshItem.vertices.Dequeue();
+                        //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
+                        yield return new WaitForSeconds(0.001f);
+                        meshes[i].normals = meshItem.normals.Dequeue();
+                        yield return new WaitForSeconds(0.001f);
+                        meshes[i].uv = meshItem.uvs.Dequeue();
+                        yield return new WaitForSeconds(0.001f);
+                        meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
+                        yield return new WaitForSeconds(0.001f);
+                        meshes[i] = ReverseWind(meshes[i]);
+                        yield return new WaitForSeconds(0.001f);
+                    }
+                    ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
+                }
+                else
+                {
+                    Debug.LogError("meshItem was null");
+                }
+            }
+
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     void ObjectDataBlockUpdateEvent(object sender, ObjectDataBlockUpdateEventArgs e)
@@ -84,13 +130,30 @@ public class SimManager : MonoBehaviour
         //Debug.Log(e.Update.Position);
         if (objects.ContainsKey(e.Prim.LocalID))
         {
-            objects[e.Prim.LocalID].transform.position = e.Prim.Position.ToUnity();
-            objects[e.Prim.LocalID].transform.rotation = e.Prim.Rotation.ToUnity();
-            GameObject bgo = objects[e.Prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
-            if (bgo.transform.localScale != e.Prim.Scale.ToUnity()) Debug.Log("Scale does not match in ObjectDataBlockUpdateEvent");
-            bgo.transform.localScale = e.Prim.Scale.ToUnity();
-
+            UpdatePrim(e.Prim);
         }
+        else
+        {
+            PrimEventArgs primevent = new PrimEventArgs(e.Simulator,e.Prim,0, true,false);
+            objectsToRez.Enqueue(primevent);
+        }
+    }
+
+    void UpdatePrim(Primitive prim)
+    {
+        GameObject bgo = objects[prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
+        if (objects[prim.LocalID].transform.parent == null)
+        {
+            objects[prim.LocalID].transform.position = prim.Position.ToUnity();
+            objects[prim.LocalID].transform.rotation = prim.Rotation.ToUnity();
+        }
+        else
+        {
+            //Debug.Log($"{bgo.transform.localPosition} {prim.Position.ToUnity()}");
+            objects[prim.LocalID].transform.localPosition = prim.Position.ToUnity();
+            objects[prim.LocalID].transform.localRotation = prim.Rotation.ToUnity();
+        }
+        bgo.transform.localScale = prim.Scale.ToUnity();
     }
 
     void KillObjectEventHandler(object sender, KillObjectEventArgs e)
@@ -190,6 +253,7 @@ public class SimManager : MonoBehaviour
         {
             counter++;
             PrimEventArgs primevent = objectsToRez.Dequeue();
+            //if (primevent == null) continue;
             Primitive prim = primevent.Prim;
             if ((!objects.ContainsKey(prim.LocalID) || primevent.IsNew))
             {
@@ -211,16 +275,33 @@ public class SimManager : MonoBehaviour
             }
             else if (objects.ContainsKey(prim.LocalID))
             {
-                objects[prim.LocalID].transform.position = prim.Position.ToUnity();
-                objects[prim.LocalID].transform.rotation = prim.Rotation.ToUnity();
-                GameObject bgo = objects[prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
-                if (bgo.transform.localScale != prim.Scale.ToUnity()) Debug.Log("Scale does not match in ObjectsUpdate");
-                objects[prim.LocalID].GetComponent<RezzedPrimStuff>().bgo.transform.localScale = prim.Scale.ToUnity();
+                UpdatePrim(prim);
 
             }
 
             //objectsToRez.RemoveAt(0);
-            if (counter > 100) break;
+            //if (counter > 100) break;
+        }
+    }
+
+    void Objects_ObjectUpdate(PrimEventArgs e)
+    {
+        if (e.Prim.IsAttachment) return;
+        if (e.Simulator.Handle != client.Network.CurrentSim.Handle) return;
+        if (e.Prim.ID == client.Self.AgentID)
+        {
+            updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
+        }
+        if (e.IsNew)
+        {
+            if (!objects.ContainsKey(e.Prim.LocalID))
+            {
+                UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Enqueue(e));
+            }
+            else
+            {
+                Debug.LogError("New object but object already exists.");
+            }
         }
     }
 
@@ -404,6 +485,7 @@ public class SimManager : MonoBehaviour
 
                 global_position = new Vector2(y + j, x + i);
                 vec = global_position * 0.20319f;
+
                 low_freq = Mathf.PerlinNoise(vec.y * 0.222222f, vec.x * 0.222222f) * 6.5f;
                 high_freq = PerlinTurbulence2(vec, 2f) * 2.25f;
                 noise = (low_freq + high_freq) * 2;
@@ -640,7 +722,14 @@ public class SimManager : MonoBehaviour
             //Debug.Log("Terse update not on main thread");
             UnityMainThreadDispatcher.Instance().Enqueue(() => Objects_TerseObjectUpdate(sender, e));
         }
-        if (!objects.ContainsKey(e.Prim.LocalID)) return;
+        if (!objects.ContainsKey(e.Prim.LocalID))
+        {
+            PrimEventArgs primevent = new PrimEventArgs(e.Simulator, e.Prim, 0, true, false);
+            objectsToRez.Enqueue(primevent);
+            return;
+        }
+        if(Vector3.Distance(e.Prim.Position.ToUnity(), player.position) < 32)
+        //Debug.Log($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.Position}/{e.Prim.Position}");
         //Debug.Log($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State.ToString()}");
         //Jenny.Console.WriteLine($"{System.DateTime.UtcNow.ToShortTimeString()}: terse update: {e.Update.State}");
         //Debug.Log($"TerseObjectUpdate: {_event.Prim.LocalID.ToString()}");
@@ -654,11 +743,7 @@ public class SimManager : MonoBehaviour
         {
             //Debug.Log()
         }
-        GameObject go = objects[e.Prim.LocalID];
-        GameObject bgo = objects[e.Prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
-        if (bgo == null) Debug.Log("null bgo");
-        go.transform.position = e.Prim.Position.ToUnity();
-        go.transform.rotation = e.Prim.Rotation.ToUnity();
+        UpdatePrim(e.Prim);
         //if (go.transform.localScale != e.Prim.Scale.ToUnity()) Debug.Log($"Scale does not match in Objects_TerseObjectUpdate {go.transform.lossyScale} {e.Prim.Scale.ToUnity()}");
 
         //go.transform.localScale = e.Prim.Scale.ToUnity();
@@ -676,35 +761,6 @@ public class SimManager : MonoBehaviour
         //UpdatePrim(_event.Prim);
     }
 
-    void Objects_ObjectUpdate(PrimEventArgs _event)
-    {
-        if (_event.Prim.IsAttachment) return;
-        //if (_event.Prim.Type == PrimType.Unknown) return;
-        //Debug.Log("ObjectUpdate");
-        if (_event.Simulator.Handle != client.Network.CurrentSim.Handle) return;
-        if (_event.Prim.ID == client.Self.AgentID)
-        {
-            updatedGO = gameObject.GetComponent<Avatar>().myAvatar.gameObject;
-        }
-        //if (_event.Prim.PrimData.PCode == PCode.Avatar && _event.Update.Textures == null)
-        //    return;
-        if (_event.IsNew)
-        {
-            if (!objects.ContainsKey(_event.Prim.LocalID))
-            {
-                //Debug.Log($"New Object: {_event.Prim.LocalID}");
-                UnityMainThreadDispatcher.Instance().Enqueue(() => objectsToRez.Enqueue(_event));
-                //GameObject go = Instantiate(cube, Vector3.zero, Quaternion.identity);
-                //objects.Add(_event.Prim.ID, null);
-
-            }
-            else
-            {
-                Debug.LogError("New object but object already exists.");
-            }
-        }
-        //UpdatePrim(_event.Prim);
-    }
 
 
     void Objects_ObjectUpdate(TerseObjectUpdateEventArgs _event)
@@ -750,7 +806,7 @@ public class SimManager : MonoBehaviour
 
     }
 
-    void UpdatePrim(Primitive prim)
+    /*void UpdatePrim(Primitive prim)
     {
         //if (!objects[prim.ID].active) return;
 
@@ -787,7 +843,7 @@ public class SimManager : MonoBehaviour
 
         //rPrim.BasePrim = prim;
         //lock (Prims) Prims[prim.LocalID] = rPrim;
-    }
+    }*/
 
     IEnumerator TimerRoutine()
     {

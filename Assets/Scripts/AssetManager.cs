@@ -26,6 +26,18 @@ namespace CrystalFrost
         int queuedMeshes = 0;
 
         public SimManager simManager;
+
+        public struct MeshQueue
+        {
+            public UUID uuid;
+            public int detailLevel;
+            public Queue<Vector3[]> vertices;
+            public Queue<Vector2[]> uvs;
+            public Queue<Vector3[]> normals;
+            public Queue<ushort[]> indices;
+        }
+        public static ConcurrentQueue<MeshQueue> concurrentMeshQueue = new ConcurrentQueue<MeshQueue>();
+
         //static Dictionary<UUID, Material> materials = new Dictionary<UUID, Material>();
         static Dictionary<UUID, Texture2D> textures = new Dictionary<UUID, Texture2D>();
         //static Dictionary<UUID, Mesh[]> meshes = new Dictionary<UUID, Mesh[]>();
@@ -36,7 +48,7 @@ namespace CrystalFrost
         static Dictionary<UUID, int> components = new Dictionary<UUID, int>();
         static List<MeshRenderer> fullbrights = new List<MeshRenderer>();
 
-        static ConcurrentDictionary<UUID, Mesh[]> meshCache = new ConcurrentDictionary<UUID, Mesh[]>();
+        public static ConcurrentDictionary<UUID, Mesh[]> meshCache = new ConcurrentDictionary<UUID, Mesh[]>();
         //static Dictionary<UUID, Texture2D> sculpts = new Dictionary<UUID, Texture2D>();
         //static List<UUID> alphaTextures;
         //static Dictionary<UUID, >  = new Dictionary<UUID, >();
@@ -647,7 +659,7 @@ namespace CrystalFrost
             queuedMeshes++;
             if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
             {
-                MainThreadhMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
+                MainThreadMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
                 return;
             }
             SculptData sculptdata = new SculptData
@@ -661,7 +673,7 @@ namespace CrystalFrost
             ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshHighest);
         }
 
-        public void RequestMeshHigh(GameObject gameObject, Primitive prim)
+        /*public void RequestMeshHigh(GameObject gameObject, Primitive prim)
         {
             if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
             {
@@ -713,7 +725,7 @@ namespace CrystalFrost
             requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
 
             ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshLow);
-        }
+        }*/
 
         Color[] ImageBytesToColors(AssetTexture assetTexture)
         {
@@ -731,19 +743,25 @@ namespace CrystalFrost
 
         public void CallbackMeshHighest(bool success, AssetMesh assetMesh)
         {
-            if (!ClientManager.IsMainThread)
-                UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshHighest(success, assetMesh));
+            //if (!ClientManager.IsMainThread)
+            //    UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshHighest(success, assetMesh));
             if (!success) return;
             UUID id = assetMesh.AssetID;
-            Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest);
+            //Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest);
+            if (meshCache.ContainsKey(id)) return;
+            concurrentMeshQueue.Enqueue(TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest));
 
-            if (ClientManager.IsMainThread)
-            {
-                MainThreadhMeshSpawner(_meshes, id);
-                return;
-            }
-         }
-        public void CallbackMeshHigh(bool success, AssetMesh assetMesh)
+            //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log($"Mesh enqueued. {concurrentMeshQueue.Count} in queue"));
+
+            //if (ClientManager.IsMainThread)
+            //{
+            //MainThreadhMeshSpawner(_meshes, id);
+            //    return;
+            //}
+        }
+
+
+        /*public void CallbackMeshHigh(bool success, AssetMesh assetMesh)
         {
             if (!ClientManager.IsMainThread)
                 UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshHigh(success, assetMesh));
@@ -791,11 +809,16 @@ namespace CrystalFrost
                 return;
             }
 
-        }
+        }*/
 
 
-        public void MainThreadhMeshSpawner(Mesh[] meshes, UUID id)
+        public void MainThreadMeshSpawner(Mesh[] meshes, UUID id)
         {
+            if (!ClientManager.IsMainThread)
+            {
+                UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadMeshSpawner(meshes, id));
+            }
+            //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  {meshes.Length} meshes");
             //v = 0;
             GameObject gomesh;// = Instantiate(blank);
             MeshRenderer _rendr;
@@ -805,6 +828,7 @@ namespace CrystalFrost
             //Primitive prim = requestedSculpts[id][0].prim;
             //UUID id = assetMesh.AssetID;
             List<SculptData> meshData = requestedMeshes[id];
+            //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  meshData has {meshData.Count.ToString()} entries");
             Primitive prim;
             GameObject go;
             Mesh mesh;
@@ -817,6 +841,7 @@ namespace CrystalFrost
 
                 for (j = 0; j < meshes.Length; j++)
                 {
+                    //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  mesh{j.ToString()} has {meshes[j].vertices.Length.ToString()} vertices");
                     if (meshes[j].vertices.Length == 0)
                     {
                         continue;
@@ -948,8 +973,97 @@ namespace CrystalFrost
 
 
 
-        Mesh[] TranscodeFacetedMesh(AssetMesh assetMesh, Primitive prim, DetailLevel detail
-            )
+        MeshQueue TranscodeFacetedMesh(AssetMesh assetMesh, Primitive prim, DetailLevel detail)
+        {
+            //Primitive prim = meshPrims[assetMesh.AssetID];
+            FacetedMesh fmesh;
+            MeshQueue meshQueue = new MeshQueue();
+            meshQueue.vertices = new Queue<Vector3[]>();
+            meshQueue.normals = new Queue<Vector3[]>();
+            meshQueue.uvs = new Queue<Vector2[]>();
+            meshQueue.indices = new Queue<ushort[]>();
+            //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log("This is executed from the main thread"));
+            if (FacetedMesh.TryDecodeFromAsset(prim, assetMesh, detail, out fmesh))
+            {
+
+                //Mesh[] meshes = new Mesh[fmesh.faces.Count];
+                //Mesh mesh = new Mesh();
+                //Mesh subMesh = new Mesh();
+                //MeshFilter meshFilter;// = go.GetComponent<MeshFilter>();
+                //MeshRenderer rendr;
+                //CombineInstance[] combine = new CombineInstance[fmesh.faces.Count];
+
+                int i;
+                int j;
+                int v = 0;
+
+                Vector3[] vertices;
+                //int[] indices;
+                Vector3[] normals;
+                Vector2[] uvs;
+
+                //for (i = 0; i < fmesh.faces.Count; i++)
+                //{
+                //    v += fmesh.faces[i].Vertices.Count;
+                //}
+
+                //vertices = new Vector3[v];
+                //indices = new int[vertices.Length];
+                //normals = new Vector3[vertices.Length];
+                //uvs = new Vector2[vertices.Length];
+                Vector2 uv;
+                ushort[] indices, _indices;
+                for (j = 0; j < fmesh.faces.Count; j++)
+                {
+                    indices = new ushort[(ushort)fmesh.faces[j].Indices.Count];
+                    _indices = new ushort[(ushort)fmesh.faces[j].Indices.Count];
+                    vertices = new Vector3[fmesh.faces[j].Vertices.Count];
+                    normals = new Vector3[fmesh.faces[j].Vertices.Count];
+                    uvs = new Vector2[fmesh.faces[j].Vertices.Count];
+
+                    Primitive.TextureEntryFace textureEntryFace = prim.Textures.GetFace((uint)j);
+
+                    for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
+                    {
+                        //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log($"i:{i.ToString()}, fmesh.faces.Count:{fmesh.faces.Count.ToString()}, fmesh.faces[{j.ToString()}].Vertices.Count:{fmesh.faces[j].Vertices.Count.ToString()}"));
+                        //Debug.Log($"i:{i.ToString()}, fmesh.faces.Count:{fmesh.faces.Count.ToString()}, fmesh.faces[{j.ToString()}].Vertices.Count:{fmesh.faces[j].Vertices.Count.ToString()}");
+                        vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
+                        //Debug.Log($"{vertices[i].ToString()}");
+                        normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
+                        //indices[i] = fmesh.faces[j].Indices[i];
+                        uv = fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                        uv.x = uv.x * textureEntryFace.RepeatU;
+                        uv.y = uv.y * textureEntryFace.RepeatV;
+                        uvs[i] = Quaternion.Euler(0, 0, (textureEntryFace.Rotation * 57.2957795f)) * uv; //fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                        //uvs[i].y *= -1f;
+                    }
+                    //mesh = new Mesh();
+                    //mesh.vertices = vertices;
+                    meshQueue.vertices.Enqueue(vertices);
+                    //mesh.normals = normals;
+                    meshQueue.normals.Enqueue(normals);
+                    //mesh.uv = uvs;
+                    meshQueue.uvs.Enqueue(uvs);
+                    meshQueue.indices.Enqueue(fmesh.faces[j].Indices.ToArray());
+                    meshQueue.uuid = prim.Sculpt.SculptTexture;
+
+                    //Mesh mesh;
+                    //mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0);
+                    //meshes[j] = ReverseWind(mesh);
+                }
+
+                //Mesh retmesh = new Mesh();
+                //retmesh.CombineMeshes(combine, false, false);
+                return meshQueue;
+            }
+            else
+            {
+                Debug.LogWarning("Unable to decode mesh");
+                return new MeshQueue();
+            }
+        }
+
+        /*Mesh[] TranscodeFacetedMesh(AssetMesh assetMesh, Primitive prim, DetailLevel detail)
         {
             //Primitive prim = meshPrims[assetMesh.AssetID];
             FacetedMesh fmesh;
@@ -1018,7 +1132,7 @@ namespace CrystalFrost
                 Debug.LogWarning("Unable to decode mesh");
                 return new Mesh[0];
             }
-        }
+        }*/
 
         Mesh ReverseWind(Mesh mesh)
         {

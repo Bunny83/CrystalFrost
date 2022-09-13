@@ -56,7 +56,7 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
         ClientManager.client.Settings.ALWAYS_REQUEST_OBJECTS = true;
         ClientManager.client.Settings.ALWAYS_DECODE_OBJECTS = true;
-        //ClientManager.client.Settings.OBJECT_TRACKING = true;
+        ClientManager.client.Settings.OBJECT_TRACKING = true;
         ClientManager.client.Settings.USE_HTTP_TEXTURES = true;
         ClientManager.client.Settings.ASSET_CACHE_DIR = $"{Application.persistentDataPath}/cache";
         ClientManager.client.Settings.SEND_PINGS = true;
