@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 11405.386, g: 11634.275, b: 12638.773, a: 1}
+  m_IndirectSpecularColor: {r: 11409.209, g: 11638.18, b: 12641.258, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2355,7 +2355,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1160676377}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -2682,6 +2682,7 @@ MonoBehaviour:
   firstName: 
   lastName: 
   fly: 0
+  canMove: 1
 --- !u!114 &1395300917
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,16 +12,80 @@ public class Avatar : MonoBehaviour
     public string lastName;
 
     public bool fly = false;
+
+    public bool canMove = true;
     //public string displayName;
 
     GridClient client;
     AgentManager self;
+
     // Start is called before the first frame update
     void Start()
     {
         client = ClientManager.client;
         self = client.Self;
         StartCoroutine(TimerRoutine());
+        //Camera.main
+    }
+
+    Transform lastMyAvatar;
+
+    private void Update()
+    {
+        bool update = false;
+        if(canMove)
+        {
+            if(Input.GetKeyDown(KeyCode.W))
+            {
+                client.Self.Movement.AtPos = true;
+                update = true;
+            }
+            else if(Input.GetKeyUp(KeyCode.W))
+            {
+                client.Self.Movement.AtPos = false;
+                update = true;
+            }
+
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                client.Self.Movement.TurnLeft = true;
+                update = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.D))
+            {
+                client.Self.Movement.TurnLeft = false;
+                update = true;
+            }
+
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                client.Self.Movement.AtNeg = true;
+                update = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.S))
+            {
+                client.Self.Movement.AtNeg = false;
+                update = true;
+            }
+
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                client.Self.Movement.TurnRight = true;
+                update = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.D))
+            {
+                client.Self.Movement.TurnRight = false;
+                update = true;
+            }
+
+            if(update)
+            {
+                client.Self.Movement.SendUpdate();
+            }
+
+
+        }
     }
 
     void SetFlyMode(bool b)
@@ -91,6 +155,13 @@ public class Avatar : MonoBehaviour
                 firstName = self.FirstName;
                 lastName = self.LastName;
                 //displayName = "Not Implemented";
+            }
+            if(myAvatar != lastMyAvatar)
+            {
+                lastMyAvatar = myAvatar;
+                Camera.main.transform.parent = myAvatar;
+                Camera.main.transform.position = myAvatar.position + (myAvatar.right * -5f);
+                Camera.main.transform.rotation = Quaternion.Euler(0f, myAvatar.eulerAngles.y + 90, 0f);
             }
             yield return new WaitForSeconds(5f);
         }

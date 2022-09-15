@@ -903,7 +903,7 @@ namespace CrystalFrost
                         gomesh.name = $"Mesh Face {j.ToString()}";
                         _rendr = gomesh.GetComponent<MeshRenderer>();
                         filter = gomesh.GetComponent<MeshFilter>();
-                        filter.mesh = mesh;
+                        filter.sharedMesh = mesh;
                         if (color.a < 0.0001f)
                         {
                             //rendr.enabled = false;

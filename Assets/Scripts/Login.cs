@@ -66,8 +66,12 @@ public class Login : MonoBehaviour
         //ClientManager.client.Settings.= true;
         ClientManager.client.Settings.SEND_AGENT_THROTTLE = true;
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
-
-        loginUI.SetActive(true);
+        ClientManager.client.Self.Movement.Camera.Far = 32f;
+        ClientManager.client.Self.Movement.SetFOVVerticalAngle(1.570796326794896613f);
+        //ClientManager.client.Self.Movement.
+        //ClientManager.client.Self.Movement.Camera.
+        //ClientManager.client.Settings.AVATAR_TRACKING
+        //loginUI.SetActive(true);
         //ClientManager.texturePipeline = new TexturePipeline(ClientManager.client);
         ClientManager.assetManager = new CrystalFrost.AssetManager();
         //ClientManager.client.Objects.

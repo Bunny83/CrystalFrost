@@ -41,7 +41,7 @@ public class SimManager : MonoBehaviour
     Queue<PrimEventArgs> objectsToRez = new Queue<PrimEventArgs>();
     //List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
 
-
+    Avatar avatar;
     Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
 
     //Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
@@ -58,15 +58,17 @@ public class SimManager : MonoBehaviour
     void Start()
     {
         client = ClientManager.client;
+
+        avatar = gameObject.GetComponent<Avatar>();
         //StartCoroutine(TimerRoutine());
-        if (ClientManager.viewDistance >= 32f)
-        {
+        //if (ClientManager.viewDistance >= 32f)
+        //{
             client.Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
             client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_ObjectUpdate);
             client.Objects.KillObject += new EventHandler<KillObjectEventArgs>(KillObjectEventHandler);
             client.Objects.ObjectDataBlockUpdate += new EventHandler<ObjectDataBlockUpdateEventArgs>(ObjectDataBlockUpdateEvent);
             //client.Objects. += new EventHandler<ObjectDataBlockUpdateEventArgs>(ObjectDataBlockUpdateEvent);
-        }
+        //}
         client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(TerrainEventHandler);
         StartCoroutine(ObjectsLODUpdate());
         StartCoroutine(MeshRequests());
@@ -164,7 +166,34 @@ public class SimManager : MonoBehaviour
     private void Update()
     {
         ObjectsUpdate();
+        //UpdateCamera();
         //TerseObjectUpdates();
+    }
+
+    float DEG_TO_RAD = 0.017453292519943295769236907684886f;
+    IEnumerator UpdateCamera()
+    {
+        while (true)
+        {
+            if (client.Settings.SEND_AGENT_UPDATES && ClientManager.active)
+            {
+                //client.Self.Movement.Camera.SetPositionOrientation(new OMVVector3(Camera.main.transform.position.x, Camera.main.transform.position.z, Camera.main.transform.position.y), Camera.main.transform.rotation.eulerAngles.x * DEG_TO_RAD, Camera.main.transform.rotation.eulerAngles.z * DEG_TO_RAD, Camera.main.transform.rotation.eulerAngles.y * DEG_TO_RAD);
+                client.Self.Movement.Camera.LookAt(
+                    client.Self.SimPosition + new OMVVector3(-5, 0, 0) * client.Self.Movement.BodyRotation,
+                    client.Self.SimPosition
+                );
+                client.Self.Movement.Camera.Far = 64f;
+                client.Self.Movement.SendUpdate();
+                Camera.main.transform.rotation = client.Self.Movement.BodyRotation.ToUnity();
+                Camera.main.transform.position = client.Self.Movement.Camera.Position.ToUnity();
+                client.Self.SetHeightWidth(1024, 768);
+                //client.Self.
+                //client.Self.Movement.Camera.LookDirection(new OMVVector3(Camera.main.transform.forward.x, Camera.main.transform.forward.z, Camera.main.transform.forward.y);
+                //client.Self.Movement.Camera.UpAxis = new OMVVector3(Camera.main.transform.up.x, Camera.main.transform.up.z, Camera.main.transform.up.y);
+                //client.Self.Movement.Camera.LeftAxis = new OMVVector3(-Camera.main.transform.right.x, -Camera.main.transform.right.z, -Camera.main.transform.right.y);
+            }
+            yield return new WaitForSeconds(1);
+        }
     }
 
 
@@ -255,11 +284,12 @@ public class SimManager : MonoBehaviour
             PrimEventArgs primevent = objectsToRez.Dequeue();
             //if (primevent == null) continue;
             Primitive prim = primevent.Prim;
-            if ((!objects.ContainsKey(prim.LocalID) || primevent.IsNew))
+            if ((!objects.ContainsKey(prim.LocalID)))// || primevent.IsNew))
             {
                 GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
                 GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
                 rez = go.GetComponent<RezzedPrimStuff>();
+                rez.localID = prim.LocalID;
                 rez.children.Add(bgo);
                 rez.bgo = bgo;
                 rez.meshHolder = go;
@@ -272,11 +302,16 @@ public class SimManager : MonoBehaviour
                 go.transform.localScale = prim.Scale.ToUnity();
                 go.transform.parent = bgo.transform;
                 MakeParent(prim.LocalID, prim.ParentID);
+
+                if (prim.LocalID == ClientManager.client.Self.LocalID)
+                {
+                    Avatar av = gameObject.GetComponent<Avatar>();
+                    av.myAvatar = bgo.transform;
+                }
             }
             else if (objects.ContainsKey(prim.LocalID))
             {
                 UpdatePrim(prim);
-
             }
 
             //objectsToRez.RemoveAt(0);
@@ -334,7 +369,7 @@ public class SimManager : MonoBehaviour
 
                 RezzedPrimStuff rez = obj.gameObject.GetComponent<RezzedPrimStuff>();
 
-                if ((Vector3.Distance(obj.gameObject.transform.position, player.position) < ClientManager.viewDistance))
+                if ((Vector3.Distance(obj.gameObject.transform.position, Camera.main.transform.position) < ClientManager.viewDistance))
                 {
                     rez.Enable();
 
