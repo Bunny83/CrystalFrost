@@ -776,7 +776,8 @@ PlayerSettings:
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
   webGLDecompressionFallback: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Standalone: NotRezPrims;RezSculpts;RezMeshes;MultiThreadSculpts
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
