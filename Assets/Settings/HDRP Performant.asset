@@ -43,9 +43,9 @@ MonoBehaviour:
     supportSurfaceGradient: 0
     decalNormalBufferHP: 0
     msaaSampleCount: 1
-    supportMotionVectors: 1
+    supportMotionVectors: 0
     supportRuntimeAOVAPI: 0
-    supportDitheringCrossFade: 1
+    supportDitheringCrossFade: 0
     supportTerrainHole: 0
     supportProbeVolume: 0
     probeVolumeMemoryBudget: 1024

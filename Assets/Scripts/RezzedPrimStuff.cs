@@ -7,11 +7,12 @@ using OpenMetaverse.Rendering;
 using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
 using UnityEngine.Rendering.HighDefinition;
-
+using Unity.Burst;
 
 public class RezzedPrimStuff : MonoBehaviour
 {
     public uint localID;
+    public uint parentID;
     public List<GameObject> children = new List<GameObject>();
     public bool visible = false;
     public bool isPopulated = false;
@@ -49,6 +50,7 @@ public class RezzedPrimStuff : MonoBehaviour
         }
     }
 
+    [BurstCompile]
     public void Populate(Primitive _prim)
     {
 #if true
@@ -64,7 +66,7 @@ public class RezzedPrimStuff : MonoBehaviour
 
         if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
         {
-#if true
+#if RezPrims
             //PrimMesh primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
             MeshmerizerR mesher = new MeshmerizerR();
             FacetedMesh fmesh;
@@ -235,13 +237,16 @@ public class RezzedPrimStuff : MonoBehaviour
         }
         else if (prim.Type == PrimType.Sculpt)
         {
+#if RezSculpts
+//#if !MultiThreadSculpts            
             //go.name += $" {prim.Sculpt.SculptTexture}";
             ClientManager.assetManager.RequestSculpt(meshHolder, prim);
             //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
-
+//#endif
+#endif
         }
         //else if(prim.Type == PrimType.Mesh) go.GetComponent<MeshRenderer>
-#if true
+#if RezMeshes
         else if (prim.Type == PrimType.Mesh)
         {
             //meshObjects.TryAdd(prim.Sculpt.SculptTexture, new List<GameObject>());
@@ -285,8 +290,9 @@ public class RezzedPrimStuff : MonoBehaviour
             //Debug.Log("no light");
         }
 #endif
-    }
+        }
 
+    [BurstCompile]
     Mesh ReverseWind(Mesh mesh)
     {
         //C# or UnityScript

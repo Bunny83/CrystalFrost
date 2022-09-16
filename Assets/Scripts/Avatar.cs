@@ -40,7 +40,7 @@ public class Avatar : MonoBehaviour
                 client.Self.Movement.AtPos = true;
                 update = true;
             }
-            else if(Input.GetKeyUp(KeyCode.W))
+            else// if(Input.GetKeyUp(KeyCode.W))
             {
                 client.Self.Movement.AtPos = false;
                 update = true;
@@ -48,12 +48,12 @@ public class Avatar : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.D))
             {
-                client.Self.Movement.TurnLeft = true;
+                client.Self.Movement.YawPos = true;
                 update = true;
             }
-            else if (Input.GetKeyUp(KeyCode.D))
+            else// if (Input.GetKeyUp(KeyCode.D))
             {
-                client.Self.Movement.TurnLeft = false;
+                client.Self.Movement.YawNeg = false;
                 update = true;
             }
 
@@ -62,7 +62,7 @@ public class Avatar : MonoBehaviour
                 client.Self.Movement.AtNeg = true;
                 update = true;
             }
-            else if (Input.GetKeyUp(KeyCode.S))
+            else// if (Input.GetKeyUp(KeyCode.S))
             {
                 client.Self.Movement.AtNeg = false;
                 update = true;
@@ -73,7 +73,7 @@ public class Avatar : MonoBehaviour
                 client.Self.Movement.TurnRight = true;
                 update = true;
             }
-            else if (Input.GetKeyUp(KeyCode.D))
+            else// if (Input.GetKeyUp(KeyCode.D))
             {
                 client.Self.Movement.TurnRight = false;
                 update = true;

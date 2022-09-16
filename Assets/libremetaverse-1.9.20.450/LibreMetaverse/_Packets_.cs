@@ -26,6 +26,7 @@
 
 using System;
 using UnityEngine;
+using Unity.Burst;
 
 namespace OpenMetaverse
 {
@@ -49,6 +50,7 @@ namespace OpenMetaverse.Packets
     /// Thrown when a packet could not be successfully deserialized
     /// </summary>
     [Serializable]
+    [BurstCompile]
     public class MalformedDataException : ApplicationException
     {
         /// <summary>
@@ -66,12 +68,13 @@ namespace OpenMetaverse.Packets
             this.Source = "Packet decoding";
         }
     }
-    
+
     /// <summary>
     /// The header of a message template packet. Holds packet flags, sequence
     /// number, packet ID, and any ACKs that will be appended at the end of
     /// the packet
     /// </summary>
+    [BurstCompile]
     public struct Header
     {
         public bool Reliable;
@@ -83,6 +86,7 @@ namespace OpenMetaverse.Packets
         public PacketFrequency Frequency;
         public uint[] AckList;
 
+        [BurstCompile]
         public void ToBytes(byte[] bytes, ref int i)
         {
             byte flags = 0;
@@ -134,6 +138,7 @@ namespace OpenMetaverse.Packets
         /// <param name="bytes">Reference to the target byte array</param>
         /// <param name="i">Beginning position to start writing to in the byte
         /// array, will be updated with the ending position of the ACK list</param>
+        [BurstCompile]
         public void AcksToBytes(byte[] bytes, ref int i)
         {
             foreach (uint ack in AckList)
@@ -151,6 +156,7 @@ namespace OpenMetaverse.Packets
         /// <param name="pos"></param>
         /// <param name="packetEnd"></param>
         /// <returns></returns>
+        /// 
         public static Header BuildHeader(byte[] bytes, ref int pos, ref int packetEnd)
         {
             Header header;
@@ -203,6 +209,7 @@ namespace OpenMetaverse.Packets
         /// <param name="header"></param>
         /// <param name="bytes"></param>
         /// <param name="packetEnd"></param>
+        ///
         static void CreateAckList(ref Header header, byte[] bytes, ref int packetEnd)
         {
             if (header.AppendedAcks)
@@ -228,6 +235,7 @@ namespace OpenMetaverse.Packets
     /// A block of data in a packet. Packets are composed of one or more blocks,
     /// each block containing one or more fields
     /// </summary>
+    [BurstCompile]
     public abstract class PacketBlock
     {
         /// <summary>Current length of the data in this packet</summary>
@@ -646,6 +654,7 @@ namespace OpenMetaverse.Packets
         ObjectAnimation = 196638,
     }
 
+    [BurstCompile]
     public abstract partial class Packet
     {
         public const int MTU = 1200;
@@ -677,6 +686,7 @@ namespace OpenMetaverse.Packets
             }
         }
 
+        [BurstCompile]
         public static PacketType GetType(ushort id, PacketFrequency frequency)
         {
             switch (frequency)
@@ -80029,6 +80039,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80041,6 +80052,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((RegionAllowAccessOverride) ? 1 : 0);
@@ -80083,6 +80095,7 @@ namespace OpenMetaverse.Packets
             FromBytes(bytes, ref i, ref packetEnd, null);
         }
 
+        [BurstCompile]
         override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
         {
             Header.FromBytes(bytes, ref i, ref packetEnd);
@@ -80102,6 +80115,7 @@ namespace OpenMetaverse.Packets
             FromBytes(head, bytes, ref i, ref packetEnd);
         }
 
+        [BurstCompile]
         override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
         {
             Header = header;
@@ -80110,6 +80124,7 @@ namespace OpenMetaverse.Packets
             RegionAllowAccessBlock.FromBytes(bytes, ref i);
         }
 
+        [BurstCompile]
         public override byte[] ToBytes()
         {
             int length = 7;
@@ -80127,11 +80142,13 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple()
         {
             return new byte[][] { ToBytes() };
         }
 
+        [BurstCompile]
         public override byte[] ToBytes(Interfaces.IByteBufferPool pool, ref int size)
         {
             int length = 7;
@@ -80149,6 +80166,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple(Interfaces.IByteBufferPool pool, out int[] sizes)
         {
             sizes = new int[1];
@@ -80214,6 +80232,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 int length;
@@ -80256,6 +80275,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
@@ -80312,6 +80332,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80326,6 +80347,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 GroupID.ToBytes(bytes, i); i += 16;
@@ -80355,6 +80377,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80368,6 +80391,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Animation.ToBytes(bytes, i); i += 16;
@@ -80395,6 +80419,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80407,6 +80432,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 GranterID.ToBytes(bytes, i); i += 16;
@@ -80435,6 +80461,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 int length;
@@ -80450,6 +80477,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)(NVPairs.Length % 256);
@@ -80478,6 +80506,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80490,6 +80519,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = ParamValue;
@@ -80517,6 +80547,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80530,6 +80561,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = AgentLegacyAccess;
@@ -80557,6 +80589,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -80569,6 +80602,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UIntToBytes(Flags, bytes, i); i += 4;
@@ -80597,6 +80631,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 int length;
@@ -80612,6 +80647,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)InventoryHost.Length;
@@ -80681,6 +80717,7 @@ namespace OpenMetaverse.Packets
             FromBytes(bytes, ref i, ref packetEnd, null);
         }
 
+        [BurstCompile]
         override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
         {
             Header.FromBytes(bytes, ref i, ref packetEnd);
@@ -80762,6 +80799,7 @@ namespace OpenMetaverse.Packets
             FromBytes(head, bytes, ref i, ref packetEnd);
         }
 
+        [BurstCompile]
         override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
         {
             Header = header;
@@ -80832,6 +80870,7 @@ namespace OpenMetaverse.Packets
             { AgentInventoryHost[j].FromBytes(bytes, ref i); }
         }
 
+        [BurstCompile]
         public override byte[] ToBytes()
         {
             int length = 7;
@@ -80877,6 +80916,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple()
         {
             System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
@@ -81061,6 +81101,7 @@ namespace OpenMetaverse.Packets
             return packets.ToArray();
         }
 
+        [BurstCompile]
         public override byte[] ToBytes(Interfaces.IByteBufferPool pool, ref int size)
         {
             int length = 7;
@@ -81104,6 +81145,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple(Interfaces.IByteBufferPool pool, out int[] sizes)
         {
             System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
@@ -81326,6 +81368,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -81341,6 +81384,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
@@ -81396,12 +81440,14 @@ namespace OpenMetaverse.Packets
             FromBytes(head, bytes, ref i, ref packetEnd);
         }
 
+        [BurstCompile]
         override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
         {
             Header = header;
             AgentData.FromBytes(bytes, ref i);
         }
 
+        [BurstCompile]
         public override byte[] ToBytes()
         {
             int length = 7;
@@ -81415,11 +81461,13 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple()
         {
             return new byte[][] { ToBytes() };
         }
 
+        [BurstCompile]
         public override byte[] ToBytes(Interfaces.IByteBufferPool pool, ref int size)
         {
             int length = 7;
@@ -81435,6 +81483,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple(Interfaces.IByteBufferPool pool, out int[] sizes)
         {
             sizes = new int[1];
@@ -81483,6 +81532,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -81506,6 +81556,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
@@ -81552,6 +81603,7 @@ namespace OpenMetaverse.Packets
             FromBytes(bytes, ref i, ref packetEnd, null);
         }
 
+        [BurstCompile]
         override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
         {
             Header.FromBytes(bytes, ref i, ref packetEnd);
@@ -81569,12 +81621,14 @@ namespace OpenMetaverse.Packets
             FromBytes(head, bytes, ref i, ref packetEnd);
         }
 
+        [BurstCompile]
         override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
         {
             Header = header;
             AgentData.FromBytes(bytes, ref i);
         }
 
+        [BurstCompile]
         public override byte[] ToBytes()
         {
             int length = 7;
@@ -81588,11 +81642,13 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple()
         {
             return new byte[][] { ToBytes() };
         }
 
+        [BurstCompile]
         public override byte[] ToBytes(Interfaces.IByteBufferPool pool, ref int size)
         {
             int length = 7;
@@ -81608,6 +81664,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple(Interfaces.IByteBufferPool pool, out int[] sizes)
         {
             sizes = new int[1];
@@ -81651,6 +81708,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -81669,6 +81727,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 SoundID.ToBytes(bytes, i); i += 16;
@@ -81710,6 +81769,7 @@ namespace OpenMetaverse.Packets
             FromBytes(bytes, ref i, ref packetEnd, null);
         }
 
+        [BurstCompile]
         override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
         {
             Header.FromBytes(bytes, ref i, ref packetEnd);
@@ -81727,12 +81787,14 @@ namespace OpenMetaverse.Packets
             FromBytes(head, bytes, ref i, ref packetEnd);
         }
 
+        [BurstCompile]
         override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
         {
             Header = header;
             SoundData.FromBytes(bytes, ref i);
         }
 
+        [BurstCompile]
         public override byte[] ToBytes()
         {
             int length = 7;
@@ -81746,11 +81808,13 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple()
         {
             return new byte[][] { ToBytes() };
         }
 
+        [BurstCompile]
         public override byte[] ToBytes(Interfaces.IByteBufferPool pool, ref int size)
         {
             int length = 7;
@@ -81766,6 +81830,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple(Interfaces.IByteBufferPool pool, out int[] sizes)
         {
             sizes = new int[1];
@@ -81795,6 +81860,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -81807,6 +81873,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 ID.ToBytes(bytes, i); i += 16;
@@ -81834,6 +81901,7 @@ namespace OpenMetaverse.Packets
                 FromBytes(bytes, ref i);
             }
 
+            [BurstCompile]
             public override void FromBytes(byte[] bytes, ref int i)
             {
                 try
@@ -81847,6 +81915,7 @@ namespace OpenMetaverse.Packets
                 }
             }
 
+            [BurstCompile]
             public override void ToBytes(byte[] bytes, ref int i)
             {
                 AnimID.ToBytes(bytes, i); i += 16;
@@ -81887,6 +81956,7 @@ namespace OpenMetaverse.Packets
             FromBytes(bytes, ref i, ref packetEnd, null);
         }
 
+        [BurstCompile]
         override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
         {
             Header.FromBytes(bytes, ref i, ref packetEnd);
@@ -81912,6 +81982,7 @@ namespace OpenMetaverse.Packets
             FromBytes(head, bytes, ref i, ref packetEnd);
         }
 
+        [BurstCompile]
         override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
         {
             Header = header;
@@ -81926,6 +81997,7 @@ namespace OpenMetaverse.Packets
             { AnimationList[j].FromBytes(bytes, ref i); }
         }
 
+        [BurstCompile]
         public override byte[] ToBytes()
         {
             int length = 7;
@@ -81943,6 +82015,7 @@ namespace OpenMetaverse.Packets
             return bytes;
         }
 
+        [BurstCompile]
         public override byte[][] ToBytesMultiple()
         {
             System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();

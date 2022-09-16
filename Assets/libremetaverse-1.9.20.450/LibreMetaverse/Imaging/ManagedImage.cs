@@ -28,6 +28,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using UnityEngine;
+using Unity.Burst;
 
 namespace OpenMetaverse.Imaging
 {
@@ -95,6 +96,7 @@ namespace OpenMetaverse.Imaging
         /// <param name="width">width</param>
         /// <param name="height">height</param>
         /// <param name="channels">channel flags</param>
+        ///
         public ManagedImage(int width, int height, ImageChannels channels)
         {
             Width = width;
@@ -237,6 +239,8 @@ namespace OpenMetaverse.Imaging
         /// Convert the channels in the image. Channels are created or destroyed as required.
         /// </summary>
         /// <param name="channels">new channel flags</param>
+        /// 
+        [BurstCompile]
         public void ConvertChannels(ImageChannels channels)
         {
             if (Channels == channels)
@@ -280,6 +284,7 @@ namespace OpenMetaverse.Imaging
         /// </summary>
         /// <param name="width">new width</param>
         /// <param name="height">new height</param>
+        [BurstCompile]
         public void ResizeNearestNeighbor(int width, int height)
         {
             if (width == Width && height == Height)
@@ -328,6 +333,7 @@ namespace OpenMetaverse.Imaging
         /// origin, suitable for feeding directly into OpenGL
         /// </summary>
         /// <returns>A byte array containing raw texture data</returns>
+        [BurstCompile]
         public byte[] ExportRaw()
         {
             byte[] raw = new byte[Width * Height * 4];
@@ -394,6 +400,7 @@ namespace OpenMetaverse.Imaging
         /// Create a Texture2D suitable for feeding directly into Unity
         /// </summary>
         /// <returns>A Texture2D containing texture data</returns>
+        [BurstCompile]
         public Texture2D ExportUnity()
         {
             //byte[] raw = new byte[Width * Height * 4];
@@ -452,6 +459,7 @@ namespace OpenMetaverse.Imaging
         /// origin, suitable for feeding directly into OpenGL
         /// </summary>
         /// <returns>A byte array containing raw texture data</returns>
+        [BurstCompile]
         public Bitmap ExportBitmap()
         {
             byte[] raw = new byte[Width * Height * 4];
@@ -509,6 +517,7 @@ namespace OpenMetaverse.Imaging
             return b;
         }
 
+        [BurstCompile]
         public byte[] ExportTGA()
         {
             byte[] tga = new byte[Width * Height * ((Channels & ImageChannels.Alpha) == 0 ? 3 : 4) + 32];
@@ -573,6 +582,7 @@ namespace OpenMetaverse.Imaging
             return tga;
         }
 
+        [BurstCompile]
         private static void FillArray(byte[] array, byte value)
         {
             if (array != null)
@@ -582,6 +592,7 @@ namespace OpenMetaverse.Imaging
             }
         }
 
+        [BurstCompile]
         public void Clear()
         {
             FillArray(Red, 0);

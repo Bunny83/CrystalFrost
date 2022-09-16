@@ -11,6 +11,7 @@ using OpenMetaverse.Rendering;
 using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
 using UnityEngine.Rendering.HighDefinition;
+using Unity.Burst;
 
 public class SimManager : MonoBehaviour
 {
@@ -45,10 +46,21 @@ public class SimManager : MonoBehaviour
     Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
 
     //Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
+    public class TranslationData
+    {
+        public Transform transform;
+        public Vector3 velocity;
+        public Vector3 omega;
 
+        public TranslationData(Transform t, Vector3 v, Vector3 o)
+        {
+            transform = t;
+            velocity = v;
+            omega = o;
+        }
+    }
 
-
-    //Dictionary<UUID, List<GameObject>> meshObjects = new Dictionary<UUID, List<GameObject>>();
+    Dictionary<uint, TranslationData> translationObjs = new Dictionary<uint, TranslationData>();
 
     private void Awake()
     {
@@ -73,10 +85,12 @@ public class SimManager : MonoBehaviour
         StartCoroutine(ObjectsLODUpdate());
         StartCoroutine(MeshRequests());
         StartCoroutine(MeshQueueParsing());
+        StartCoroutine(UpdateCamera());
         //SplatPrototype[] splats = new SplatPrototype[4];
 
     }
 
+    [BurstCompile]
     IEnumerator MeshQueueParsing()
     {
         CrystalFrost.AssetManager.MeshQueue meshItem;
@@ -84,44 +98,42 @@ public class SimManager : MonoBehaviour
         int i;
         while (true)
         {
-            //Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
-            if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
-            {
-                yield return new WaitForSeconds(0.001f);
-                //Debug.Log("DeQueing mesh stage 2");
-                if (meshItem.uuid != null)
+            if(ClientManager.active)
+            { 
+//                Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
+                if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
                 {
-                    //Debug.Log("DeQueing mesh stage 3");
-                    //CrystalFrost.AssetManager.meshCache.TryAdd()
-                    meshes = new Mesh[meshItem.vertices.Count];
-                    for (i = 0; i < meshes.Length; i++)
+                    //Debug.Log("DeQueing mesh stage 2");
+                    if (meshItem.uuid != null)
                     {
-                        meshes[i] = new Mesh();
-                        meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
-                        meshes[i].vertices = meshItem.vertices.Dequeue();
-                        //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
-                        yield return new WaitForSeconds(0.001f);
-                        meshes[i].normals = meshItem.normals.Dequeue();
-                        yield return new WaitForSeconds(0.001f);
-                        meshes[i].uv = meshItem.uvs.Dequeue();
-                        yield return new WaitForSeconds(0.001f);
-                        meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
-                        yield return new WaitForSeconds(0.001f);
-                        meshes[i] = ReverseWind(meshes[i]);
-                        yield return new WaitForSeconds(0.001f);
+                        //Debug.Log("DeQueing mesh stage 3");
+                        //CrystalFrost.AssetManager.meshCache.TryAdd()
+                        meshes = new Mesh[meshItem.vertices.Count];
+                        for (i = 0; i < meshes.Length; i++)
+                        {
+                            meshes[i] = new Mesh();
+                            meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
+                            meshes[i].vertices = meshItem.vertices.Dequeue();
+                            //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
+                            meshes[i].normals = meshItem.normals.Dequeue();
+                            meshes[i].uv = meshItem.uvs.Dequeue();
+                            meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
+                            meshes[i] = ReverseWind(meshes[i]);
+                        }
+                        ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
                     }
-                    ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
-                }
-                else
-                {
-                    Debug.LogError("meshItem was null");
+                    else
+                    {
+                        Debug.LogError("meshItem was null");
+                    }
                 }
             }
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.02f);
         }
     }
 
+    [BurstCompile]
     void ObjectDataBlockUpdateEvent(object sender, ObjectDataBlockUpdateEventArgs e)
     {
         if(!ClientManager.IsMainThread)
@@ -141,6 +153,7 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    [BurstCompile]
     void UpdatePrim(Primitive prim)
     {
         GameObject bgo = objects[prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
@@ -156,6 +169,8 @@ public class SimManager : MonoBehaviour
             objects[prim.LocalID].transform.localRotation = prim.Rotation.ToUnity();
         }
         bgo.transform.localScale = prim.Scale.ToUnity();
+        translationObjs[prim.LocalID].velocity = prim.Velocity.ToUnity();
+        translationObjs[prim.LocalID].omega = prim.AngularVelocity.ToUnity();
     }
 
     void KillObjectEventHandler(object sender, KillObjectEventArgs e)
@@ -165,12 +180,27 @@ public class SimManager : MonoBehaviour
 
     private void Update()
     {
+        float t = Time.deltaTime;
         ObjectsUpdate();
+
+        TranslateObjects(t);
         //UpdateCamera();
         //TerseObjectUpdates();
     }
 
+    [BurstCompile]
+    void TranslateObjects(float t)
+    {
+        foreach(TranslationData td in translationObjs.Values)
+        {
+            td.transform.position += td.velocity * t;
+            td.transform.rotation = td.transform.rotation * Quaternion.Euler(td.omega * 57.295779513082320876798154814105f * t);
+        }
+    }
+
     float DEG_TO_RAD = 0.017453292519943295769236907684886f;
+    float RAD_TO_DEG = 57.295779513082320876798154814105f;
+    [BurstCompile]
     IEnumerator UpdateCamera()
     {
         while (true)
@@ -178,15 +208,18 @@ public class SimManager : MonoBehaviour
             if (client.Settings.SEND_AGENT_UPDATES && ClientManager.active)
             {
                 //client.Self.Movement.Camera.SetPositionOrientation(new OMVVector3(Camera.main.transform.position.x, Camera.main.transform.position.z, Camera.main.transform.position.y), Camera.main.transform.rotation.eulerAngles.x * DEG_TO_RAD, Camera.main.transform.rotation.eulerAngles.z * DEG_TO_RAD, Camera.main.transform.rotation.eulerAngles.y * DEG_TO_RAD);
+                Vector3 lookat = Camera.main.transform.position + (Camera.main.transform.forward * 7.5f);
                 client.Self.Movement.Camera.LookAt(
-                    client.Self.SimPosition + new OMVVector3(-5, 0, 0) * client.Self.Movement.BodyRotation,
-                    client.Self.SimPosition
-                );
+                    new OMVVector3(Camera.main.transform.position.x, Camera.main.transform.position.z, Camera.main.transform.position.y),
+                    new OMVVector3(lookat.x, lookat.z, lookat.y));
+                //    client.Self.SimPosition + new OMVVector3(-5, 0, 0) * client.Self.Movement.BodyRotation,
+                //    client.Self.SimPosition
+                //);
                 client.Self.Movement.Camera.Far = 64f;
+                client.Self.SetHeightWidth(1920, 1080);
                 client.Self.Movement.SendUpdate();
-                Camera.main.transform.rotation = client.Self.Movement.BodyRotation.ToUnity();
-                Camera.main.transform.position = client.Self.Movement.Camera.Position.ToUnity();
-                client.Self.SetHeightWidth(1024, 768);
+                //Camera.main.transform.rotation = client.Self.Movement.BodyRotation.ToUnity();
+                //Camera.main.transform.position = client.Self.Movement.Camera.Position.ToUnity();
                 //client.Self.
                 //client.Self.Movement.Camera.LookDirection(new OMVVector3(Camera.main.transform.forward.x, Camera.main.transform.forward.z, Camera.main.transform.forward.y);
                 //client.Self.Movement.Camera.UpAxis = new OMVVector3(Camera.main.transform.up.x, Camera.main.transform.up.z, Camera.main.transform.up.y);
@@ -232,6 +265,7 @@ public class SimManager : MonoBehaviour
 
 
     int meshRequestCounter = 0;
+    [BurstCompile]
     IEnumerator MeshRequests()
     {
         while (true)
@@ -273,6 +307,7 @@ public class SimManager : MonoBehaviour
     //Faces are added to BGO, not to GO, and given the same rotation and position as the GO, then locally scaled
     //to the prim.Scale.ToUnity() vector and then lastly parented to the BGO
     /// </summary>
+    [BurstCompile]
     void ObjectsUpdate()
     {
         int counter = 0;
@@ -303,6 +338,9 @@ public class SimManager : MonoBehaviour
                 go.transform.parent = bgo.transform;
                 MakeParent(prim.LocalID, prim.ParentID);
 
+                TranslationData translationData = new TranslationData(bgo.transform, prim.Velocity.ToUnity(), prim.AngularVelocity.ToUnity());
+                translationObjs.TryAdd(prim.LocalID, translationData);
+
                 if (prim.LocalID == ClientManager.client.Self.LocalID)
                 {
                     Avatar av = gameObject.GetComponent<Avatar>();
@@ -319,6 +357,7 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    [BurstCompile]
     void Objects_ObjectUpdate(PrimEventArgs e)
     {
         if (e.Prim.IsAttachment) return;
@@ -340,6 +379,7 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    [BurstCompile]
     void MakeParent(uint id, uint parent)
     {
         if (objects.ContainsKey(parent) && parent != id)
@@ -352,10 +392,15 @@ public class SimManager : MonoBehaviour
             bgo.transform.parent = bgoParent.transform;
             bgo.transform.rotation = bgo.transform.parent.rotation * bgo.transform.rotation;
         }
+        if(objects.ContainsKey(parent) && (parent == id || parent == 0))
+        {
+
+        }
     }
 
     //IEnumerator ObjectsUpdate()
 #if true
+    [BurstCompile]
     IEnumerator ObjectsLODUpdate()
     {
         int counter = 0;
@@ -369,6 +414,7 @@ public class SimManager : MonoBehaviour
 
                 RezzedPrimStuff rez = obj.gameObject.GetComponent<RezzedPrimStuff>();
 
+                if (obj.primitive.Type == PrimType.Unknown) continue;
                 if ((Vector3.Distance(obj.gameObject.transform.position, Camera.main.transform.position) < ClientManager.viewDistance))
                 {
                     rez.Enable();
@@ -391,6 +437,7 @@ public class SimManager : MonoBehaviour
 
     }
 #endif
+    [BurstCompile]
     public void ParseMeshes(Mesh[] meshes, GameObject go, Primitive prim)
     {
         int k;
@@ -471,6 +518,7 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    [BurstCompile]
     public void TerrainEventHandler(object sender, LandPatchReceivedEventArgs e)
     {
         if (!ClientManager.IsMainThread)
@@ -620,6 +668,7 @@ public class SimManager : MonoBehaviour
         return t;
     }
 
+    [BurstCompile]
     Mesh ReverseWind(Mesh mesh)
     {
         //C# or UnityScript

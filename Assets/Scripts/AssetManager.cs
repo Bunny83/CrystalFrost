@@ -10,6 +10,7 @@ using OpenMetaverse.Assets;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Imaging;
 using OpenJpegDotNet.IO;
+using Unity.Burst;
 
 namespace CrystalFrost
 {
@@ -27,6 +28,7 @@ namespace CrystalFrost
 
         public SimManager simManager;
 
+        [BurstCompile]
         public struct MeshQueue
         {
             public UUID uuid;
@@ -48,7 +50,9 @@ namespace CrystalFrost
         static Dictionary<UUID, int> components = new Dictionary<UUID, int>();
         static List<MeshRenderer> fullbrights = new List<MeshRenderer>();
 
+#if UseMeshCache
         public static ConcurrentDictionary<UUID, Mesh[]> meshCache = new ConcurrentDictionary<UUID, Mesh[]>();
+#endif
         //static Dictionary<UUID, Texture2D> sculpts = new Dictionary<UUID, Texture2D>();
         //static List<UUID> alphaTextures;
         //static Dictionary<UUID, >  = new Dictionary<UUID, >();
@@ -58,6 +62,7 @@ namespace CrystalFrost
         //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
         //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
 
+        [BurstCompile]
         public Texture2D RequestTexture(UUID uuid, MeshRenderer rendr)
         {
             if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
@@ -118,6 +123,7 @@ namespace CrystalFrost
             return textures[uuid];
         }
 
+        [BurstCompile]
         public Texture2D RequestFullbrightTexture(UUID uuid, MeshRenderer rendr)
         {
             if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
@@ -213,8 +219,9 @@ namespace CrystalFrost
         }
 #endif
 
-        Dictionary<UUID, List<SculptData>> requestedSculpts = new Dictionary<UUID, List<SculptData>>();
+        ConcurrentDictionary<UUID, List<SculptData>> requestedSculpts = new ConcurrentDictionary<UUID, List<SculptData>>();
 
+        [BurstCompile]
         public void RequestSculpt(GameObject gameObject, Primitive prim)
         {
             SculptData sculptdata = new SculptData
@@ -222,9 +229,15 @@ namespace CrystalFrost
                 gameObject = gameObject,
                 prim = prim
             };
+
+#if MultiThreadSculpts
+            Debug.Log("Adding sculpt to requestedMeshes");
+            requestedMeshes.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
+            requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
+#else
             requestedSculpts.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
             requestedSculpts[prim.Sculpt.SculptTexture].Add(sculptdata);
-
+#endif
             ClientManager.client.Assets.RequestImage(prim.Sculpt.SculptTexture, CallbackSculptTexture);
 
             //return Resources.Load<MeshFilter>("Sphere").mesh;
@@ -233,6 +246,7 @@ namespace CrystalFrost
             //return textures[uuid];
         }
 
+        [BurstCompile]
         public void CallbackSculptTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -241,7 +255,7 @@ namespace CrystalFrost
             UUID id = assetTexture.AssetID;
 
             //SculptData sculptdata = requestedSculpts[ID];
-
+#if !MultiThreadSculpts
             if (!isMainThread)
             {
                 UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackSculptTexture(state, assetTexture));
@@ -253,19 +267,42 @@ namespace CrystalFrost
             //MeshRenderer rendr;// = sculptRenderers[id][0];
 
             Mesh mesh;// = new Mesh();
+#endif
+
             MeshmerizerR mesher = new MeshmerizerR();
 
             //FIXME Replace this decode with the native code DLL version
             bool success = assetTexture.Decode();
 
+
             //Debug.Log("Sculpt Texture decoded");
 
-            if (mesher == null) Debug.Log("mesher is null");
+            /*if (mesher == null) Debug.Log("mesher is null");
             if (assetTexture == null) Debug.Log("assetTexture is null");
             if (assetTexture.Image == null) Debug.Log("assetTexture.Image is null");
-            if (assetTexture.Image.ExportBitmap() == null) Debug.Log("assetTexture.Image.ExportBitmap() is null");
-            //FIXME Replace assetTexture.Image.ExportBitmap argument with one derived from the native code DLL
-            FacetedMesh fmesh = mesher.GenerateFacetedSculptMesh(requestedSculpts[id][0].prim, assetTexture.Image.ExportBitmap(), DetailLevel.Highest);
+            if (assetTexture.Image.ExportBitmap() == null) Debug.Log("assetTexture.Image.ExportBitmap() is null");*/
+            //System.Drawing.Bitmap bitmap = assetTexture.Image.ExportBitmap();
+            //FacetedMesh fmesh = new FacetedMesh();
+            FacetedMesh fmesh;
+            Primitive prim;
+            try
+            {
+            // Call a method that might throw an exception
+#if MultiThreadSculpts
+                prim = requestedMeshes[id][0].prim;
+                fmesh = mesher.GenerateFacetedSculptMesh(requestedMeshes[id][0].prim, assetTexture.Image.ExportBitmap(), DetailLevel.Highest);
+#else
+                prim = requestedSculpts[id][0].prim;
+                fmesh = mesher.GenerateFacetedSculptMesh(requestedSculpts[id][0].prim, assetTexture.Image.ExportBitmap(), DetailLevel.Highest);
+#endif
+            }
+            catch (Exception e)
+            {
+                UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log(e));
+                return;
+                // Catch all exception cases individually
+            }
+
 
             //Debug.Log("Sculpt Mesh generated");
 
@@ -289,14 +326,24 @@ namespace CrystalFrost
             indices = new int[vertices.Length];
             normals = new Vector3[vertices.Length];
             uvs = new Vector2[vertices.Length];
+
             //mesh.subMeshCount = fmesh.faces.Count;
             v = 0;
+#if MultiThreadSculpts
+            MeshQueue meshQueue = new MeshQueue();
+            meshQueue.uuid = assetTexture.AssetID;
+            meshQueue.vertices = new Queue<Vector3[]>();
+            meshQueue.normals = new Queue<Vector3[]>();
+            meshQueue.uvs = new Queue<Vector2[]>();
+            meshQueue.indices = new Queue<ushort[]>();
+#else
             GameObject gomesh;// = Instantiate(blank);
             MeshRenderer _rendr;
             MeshFilter filter;
+#endif
             int counter = 0;
             int vertexcount = 0;
-            Primitive prim = requestedSculpts[id][0].prim;
+
             for (j = 0; j < fmesh.faces.Count; j++)
             {
                 if (fmesh.faces[j].Vertices.Count == 0)
@@ -306,7 +353,9 @@ namespace CrystalFrost
                 vertexcount += fmesh.faces[j].Vertices.Count;
                 counter++;
 
+#if !MultiThreadSculpts
                 mesh = new Mesh();
+#endif
 
                 vertices = new Vector3[fmesh.faces[j].Vertices.Count];
                 //indices = new int[fmesh.faces[j].Indices.Length];
@@ -330,6 +379,19 @@ namespace CrystalFrost
                 }
 
                 //mesh = new Mesh();
+#if MultiThreadSculpts
+
+                meshQueue.vertices.Enqueue(vertices);
+                meshQueue.normals.Enqueue(normals);
+                meshQueue.uvs.Enqueue(uvs);
+                meshQueue.indices.Enqueue(fmesh.faces[j].Indices.ToArray());
+            }
+
+            concurrentMeshQueue.Enqueue(meshQueue);
+
+            //concurrentMeshQueue.Enqueue(TranscodeFacetedMesh(meshQueue, requestedMeshes[id][0].prim, DetailLevel.Highest));
+
+#else
                 mesh.vertices = vertices;
                 mesh.normals = normals;
                 //mesh.RecalculateNormals();
@@ -417,7 +479,8 @@ namespace CrystalFrost
 
 
             }
-            if (counter == 0 || vertexcount == 0)
+#endif
+                if (counter == 0 || vertexcount == 0)
             {
                 //Debug.Log($"Sculpt Mesh {rendr.gameObject.name} empty: {counter} / {vertexcount}");
             }
@@ -429,6 +492,7 @@ namespace CrystalFrost
 
         }
 
+        [BurstCompile]
         public void CallbackTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -484,6 +548,7 @@ namespace CrystalFrost
 
         }
 
+        [BurstCompile]
         public void CallbackTerrainTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -529,6 +594,7 @@ namespace CrystalFrost
 
         }
 
+        [BurstCompile]
         public void MainThreadTextureReinitialize(Texture2D texture2D, UUID uuid, int components)
         {
             //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
@@ -569,6 +635,7 @@ namespace CrystalFrost
             }
         }
 
+        [BurstCompile]
         public void CallbackFullbrightTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -619,7 +686,7 @@ namespace CrystalFrost
 
 
         }
-
+        [BurstCompile]
         public void MainThreadFullbrightTextureReinitialize(Texture2D texture2D, UUID uuid, int components)
         {
             //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
@@ -653,15 +720,17 @@ namespace CrystalFrost
         }
 
         ConcurrentDictionary<UUID, List<SculptData>> requestedMeshes = new ConcurrentDictionary<UUID, List<SculptData>>();
-
+        [BurstCompile]
         public void RequestMeshHighest(GameObject gameObject, Primitive prim)
         {
             queuedMeshes++;
+#if UseMeshCache
             if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
             {
                 MainThreadMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
                 return;
             }
+#endif
             SculptData sculptdata = new SculptData
             {
                 gameObject = gameObject,
@@ -670,7 +739,7 @@ namespace CrystalFrost
             requestedMeshes.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
             requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
 
-            ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshHighest);
+            ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMesh);
         }
 
         /*public void RequestMeshHigh(GameObject gameObject, Primitive prim)
@@ -726,7 +795,7 @@ namespace CrystalFrost
 
             ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshLow);
         }*/
-
+        [BurstCompile]
         Color[] ImageBytesToColors(AssetTexture assetTexture)
         {
             int i;
@@ -740,15 +809,17 @@ namespace CrystalFrost
             }
             return Colors;
         }
-
-        public void CallbackMeshHighest(bool success, AssetMesh assetMesh)
+        [BurstCompile]
+        public void CallbackMesh(bool success, AssetMesh assetMesh)
         {
             //if (!ClientManager.IsMainThread)
             //    UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshHighest(success, assetMesh));
             if (!success) return;
             UUID id = assetMesh.AssetID;
             //Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest);
+#if UseMeshCache
             if (meshCache.ContainsKey(id)) return;
+#endif
             concurrentMeshQueue.Enqueue(TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest));
 
             //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log($"Mesh enqueued. {concurrentMeshQueue.Count} in queue"));
@@ -811,7 +882,7 @@ namespace CrystalFrost
 
         }*/
 
-
+        [BurstCompile]
         public void MainThreadMeshSpawner(Mesh[] meshes, UUID id)
         {
             if (!ClientManager.IsMainThread)
@@ -972,7 +1043,7 @@ namespace CrystalFrost
         }
 
 
-
+        [BurstCompile]
         MeshQueue TranscodeFacetedMesh(AssetMesh assetMesh, Primitive prim, DetailLevel detail)
         {
             //Primitive prim = meshPrims[assetMesh.AssetID];
@@ -1133,7 +1204,7 @@ namespace CrystalFrost
                 return new Mesh[0];
             }
         }*/
-
+        [BurstCompile]
         Mesh ReverseWind(Mesh mesh)
         {
             //C# or UnityScript
