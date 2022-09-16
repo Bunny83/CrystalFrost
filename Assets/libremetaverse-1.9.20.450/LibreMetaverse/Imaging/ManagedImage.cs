@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using UnityEngine;
@@ -453,6 +454,63 @@ namespace OpenMetaverse.Imaging
 
             return texture;
         }
+
+        [BurstCompile]
+        public UnityEngine.Color[] ExportUnityThreadSafe()
+        {
+            //byte[] raw = new byte[Width * Height * 4];
+            //Texture2D texture = new Texture2D(Width, Height, TextureFormat.RGBA32, false);
+            UnityEngine.Color[] colors = new UnityEngine.Color[Width * Height];
+            int i = 0;
+            if ((Channels & ImageChannels.Alpha) != 0)
+            {
+                if ((Channels & ImageChannels.Color) != 0)
+                {
+                    // RGBA
+                    for (int h = 0; h < Height; h++)
+                    {
+                        for (int w = 0; w < Width; w++)
+                        {
+                            int pos = (Height - 1 - h) * Width + w;
+                            int srcPos = h * Width + w;
+                            colors[i] = new UnityEngine.Color(Red[srcPos] * 0.003921568627451f, Green[srcPos] * 0.003921568627451f, Blue[srcPos] * 0.003921568627451f, Alpha[srcPos] * 0.003921568627451f);
+                            i++;
+                        }
+                    }
+                }
+                else
+                {
+                    // Alpha only
+                    for (int h = 0; h < Height; h++)
+                    {
+                        for (int w = 0; w < Width; w++)
+                        {
+                            int pos = (Height - 1 - h) * Width + w;
+                            int srcPos = h * Width + w;
+                            colors[i] = new UnityEngine.Color(Red[srcPos] * 0.003921568627451f, Green[srcPos] * 0.003921568627451f, Blue[srcPos] * 0.003921568627451f);
+                            i++;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // RGB
+                for (int h = 0; h < Height; h++)
+                {
+                    for (int w = 0; w < Width; w++)
+                    {
+                        int pos = (Height - 1 - h) * Width + w;
+                        int srcPos = h * Width + w;
+                        colors[i] = new UnityEngine.Color(Red[srcPos] * 0.003921568627451f, Green[srcPos] * 0.003921568627451f, Blue[srcPos] * 0.003921568627451f);
+                        i++;
+                    }
+                }
+            }
+
+            return colors;
+        }
+
 
         /// <summary>
         /// Create a byte array containing 32-bit RGBA data with a bottom-left

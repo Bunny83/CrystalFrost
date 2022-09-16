@@ -377,7 +377,7 @@ namespace CrystalFrost
                     uvs[i].y *= -1;
                     v++;
                 }
-
+                
                 //mesh = new Mesh();
 #if MultiThreadSculpts
 
@@ -492,6 +492,18 @@ namespace CrystalFrost
 
         }
 
+        public struct TextureQueueData
+        {
+            public UUID uuid;
+            public Color[] colors;
+            public int components;
+            public int width;
+            public int height;
+            public bool fullbright;
+        }
+
+        public static ConcurrentQueue<TextureQueueData> textureQueue = new ConcurrentQueue<TextureQueueData>();
+
         [BurstCompile]
         public void CallbackTexture(TextureRequestState state, AssetTexture assetTexture)
         {
@@ -537,6 +549,18 @@ namespace CrystalFrost
             {
             }
 
+#if MultiThreadTextures
+
+            textureQueue.Enqueue(new TextureQueueData
+            {
+                uuid = assetTexture.AssetID,
+                colors = assetTexture.Image.ExportUnityThreadSafe(),
+                components = assetTexture.Components,
+                width = assetTexture.Image.Width,
+                height = assetTexture.Image.Height,
+                fullbright = false
+        });
+#else
             if (!isMainThread)
             {
                 UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components));
@@ -544,7 +568,7 @@ namespace CrystalFrost
             }
 
             MainThreadTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components);
-
+#endif
 
         }
 
@@ -592,6 +616,46 @@ namespace CrystalFrost
             MainThreadTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components);
 
 
+        }
+
+        [BurstCompile]
+        public void MainThreadTextureReinitialize(Color[] colors, UUID uuid, int width, int height, int components)
+        {
+            //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
+            if (components == 3)
+                textures[uuid].Reinitialize(width, height, TextureFormat.RGB24, false);
+            else
+                textures[uuid].Reinitialize(width, height, TextureFormat.RGBA32, false);
+            if (width * height != colors.Length) Debug.Log($"{width}*{height}={width * height}. colors.Length = {colors.Length}");
+            textures[uuid].SetPixels(colors);
+            textures[uuid].name = $"{uuid} Comp:{components.ToString()}";
+            textures[uuid].Apply();
+            textures[uuid].Compress(true);
+            if (components == 4)
+            {
+                int i = 0;
+
+                Color col;
+                Material mat;
+                string basecolor = "_BaseColor";
+                for (i = 0; i < materials[uuid].Count; i++)
+                {
+                    if (materials[uuid][i].material.HasColor("_BaseColor"))
+                    {
+                        mat = Resources.Load<Material>("Alpha Material");
+                        col = materials[uuid][i].material.GetColor("_BaseColor");
+                    }
+                    else
+                    {
+                        mat = Resources.Load<Material>("Alpha Fullbright Material");
+                        col = materials[uuid][i].material.GetColor("_UnlitColor");
+                    }
+                    materials[uuid][i].name += " alpha";
+                    materials[uuid][i].material = mat;
+                    materials[uuid][i].material.SetTexture(basecolor + "Map", textures[uuid]);
+                    materials[uuid][i].material.SetColor(basecolor, col);
+                }
+            }
         }
 
         [BurstCompile]
@@ -676,6 +740,18 @@ namespace CrystalFrost
                 return;
             }
 
+#if MultiThreadTextures
+
+            textureQueue.Enqueue(new TextureQueueData
+            {
+                uuid = assetTexture.AssetID,
+                colors = assetTexture.Image.ExportUnityThreadSafe(),
+                components = assetTexture.Components,
+                width = assetTexture.Image.Width,
+                height = assetTexture.Image.Height,
+                fullbright = true
+            });
+#else
             if (!isMainThread)
             {
                 UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadFullbrightTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components));
@@ -683,9 +759,46 @@ namespace CrystalFrost
             }
 
             MainThreadFullbrightTextureReinitialize(assetTexture.Image.ExportUnity(), assetTexture.AssetID, assetTexture.Components);
+#endif
 
 
         }
+#if MultiThreadTextures
+        [BurstCompile]
+        public void MainThreadFullbrightTextureReinitialize(Color[] colors, UUID uuid, int width, int height, int components)
+        {
+            //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
+            textures[uuid].Reinitialize(width, height, TextureFormat.RGBA32, false);
+            textures[uuid].SetPixels(colors);
+            textures[uuid].name = $"{uuid} Comp:{components.ToString()}";
+            textures[uuid].Apply();
+            textures[uuid].Compress(true);
+
+            if (components == 4)
+            {
+                int i = 0;
+                Color col;
+                for (i = 0; i < materials[uuid].Count; i++)
+                {
+                    Material alphaLit = Resources.Load<Material>("Alpha Fullbright Material");
+                    if (materials[uuid][i].material.HasColor("_UnlitColor"))
+                    {
+                        col = materials[uuid][i].material.GetColor("_UnlitColor");
+                    }
+                    else
+                    {
+                        col = materials[uuid][i].material.GetColor("_BaseColor");
+                    }
+                    materials[uuid][i].name += " alpha";
+                    materials[uuid][i].material = alphaLit;
+                    materials[uuid][i].material.SetTexture("_UnlitColorMap", textures[uuid]);
+                    materials[uuid][i].material.SetColor("_UnlitColor", col);
+                }
+            }
+        }
+#endif
+
+
         [BurstCompile]
         public void MainThreadFullbrightTextureReinitialize(Texture2D texture2D, UUID uuid, int components)
         {

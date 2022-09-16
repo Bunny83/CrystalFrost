@@ -86,9 +86,41 @@ public class SimManager : MonoBehaviour
         StartCoroutine(MeshRequests());
         StartCoroutine(MeshQueueParsing());
         StartCoroutine(UpdateCamera());
+#if MultiThreadTextures
+        StartCoroutine(TextureQueueParsing());
+#endif
         //SplatPrototype[] splats = new SplatPrototype[4];
 
     }
+
+#if MultiThreadTextures
+    [BurstCompile]
+    IEnumerator TextureQueueParsing()
+    {
+        CrystalFrost.AssetManager.TextureQueueData textureItem;
+        int i;
+        while(true)
+        {
+            if (ClientManager.active)
+            {
+                if (CrystalFrost.AssetManager.textureQueue.TryDequeue(out textureItem))
+                {
+                    if(!textureItem.fullbright)
+                        ClientManager.assetManager.MainThreadTextureReinitialize(textureItem.colors, textureItem.uuid, textureItem.width, textureItem.height, textureItem.components);
+                    else
+                        ClientManager.assetManager.MainThreadFullbrightTextureReinitialize(textureItem.colors, textureItem.uuid, textureItem.width, textureItem.height, textureItem.components);
+                }
+                else
+                {
+                    Debug.LogError("textureItem was null");
+                }
+            }
+
+            yield return new WaitForSeconds(0.02f);
+        }
+    }
+
+#endif
 
     [BurstCompile]
     IEnumerator MeshQueueParsing()
