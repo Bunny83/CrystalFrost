@@ -231,7 +231,7 @@ namespace OpenMetaverse.Rendering
         /// routine since all the context for finding teh texture is elsewhere.
         /// </summary>
         /// <returns>The faceted mesh or null if can't do it</returns>
-        //[BurstCompile]
+        [BurstCompile]
         public FacetedMesh GenerateFacetedSculptMesh(Primitive prim, Bitmap scupltTexture, DetailLevel lod)
         {
             //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log("Generating sculpt mesh"));
