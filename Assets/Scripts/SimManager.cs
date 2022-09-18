@@ -11,7 +11,8 @@ using OpenMetaverse.Rendering;
 using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
 using UnityEngine.Rendering.HighDefinition;
-using Unity.Burst;
+//using Unity.Burst;
+using CrystalFrost;
 
 public class SimManager : MonoBehaviour
 {
@@ -43,10 +44,339 @@ public class SimManager : MonoBehaviour
     //List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
 
     Avatar avatar;
-    Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
+
+    public class RezzedObjectData
+    {
+        public string primName;
+        public string description;
+        public bool isPopulated;
+        uint localID;
+
+        //public Primitive prim;// rez.localID = prim.LocalID;
+        public List<GameObject> children; //rez.children.Add(bgo);
+        public List<GameObject> faces;
+        public GameObject bgo;
+        public GameObject go;
+        public GameObject meshHolder;
+        public GameObject gameObject;
+        public SimManager simMan;
+        public Vector3 velocity;
+        public Vector3 omega;
+        //public PrimType primType;
+        //public Primitive.ConstructionData pCode;
+        public Primitive prim;
+
+        public RezzedObjectData(string name, string desc, uint id, Primitive p, GameObject bg, GameObject g, SimManager s)
+        {
+            primName = name;
+            description = desc;
+            localID = id;
+            bgo = bg;
+            go = g;
+            meshHolder = g;
+            simMan = s;
+            gameObject = bgo;
+            isPopulated = false;
+            children = new List<GameObject>();
+            faces = new List<GameObject>();
+            //primType = p.Type;
+            prim = p;
+            velocity = p.Velocity.ToUnity();
+            omega = p.AngularVelocity.ToUnity();
+
+            bgo.name = name;
+            go.name = bgo.name + " meshHolder";
+            //primData = prim.PrimData;
+
+        }
+
+        /*        public void Populate()
+                {
+                    Populate(prim);
+                }
+        */
+        public void Populate(Primitive prim)
+        {
+#if true
+            if (isPopulated) return;
+
+            //if (Vector3.Distance(Camera.main.transform.position, prim.Position.ToUnity()) > ClientManager.viewDistance) return;
+
+            isPopulated = true;
+            //prim = _prim;
+
+            prim.GetOSD();
+            primName = prim.Properties != null ? prim.Properties.Name : "Object";
+            description = prim.Properties != null ? prim.Properties.Description : "";
+            go.name = $"{prim.Type.ToString()} {primName}";
+
+            if (prim.PrimData.PCode == PCode.Avatar) return;
+            if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
+            {
+#if RezPrims
+                //PrimMesh primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
+                MeshmerizerR mesher = new MeshmerizerR();
+                FacetedMesh fmesh;
+                fmesh = mesher.GenerateFacetedMesh(prim, DetailLevel.Highest);
+                //Jenny.Console.WriteLine($"Cylinder has {fmesh.faces.Count.ToString()} faces");
+
+                Mesh mesh = new Mesh();
+                Mesh subMesh = new Mesh();
+                MeshFilter meshFilter;// = go.GetComponent<MeshFilter>();
+                MeshRenderer rendr;
+
+                int i;
+                int j;
+                int v = 0;
+
+                Vector3[] vertices;
+                int[] indices;
+                Vector3[] normals;
+                Vector2[] uvs;
+
+                //for (i = 0; i < fmesh.faces.Count; i++)
+                //{
+                //    v += fmesh.faces[i].Vertices.Count;
+                //}
+
+                //Debug.Log($"Cylinder {prim.LocalID.ToString()} has {v} vertices");
+
+                vertices = new Vector3[v];
+                indices = new int[vertices.Length];
+                normals = new Vector3[vertices.Length];
+                uvs = new Vector2[vertices.Length];
+                //mesh.subMeshCount = fmesh.faces.Count;
+                v = 0;
+                GameObject gomesh;// = Instantiate(blank);
+                for (j = 0; j < fmesh.faces.Count; j++)
+                {
+                    gomesh = Instantiate(Resources.Load<GameObject>("Cube"));
+                    gomesh.name = $"face {j.ToString()}";
+                    gomesh.transform.position = go.transform.position;
+                    gomesh.transform.rotation = go.transform.rotation;
+                    gomesh.transform.parent = meshHolder.transform;
+                    gomesh.transform.localScale = Vector3.one;//prim.Scale.ToUnity();
+                    faces.Add(gomesh);
+
+                    //if(Vector3.Distance(gomesh.transform.position, Camera.main.transform.position) >= 32f)
+                        gomesh.GetComponent<MeshRenderer>().enabled = true;
+
+
+                    vertices = new Vector3[fmesh.faces[j].Vertices.Count];
+                    //indices = new int[fmesh.faces[j].Indices.Length];
+                    normals = new Vector3[fmesh.faces[j].Vertices.Count];
+                    uvs = new Vector2[fmesh.faces[j].Vertices.Count];
+
+                    rendr = gomesh.GetComponent<MeshRenderer>();
+                    meshFilter = gomesh.GetComponent<MeshFilter>();
+                    //.GetComponent<MeshRenderer>().enabled = false;
+                    Primitive.TextureEntryFace textureEntryFace;
+                    textureEntryFace = prim.Textures.GetFace((uint)j);
+                    mesher.TransformTexCoords(fmesh.faces[j].Vertices, fmesh.faces[j].Center, textureEntryFace, prim.Scale);
+                    for (i = 0; i < fmesh.faces[j].Vertices.Count; i++)
+                    {
+                        vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
+                        //indices[i] = fmesh.faces[j].Indices[i];
+                        normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
+                        uvs[i] = /*Quaternion.Euler(0, 0, (textureEntryFace.Rotation * 57.2957795f)) * */ fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
+                        v++;
+                    }
+
+                    mesh = new Mesh();
+                    mesh.vertices = vertices;
+                    mesh.normals = normals;
+                    //mesh.RecalculateNormals();
+                    mesh.uv = uvs;
+                    mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0);
+                    meshFilter.mesh = ReverseWind(mesh);
+                    Material clonemat;// = null;
+
+                    textureEntryFace.GetOSD(j);
+                    //ImageType.
+                    Color color = textureEntryFace.RGBA.ToUnity();
+                    if (color.a < 0.0001f)
+                    {
+                        //rendr.enabled = false;
+                        //continue;
+                    }
+                    string texturestring = "_BaseColorMap";
+                    string colorstring = "_BaseColor";
+                    if (color.a < 0.999f)
+                    {
+                        if (!textureEntryFace.Fullbright)
+                        {
+                            clonemat = new Material(Resources.Load<Material>("Alpha Material"));
+                        }
+                        else
+                        {
+                            texturestring = "_UnlitColorMap";
+                            colorstring = "_UnlitColor";
+                            clonemat = new Material(Resources.Load<Material>("Alpha Fullbright Material"));
+                        }
+                    }
+                    else if (!textureEntryFace.Fullbright)
+                    {
+                        clonemat = new Material(Resources.Load<Material>("Opaque Material"));
+                    }
+                    else
+                    {
+                        texturestring = "_UnlitColorMap";
+                        colorstring = "_UnlitColor";
+                        clonemat = new Material(Resources.Load<Material>("Opaque Fullbright Material"));
+                    }
+                    //color.a = 0.5f;
+
+                    rendr.material = clonemat;
+                    rendr.material.SetColor(colorstring, color);
+                    //prim.Properties.
+                    //if (prim!=null)
+                    //if (prim.Textures!=null)
+                    //if (prim.Textures.FaceTextures!=null)
+                    //if (prim.Textures.FaceTextures[j]!=null)
+                    //if (prim.Textures.FaceTextures[j].TextureID!=null)
+                    //{
+                    UUID tuuid = textureEntryFace.TextureID;//prim.Textures.FaceTextures[j];
+                                                            //Texture2D _texture = ClientManager.assetManager.RequestTexture(tuuid);
+                                                            //bool isfullbright = 
+                                                            //Texture2D _texture = ClientManager.assetManager.RequestTexture(tuuid, rendr, textureEntryFace.Fullbright);
+
+                    if (!textureEntryFace.Fullbright)
+                        rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestTexture(tuuid, rendr));
+                    else
+                        rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestFullbrightTexture(tuuid, rendr));
+
+
+                    if (textureEntryFace.TexMapType == MappingType.Default)
+                    {
+                        //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU * -2f, (textureEntryFace.OffsetV * -2f)));
+                        //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (textureEntryFace.OffsetV)));
+                        //rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
+                    }
+                    else
+                    {
+                        //rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (-textureEntryFace.OffsetV)));
+                        //rendr.material.SetTextureScale(texturestring, new Vector2(1f / textureEntryFace.RepeatU,(textureEntryFace.RepeatV)));
+                        //rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
+                    }
+
+
+                    //yield return null;// new WaitForEndOfFrame();
+                    //}
+                }
+
+                /*for (j=0;j<fmesh.faces.Count;j++)
+                {
+                    //mesh.SetVertices()
+                    //Debug.Log($"mesh has {mesh.vertices.")
+                    int buffer=0;
+                    if (j > 0) buffer = fmesh.faces[j - 1].Vertices.Count;
+                    mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, j, false, buffer);
+                    //ClientManager.texturePipeline.RequestTexture(fmesh.faces[j].TextureFace.TextureID, ImageType.Normal, 1f, 0, 0,TextureCallback(),true);
+                    string id = fmesh.faces[j].TextureFace.TextureID.ToString();
+                    //if (cmaterials.ContainsKey(id]))
+                    //{
+                    //    rendr.materials[j] = cmaterials[id];
+                    //}
+                    rendr.materials[j] = Instantiate(blankMaterial);
+                    rendr.materials[j].name = fmesh.faces[j].TextureFace.TextureID.ToString();
+                    //Texture texture = prim.Textures.FaceTextures[face];
+                }*/
+
+
+                //meshFilter.mesh = mesh;
+#endif
+            }
+            else if (prim.Type == PrimType.Sculpt)
+            {
+#if RezSculpts
+                //#if !MultiThreadSculpts            
+                //go.name += $" {prim.Sculpt.SculptTexture}";
+                ClientManager.assetManager.RequestSculpt(meshHolder, prim);
+                //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
+                //#endif
+#endif
+            }
+            //else if(prim.Type == PrimType.Mesh) go.GetComponent<MeshRenderer>
+#if RezMeshes
+            else if (prim.Type == PrimType.Mesh)
+            {
+                //meshObjects.TryAdd(prim.Sculpt.SculptTexture, new List<GameObject>());
+                //meshObjects[prim.Sculpt.SculptTexture].Add(go);
+                //go.GetComponent<MeshRenderer>().enabled = false;
+                if (prim.Sculpt != null && prim.Sculpt.SculptTexture != UUID.Zero)
+                {
+                    if (prim.Sculpt.Type == SculptType.Mesh)
+                    {
+                        //Debug.Log(l);
+                        if (prim.Sculpt.SculptTexture != null)
+                            simMan.RequestMesh(meshHolder, prim);
+                        //Debug.Log("Requesting Mesh");
+                        //go.GetComponent<MeshFilter>().mesh = 
+                    }
+                }
+            }
+#endif
+
+            //prim.Light.GetOSD();
+            if (prim.Light != null)
+            {
+                //Debug.Log("light");
+                GameObject golight = Instantiate<GameObject>(Resources.Load<GameObject>("Point Light"));
+                golight.transform.parent = go.transform;
+                children.Add(golight);
+                golight.transform.localPosition = Vector3.zero;
+                golight.transform.localRotation = Quaternion.identity;
+                Light light = golight.GetComponent<Light>();
+                HDAdditionalLightData hdlight = light.GetComponent<HDAdditionalLightData>();
+
+                //light. = prim.Light.Radius;
+                hdlight.color = prim.Light.Color.ToUnity();
+                hdlight.intensity = prim.Light.Intensity * 10000f;
+                hdlight.range = prim.Light.Radius;
+                //hdlight.fadeDistance = prim.Light.Radius * (1f - prim.Light.Falloff)
+            }
+            else
+            {
+                //Debug.Log("no light");
+            }
+#endif
+
+            //bgo.GetComponent<RezzedPrimStuff>().meshHolder = go;
+            //rez.simMan = this;
+            //rez.primType = prim.Type;
+            //rez.primTypeNum = (int) prim.Type;
+            //rez.pCode = prim.PrimData.PCode;
+        }
+
+        Mesh ReverseWind(Mesh mesh)
+        {
+            //C# or UnityScript
+            var indices = mesh.triangles;
+            var triangleCount = indices.Length / 3;
+            for (var i = 0; i < triangleCount; i++)
+            {
+                var tmp = indices[i * 3];
+                indices[i * 3] = indices[i * 3 + 1];
+                indices[i * 3 + 1] = tmp;
+            }
+            mesh.triangles = indices;
+            // additionally flip the vertex normals to get the correct lighting
+            var normals = mesh.normals;
+            for (var n = 0; n < normals.Length; n++)
+            {
+                normals[n] = -normals[n];
+            }
+            mesh.normals = normals;
+
+            return mesh;
+        }
+
+    }
+
+    Dictionary<uint, RezzedObjectData> objects = new Dictionary<uint, RezzedObjectData>();
 
     //Dictionary<string, Material> cmaterials = new Dictionary<string, Material>();
-    public class TranslationData
+/*    public class TranslationData
     {
         public Transform transform;
         public Vector3 velocity;
@@ -61,6 +391,7 @@ public class SimManager : MonoBehaviour
     }
 
     Dictionary<uint, TranslationData> translationObjs = new Dictionary<uint, TranslationData>();
+    */
 
     private void Awake()
     {
@@ -82,7 +413,7 @@ public class SimManager : MonoBehaviour
             //client.Objects. += new EventHandler<ObjectDataBlockUpdateEventArgs>(ObjectDataBlockUpdateEvent);
         //}
         client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(TerrainEventHandler);
-        StartCoroutine(ObjectsLODUpdate());
+        //StartCoroutine(ObjectsLODUpdate());
         StartCoroutine(MeshRequests());
         StartCoroutine(MeshQueueParsing());
         StartCoroutine(UpdateCamera());
@@ -94,7 +425,6 @@ public class SimManager : MonoBehaviour
     }
 
 #if MultiThreadTextures
-    [BurstCompile]
     IEnumerator TextureQueueParsing()
     {
         CrystalFrost.AssetManager.TextureQueueData textureItem;
@@ -103,17 +433,21 @@ public class SimManager : MonoBehaviour
         {
             if (ClientManager.active)
             {
-                if (CrystalFrost.AssetManager.textureQueue.TryDequeue(out textureItem))
-                {
-                    if(!textureItem.fullbright)
-                        ClientManager.assetManager.MainThreadTextureReinitialize(textureItem.colors, textureItem.uuid, textureItem.width, textureItem.height, textureItem.components);
+                //while (CrystalFrost.AssetManager.textureQueue.Count > 0)
+                //{
+                    if (CrystalFrost.AssetManager.textureQueue.TryDequeue(out textureItem))
+                    {
+                        if (!textureItem.fullbright)
+                            ClientManager.assetManager.MainThreadTextureReinitialize(textureItem.colors, textureItem.uuid, textureItem.width, textureItem.height, textureItem.components);
+                        else
+                            ClientManager.assetManager.MainThreadFullbrightTextureReinitialize(textureItem.colors, textureItem.uuid, textureItem.width, textureItem.height, textureItem.components);
+                    }
                     else
-                        ClientManager.assetManager.MainThreadFullbrightTextureReinitialize(textureItem.colors, textureItem.uuid, textureItem.width, textureItem.height, textureItem.components);
-                }
-                else
-                {
-                    Debug.LogError("textureItem was null");
-                }
+                    {
+                        //Debug.LogError("textureItem was null");
+                    }
+                    //yield return new WaitForSeconds(0.01f);
+                //}
             }
 
             yield return new WaitForSeconds(0.02f);
@@ -122,50 +456,62 @@ public class SimManager : MonoBehaviour
 
 #endif
 
-    [BurstCompile]
     IEnumerator MeshQueueParsing()
     {
         CrystalFrost.AssetManager.MeshQueue meshItem;
         Mesh[] meshes;
-        int i;
+        int i,count;
+        double time = Time.realtimeSinceStartupAsDouble;
+        double delta = 0;
         while (true)
         {
             if(ClientManager.active)
-            { 
-//                Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
-                if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
+            {
+                delta = 0.0;
+                if (CrystalFrost.AssetManager.concurrentMeshQueue.Count > 0)
                 {
-                    //Debug.Log("DeQueing mesh stage 2");
-                    if (meshItem.uuid != null)
+                    while (delta < 0.1)
                     {
-                        //Debug.Log("DeQueing mesh stage 3");
-                        //CrystalFrost.AssetManager.meshCache.TryAdd()
-                        meshes = new Mesh[meshItem.vertices.Count];
-                        for (i = 0; i < meshes.Length; i++)
+                        //Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
+                        if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
                         {
-                            meshes[i] = new Mesh();
-                            meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
-                            meshes[i].vertices = meshItem.vertices.Dequeue();
-                            //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
-                            meshes[i].normals = meshItem.normals.Dequeue();
-                            meshes[i].uv = meshItem.uvs.Dequeue();
-                            meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
-                            meshes[i] = ReverseWind(meshes[i]);
+                            //Debug.Log("DeQueing mesh stage 2");
+                            if (meshItem.uuid != null)
+                            {
+                                //Debug.Log("DeQueing mesh stage 3");
+                                //CrystalFrost.AssetManager.meshCache.TryAdd()
+                                meshes = new Mesh[meshItem.vertices.Count];
+                                for (i = 0; i < meshes.Length; i++)
+                                {
+                                    meshes[i] = new Mesh();
+                                    meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
+                                    meshes[i].vertices = meshItem.vertices.Dequeue();
+                                    //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
+                                    meshes[i].normals = meshItem.normals.Dequeue();
+                                    meshes[i].uv = meshItem.uvs.Dequeue();
+                                    meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
+                                    meshes[i] = AssetManager.ReverseWind(meshes[i]);
+                                    //meshes[i].UploadMeshData(true);
+                                }
+                                ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
+                            }
+                            else
+                            {
+                                Debug.LogError("meshItem was null");
+                            }
                         }
-                        ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
-                    }
-                    else
-                    {
-                        Debug.LogError("meshItem was null");
+                        time = Time.realtimeSinceStartupAsDouble - time;
+                        delta += time;
+                        //if (delta > 0.01 || CrystalFrost.AssetManager.concurrentMeshQueue.Count == 0)
+                        //    break;
                     }
                 }
             }
 
-            yield return new WaitForSeconds(0.02f);
+            yield return null;
         }
     }
 
-    [BurstCompile]
     void ObjectDataBlockUpdateEvent(object sender, ObjectDataBlockUpdateEventArgs e)
     {
         if(!ClientManager.IsMainThread)
@@ -185,24 +531,24 @@ public class SimManager : MonoBehaviour
         }
     }
 
-    [BurstCompile]
     void UpdatePrim(Primitive prim)
     {
-        GameObject bgo = objects[prim.LocalID].GetComponent<RezzedPrimStuff>().meshHolder;
-        if (objects[prim.LocalID].transform.parent == null)
+        GameObject bgo = objects[prim.LocalID].bgo;
+        if (objects[prim.LocalID].go.transform.parent == null)
         {
-            objects[prim.LocalID].transform.position = prim.Position.ToUnity();
-            objects[prim.LocalID].transform.rotation = prim.Rotation.ToUnity();
+            objects[prim.LocalID].go.transform.position = prim.Position.ToUnity();
+            objects[prim.LocalID].go.transform.rotation = prim.Rotation.ToUnity();
         }
         else
         {
             //Debug.Log($"{bgo.transform.localPosition} {prim.Position.ToUnity()}");
-            objects[prim.LocalID].transform.localPosition = prim.Position.ToUnity();
-            objects[prim.LocalID].transform.localRotation = prim.Rotation.ToUnity();
+            objects[prim.LocalID].go.transform.localPosition = prim.Position.ToUnity();
+            objects[prim.LocalID].go.transform.localRotation = prim.Rotation.ToUnity();
         }
+
         bgo.transform.localScale = prim.Scale.ToUnity();
-        translationObjs[prim.LocalID].velocity = prim.Velocity.ToUnity();
-        translationObjs[prim.LocalID].omega = prim.AngularVelocity.ToUnity();
+        objects[prim.LocalID].velocity = prim.Velocity.ToUnity();
+        objects[prim.LocalID].omega = prim.AngularVelocity.ToUnity();
     }
 
     void KillObjectEventHandler(object sender, KillObjectEventArgs e)
@@ -220,19 +566,19 @@ public class SimManager : MonoBehaviour
         //TerseObjectUpdates();
     }
 
-    [BurstCompile]
+    float DEG_TO_RAD = 0.017453292519943295769236907684886f;
+    float RAD_TO_DEG = 57.295779513082320876798154814105f;
+
     void TranslateObjects(float t)
     {
-        foreach(TranslationData td in translationObjs.Values)
+        foreach(RezzedObjectData td in objects.Values)
         {
-            td.transform.position += td.velocity * t;
-            td.transform.rotation = td.transform.rotation * Quaternion.Euler(td.omega * 57.295779513082320876798154814105f * t);
+            td.go.transform.position += td.velocity * t;
+            td.go.transform.rotation = td.go.transform.rotation * Quaternion.Euler(td.omega * RAD_TO_DEG * t);
         }
     }
 
-    float DEG_TO_RAD = 0.017453292519943295769236907684886f;
-    float RAD_TO_DEG = 57.295779513082320876798154814105f;
-    [BurstCompile]
+
     IEnumerator UpdateCamera()
     {
         while (true)
@@ -280,7 +626,7 @@ public class SimManager : MonoBehaviour
         public Primitive primitive;
     }
 
-    public Queue<MeshRequestData> meshRequests = new Queue<MeshRequestData>();
+    public static Queue<MeshRequestData> meshRequests = new Queue<MeshRequestData>();
 
     public void RequestMesh(GameObject go, Primitive prim)
     {
@@ -297,7 +643,7 @@ public class SimManager : MonoBehaviour
 
 
     int meshRequestCounter = 0;
-    [BurstCompile]
+
     IEnumerator MeshRequests()
     {
         while (true)
@@ -339,57 +685,70 @@ public class SimManager : MonoBehaviour
     //Faces are added to BGO, not to GO, and given the same rotation and position as the GO, then locally scaled
     //to the prim.Scale.ToUnity() vector and then lastly parented to the BGO
     /// </summary>
-    [BurstCompile]
+
     void ObjectsUpdate()
     {
-        int counter = 0;
-        RezzedPrimStuff rez;
-        RezzedPrimStuff brez;
+        RezzedObjectData rez;
+        PrimEventArgs primevent;
+        Primitive prim;
         while (objectsToRez.Count > 0)
         {
-            counter++;
-            PrimEventArgs primevent = objectsToRez.Dequeue();
-            //if (primevent == null) continue;
-            Primitive prim = primevent.Prim;
-            if ((!objects.ContainsKey(prim.LocalID)))// || primevent.IsNew))
+            if (objectsToRez.TryDequeue(out primevent))
             {
-                GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
-                GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
-                rez = go.GetComponent<RezzedPrimStuff>();
-                rez.localID = prim.LocalID;
-                rez.children.Add(bgo);
-                rez.bgo = bgo;
-                rez.meshHolder = go;
-                bgo.GetComponent<RezzedPrimStuff>().meshHolder = go;
-                rez.simMan = this;
-                objects.TryAdd(prim.LocalID, bgo);
-                objectData.Add(new ObjectData { gameObject = bgo, primitive = prim });
-                go.transform.position = prim.Position.ToUnity();
-                go.transform.rotation = prim.Rotation.ToUnity();
-                go.transform.localScale = prim.Scale.ToUnity();
-                go.transform.parent = bgo.transform;
-                MakeParent(prim.LocalID, prim.ParentID);
-
-                TranslationData translationData = new TranslationData(bgo.transform, prim.Velocity.ToUnity(), prim.AngularVelocity.ToUnity());
-                translationObjs.TryAdd(prim.LocalID, translationData);
-
-                if (prim.LocalID == ClientManager.client.Self.LocalID)
+                if (primevent == null) continue;
+                prim = primevent.Prim;
+                if (primevent.IsNew)
                 {
-                    Avatar av = gameObject.GetComponent<Avatar>();
-                    av.myAvatar = bgo.transform;
+                    GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
+                    GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
+                    objects.TryAdd(prim.LocalID, new RezzedObjectData(prim.Type.ToString() + " Object", string.Empty, prim.LocalID, prim, bgo, go, this));
+                    rez = objects[prim.LocalID];//go.GetComponent<RezzedPrimStuff>();
+                                                //rez.localID = prim.LocalID;
+                    if (objects.ContainsKey(prim.ParentID)) objects[prim.ParentID].children.Add(bgo);
+                    //rez.bgo = bgo;
+                    //rez.meshHolder = go;
+                    //bgo.GetComponent<RezzedPrimStuff>().meshHolder = go;
+                    //rez.simMan = this;
+                    //rez.primType = prim.Type;
+                    //rez.primTypeNum = (int)prim.Type;
+                    //rez.pCode = prim.PrimData.PCode;
+
+                    objectData.Add(new ObjectData { gameObject = bgo, primitive = prim });
+
+                    go.transform.position = prim.Position.ToUnity();
+                    go.transform.rotation = prim.Rotation.ToUnity();
+                    go.transform.localScale = prim.Scale.ToUnity();
+                    go.transform.parent = bgo.transform;
+                    MakeParent(prim.LocalID, prim.ParentID);
+
+                    //TranslationData translationData = new TranslationData(go.transform, prim.Velocity.ToUnity(), prim.AngularVelocity.ToUnity());
+                    //translationObjs.TryAdd(prim.LocalID, translationData);
+
+                    if (prim.LocalID == ClientManager.client.Self.LocalID)
+                    {
+                        Avatar av = gameObject.GetComponent<Avatar>();
+                        av.myAvatar = bgo.transform;
+                    }
+
+                    if (Vector3.Distance(Camera.main.transform.position, prim.Position.ToUnity()) < ClientManager.viewDistance)
+                    {
+                        objects[prim.LocalID].Populate(prim);
+                    }
+                }
+                else if (objects.ContainsKey(prim.LocalID))
+                {
+                    UpdatePrim(prim);
                 }
             }
-            else if (objects.ContainsKey(prim.LocalID))
+            else
             {
-                UpdatePrim(prim);
+                Debug.LogWarning("primevent was null");
             }
-
             //objectsToRez.RemoveAt(0);
             //if (counter > 100) break;
         }
     }
 
-    [BurstCompile]
     void Objects_ObjectUpdate(PrimEventArgs e)
     {
         if (e.Prim.IsAttachment) return;
@@ -406,19 +765,18 @@ public class SimManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("New object but object already exists.");
+                Debug.LogWarning("New object but object already exists.");
             }
         }
     }
 
-    [BurstCompile]
     void MakeParent(uint id, uint parent)
     {
         if (objects.ContainsKey(parent) && parent != id)
         {
-            GameObject bgo = objects[id];
-            GameObject bgoParent = objects[parent];
-            RezzedPrimStuff rez = bgoParent.GetComponent<RezzedPrimStuff>();
+            GameObject bgo = objects[id].bgo;
+            GameObject bgoParent = objects[parent].bgo;
+            RezzedObjectData rez = objects[parent];
             rez.children.Add(bgo);
             bgo.transform.position = (bgoParent.transform.rotation * bgo.transform.position) + (bgoParent.transform.position);
             bgo.transform.parent = bgoParent.transform;
@@ -432,44 +790,17 @@ public class SimManager : MonoBehaviour
 
     //IEnumerator ObjectsUpdate()
 #if true
-    [BurstCompile]
     IEnumerator ObjectsLODUpdate()
     {
         int counter = 0;
         while (true)
         {
-            foreach (ObjectData obj in objectData)
-            {
-                counter++;
 
-                Primitive prim = obj.primitive;
-
-                RezzedPrimStuff rez = obj.gameObject.GetComponent<RezzedPrimStuff>();
-
-                if (obj.primitive.Type == PrimType.Unknown) continue;
-                if ((Vector3.Distance(obj.gameObject.transform.position, Camera.main.transform.position) < ClientManager.viewDistance))
-                {
-                    rez.Enable();
-
-                    if (rez.isPopulated)
-                    {
-                        continue;
-                    }
-                    rez.simMan = this;
-                    rez.Populate(prim);
-
-                }
-                else
-                {
-                    rez.Disable();
-                }
-            }
             yield return new WaitForSeconds(1f);
         }
 
     }
 #endif
-    [BurstCompile]
     public void ParseMeshes(Mesh[] meshes, GameObject go, Primitive prim)
     {
         int k;
@@ -485,7 +816,7 @@ public class SimManager : MonoBehaviour
             mo.GetComponent<MeshFilter>().mesh = meshes[k];
 
             MeshRenderer rendr = mo.GetComponent<MeshRenderer>();
-
+            //rendr.enabled = true;
             Material clonemat;// = null;
             Primitive.TextureEntryFace textureEntryFace;
             textureEntryFace = prim.Textures.GetFace((uint)k);
@@ -550,7 +881,6 @@ public class SimManager : MonoBehaviour
         }
     }
 
-    [BurstCompile]
     public void TerrainEventHandler(object sender, LandPatchReceivedEventArgs e)
     {
         if (!ClientManager.IsMainThread)
@@ -700,30 +1030,6 @@ public class SimManager : MonoBehaviour
         return t;
     }
 
-    [BurstCompile]
-    Mesh ReverseWind(Mesh mesh)
-    {
-        //C# or UnityScript
-        var indices = mesh.triangles;
-        var triangleCount = indices.Length / 3;
-        for (var i = 0; i < triangleCount; i++)
-        {
-            var tmp = indices[i * 3];
-            indices[i * 3] = indices[i * 3 + 1];
-            indices[i * 3 + 1] = tmp;
-        }
-        mesh.triangles = indices;
-        // additionally flip the vertex normals to get the correct lighting
-        var normals = mesh.normals;
-        for (var n = 0; n < normals.Length; n++)
-        {
-            normals[n] = -normals[n];
-        }
-        mesh.normals = normals;
-
-        return mesh;
-    }
-
     void TextureCallback(TextureRequestState state, AssetTexture assetTexture)
     {
         int h = assetTexture.Image.Height;
@@ -807,17 +1113,17 @@ public class SimManager : MonoBehaviour
     void ScanForOrphans(PrimEventArgs _event)
     {
         //int i;
-        foreach (KeyValuePair<uint, GameObject> entry in objects)
+        foreach (KeyValuePair<uint, RezzedObjectData> entry in objects)
         {
-            Transform t = entry.Value.transform;
+            Transform t = entry.Value.go.transform;
             if (t.parent == null)
             {
                 if (objects.ContainsKey(_event.Prim.LocalID))
                 {
                     Primitive prim = _event.Prim;
-                    t.position = (objects[prim.ParentID].transform.parent.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].transform.parent.position);
-                    t.parent = objects[prim.ParentID].transform.parent;
-                    t.parent = objects[prim.LocalID].transform;
+                    t.position = (objects[prim.ParentID].go.transform.parent.rotation * prim.Position.ToUnity()) + (objects[prim.ParentID].gameObject.transform.parent.position);
+                    t.parent = objects[prim.ParentID].go.transform.parent;
+                    t.parent = objects[prim.LocalID].go.transform;
                 }
             }
         }

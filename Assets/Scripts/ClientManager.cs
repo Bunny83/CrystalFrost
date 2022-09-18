@@ -9,7 +9,7 @@ public static class ClientManager
     public static AssetManager assetManager;
     public static SimManager simManager;
     public static int mainThreadId;
-    public static float viewDistance = 256f;
+    public static float viewDistance = 1000f;
     // In Main method:
 
 // If called in the non main thread, will return false;

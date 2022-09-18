@@ -712,10 +712,6 @@ namespace CrystalFrost
 
             bool success = false;
 
-            bool isKnownPurpleTexture = false;
-            if (assetTexture.AssetID.ToString() == "9754be14-d5f7-0170-f8b5-fb1cfb5f276e")
-                isKnownPurpleTexture = true;
-
             try
             {
                 success = assetTexture.Decode();
@@ -995,12 +991,16 @@ namespace CrystalFrost
 
         }*/
 
-        [BurstCompile]
         public void MainThreadMeshSpawner(Mesh[] meshes, UUID id)
         {
             if (!ClientManager.IsMainThread)
             {
                 UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadMeshSpawner(meshes, id));
+            }
+            if(!requestedMeshes.ContainsKey(id))
+            {
+                Debug.LogWarning($"Decoded mesh returned not found in requested meshes, {id.ToString()}");
+                return;
             }
             //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  {meshes.Length} meshes");
             //v = 0;
@@ -1033,7 +1033,7 @@ namespace CrystalFrost
                     vertexcount += meshes[j].vertices.Length;
                     counter++;
 
-                    mesh = new Mesh();
+                    //mesh = new Mesh();
 
                     //vertices = new Vector3[meshes[j].vertices.Length];
                     //indices = new int[fmesh.faces[j].Indices.Length];
@@ -1071,23 +1071,27 @@ namespace CrystalFrost
                                       //ImageType.
                     Color color;// = textureEntryFace.RGBA.ToUnity();
 
-                    for (i = 0; i < requestedMeshes[id].Count; i++)
+                    for (i = 0; i < meshData.Count; i++)
                     {
-                        textureEntryFace = requestedMeshes[id][i].prim.Textures.GetFace((uint)j);
+                        textureEntryFace = meshData[i].prim.Textures.GetFace((uint)j);
                         textureEntryFace.GetOSD(j);
                         color = textureEntryFace.RGBA.ToUnity();
                         //requestedMeshes[id][i].gameObject.GetComponent<MeshFilter>().mesh = mesh;
                         gomesh = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Sphere"));
 
-                        gomesh.transform.position = requestedMeshes[id][i].gameObject.transform.position;
-                        gomesh.transform.rotation = requestedMeshes[id][i].gameObject.transform.rotation;
-                        gomesh.transform.parent = requestedMeshes[id][i].gameObject.transform;
+                        gomesh.transform.position = meshData[i].gameObject.transform.position;
+                        gomesh.transform.rotation = meshData[i].gameObject.transform.rotation;
+                        gomesh.transform.parent = meshData[i].gameObject.transform;
                         gomesh.transform.localScale = Vector3.one;
 
                         gomesh.name = $"Mesh Face {j.ToString()}";
+
                         _rendr = gomesh.GetComponent<MeshRenderer>();
+                        _rendr.enabled = true;
                         filter = gomesh.GetComponent<MeshFilter>();
                         filter.sharedMesh = mesh;
+                        //filter.sharedMesh.UploadMeshData(true);
+
                         if (color.a < 0.0001f)
                         {
                             //rendr.enabled = false;
@@ -1140,23 +1144,29 @@ namespace CrystalFrost
                             _rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestFullbrightTexture(tuuid, _rendr));
 
                         //requestedMeshes[id][i].gameObject.GetComponent<MeshRenderer>().enabled = false;
+                        meshData.Remove(meshData[i]);
                     }
 
+#if !UseMeshCache
+                    meshes[j].UploadMeshData(true);
+#endif
+                    //mesh = null;
+                    //meshes[j] = null;
 
                 }
                 if (counter == 0 || vertexcount == 0)
                 {
                     //Debug.Log($"Sculpt Mesh {rendr.gameObject.name} empty: {counter} / {vertexcount}");
                 }
+
                 queuedMeshes--;
             }
+            requestedMeshes.TryRemove(id, out List<SculptData> l);
 
             //requestedMeshes.Remove(id, out meshData);
 
         }
 
-
-        [BurstCompile]
         MeshQueue TranscodeFacetedMesh(AssetMesh assetMesh, Primitive prim, DetailLevel detail)
         {
             //Primitive prim = meshPrims[assetMesh.AssetID];
@@ -1317,8 +1327,7 @@ namespace CrystalFrost
                 return new Mesh[0];
             }
         }*/
-        [BurstCompile]
-        Mesh ReverseWind(Mesh mesh)
+        public static Mesh ReverseWind(Mesh mesh)
         {
             //C# or UnityScript
             var indices = mesh.triangles;

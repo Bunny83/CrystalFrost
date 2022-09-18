@@ -13,6 +13,9 @@ public class RezzedPrimStuff : MonoBehaviour
 {
     public uint localID;
     public uint parentID;
+    public PrimType primType;
+    public int primTypeNum;
+    public PCode pCode;
     public List<GameObject> children = new List<GameObject>();
     public bool visible = false;
     public bool isPopulated = false;
@@ -63,7 +66,7 @@ public class RezzedPrimStuff : MonoBehaviour
         description = prim.Properties != null ? prim.Properties.Description : "";
         gameObject.name = $"{prim.Type.ToString()} {primName}";
 
-
+        if (prim.PrimData.PCode == PCode.Avatar) return;
         if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
         {
 #if RezPrims
@@ -292,7 +295,6 @@ public class RezzedPrimStuff : MonoBehaviour
 #endif
         }
 
-    [BurstCompile]
     Mesh ReverseWind(Mesh mesh)
     {
         //C# or UnityScript
