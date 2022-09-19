@@ -14,10 +14,10 @@ using OpenJpegDotNet.IO;
 
 namespace CrystalFrost
 {
-    struct AssetData
+    public class AssetData
     {
-        object cache;
-        List<object> objects;
+        public object cache;
+        public List<object> objects;
     }
 
     public class AssetManager
@@ -29,7 +29,7 @@ namespace CrystalFrost
         public SimManager simManager;
 
         
-        public struct MeshQueue
+        public class MeshQueue
         {
             public UUID uuid;
             public int detailLevel;
@@ -161,7 +161,7 @@ namespace CrystalFrost
             return textures[uuid];
         }
 
-        public struct SculptData
+        public class SculptData
         {
             public GameObject gameObject;
             public Primitive prim;
@@ -240,7 +240,6 @@ namespace CrystalFrost
 #endif
             ClientManager.client.Assets.RequestImage(prim.Sculpt.SculptTexture, CallbackSculptTexture);
 
-            //return Resources.Load<MeshFilter>("Sphere").mesh;
             //Debug.Log("Sculpt requested");
 
             //return textures[uuid];
@@ -372,7 +371,7 @@ namespace CrystalFrost
                 {
                     vertices[i] = fmesh.faces[j].Vertices[i].Position.ToUnity();
                     //indices[i] = fmesh.faces[j].Indices[i];
-                    normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity() * -1f;
+                    normals[i] = fmesh.faces[j].Vertices[i].Normal.ToUnity();
                     uvs[i] = /*Quaternion.Euler(0, 0, (textureEntryFace.Rotation * 57.2957795f)) * */ fmesh.faces[j].Vertices[i].TexCoord.ToUnity();
                     uvs[i].y *= -1;
                     v++;
@@ -410,9 +409,7 @@ namespace CrystalFrost
                     textureEntryFace.GetOSD(j);
                     color = textureEntryFace.RGBA.ToUnity();
                     
-                    //requestedSculpts[id][i].gameObject.GetComponent<MeshFilter>().mesh = mesh;
                     gomesh = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Sphere"));
-                    //gomesh.GetComponent<MeshFilter>().mesh = mesh;
                     gomesh.transform.position = requestedSculpts[id][i].gameObject.transform.position;
                     gomesh.transform.rotation = requestedSculpts[id][i].gameObject.transform.rotation;
                     gomesh.transform.parent = requestedSculpts[id][i].gameObject.transform;
@@ -422,7 +419,7 @@ namespace CrystalFrost
                     gomesh.name = $"Sculpt Face {j.ToString()}";
                     _rendr = gomesh.GetComponent<MeshRenderer>();
                     filter = gomesh.GetComponent<MeshFilter>();
-                    filter.mesh = mesh;
+                    filter.sharedMesh = mesh;
                     if (color.a < 0.0001f)
                     {
                         //rendr.enabled = false;
@@ -492,7 +489,7 @@ namespace CrystalFrost
 
         }
 
-        public struct TextureQueueData
+        public class TextureQueueData
         {
             public UUID uuid;
             public Color[] colors;
@@ -833,13 +830,7 @@ namespace CrystalFrost
         public void RequestMeshHighest(GameObject gameObject, Primitive prim)
         {
             queuedMeshes++;
-#if UseMeshCache
-            if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
-            {
-                MainThreadMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
-                return;
-            }
-#endif
+
             SculptData sculptdata = new SculptData
             {
                 gameObject = gameObject,
@@ -851,60 +842,6 @@ namespace CrystalFrost
             ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMesh);
         }
 
-        /*public void RequestMeshHigh(GameObject gameObject, Primitive prim)
-        {
-            if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
-            {
-                MainThreadhMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
-                return;
-            }
-            SculptData sculptdata = new SculptData
-            {
-                gameObject = gameObject,
-                prim = prim
-            };
-            requestedMeshes.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
-            requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
-
-            ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshHigh);
-        }
-
-        public void RequestMeshMedium(GameObject gameObject, Primitive prim)
-        {
-            if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
-            {
-                MainThreadhMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
-                return;
-            }
-            SculptData sculptdata = new SculptData
-            {
-                gameObject = gameObject,
-                prim = prim
-            };
-            requestedMeshes.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
-            requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
-
-            ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshMedium);
-        }
-
-        public void RequestMeshLow(GameObject gameObject, Primitive prim)
-        {
-            if (meshCache.ContainsKey(prim.Sculpt.SculptTexture))
-            {
-                MainThreadhMeshSpawner(meshCache[prim.Sculpt.SculptTexture], prim.Sculpt.SculptTexture);
-                return;
-            }
-            SculptData sculptdata = new SculptData
-            {
-                gameObject = gameObject,
-                prim = prim
-            };
-            requestedMeshes.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
-            requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
-
-            ClientManager.client.Assets.RequestMesh(prim.Sculpt.SculptTexture, CallbackMeshLow);
-        }*/
-        
         Color[] ImageBytesToColors(AssetTexture assetTexture)
         {
             int i;
@@ -921,87 +858,27 @@ namespace CrystalFrost
         
         public void CallbackMesh(bool success, AssetMesh assetMesh)
         {
-            //if (!ClientManager.IsMainThread)
-            //    UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshHighest(success, assetMesh));
+
             if (!success) return;
             UUID id = assetMesh.AssetID;
-            //Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest);
-#if UseMeshCache
-            if (meshCache.ContainsKey(id)) return;
-#endif
+
             concurrentMeshQueue.Enqueue(TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Highest));
 
-            //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log($"Mesh enqueued. {concurrentMeshQueue.Count} in queue"));
-
-            //if (ClientManager.IsMainThread)
-            //{
-            //MainThreadhMeshSpawner(_meshes, id);
-            //    return;
-            //}
         }
 
 
-        /*public void CallbackMeshHigh(bool success, AssetMesh assetMesh)
-        {
-            if (!ClientManager.IsMainThread)
-                UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshHigh(success, assetMesh));
-            if (!success) return;
-
-            UUID id = assetMesh.AssetID;
-
-            Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.High);
-
-            if (ClientManager.IsMainThread)
-            {
-                MainThreadhMeshSpawner(_meshes, id);
-                return;
-            }
-        }
-        public void CallbackMeshLow(bool success, AssetMesh assetMesh)
-        {
-            if (!ClientManager.IsMainThread)
-                UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshLow(success, assetMesh));
-            if (!success) return;
-
-            UUID id = assetMesh.AssetID;
-
-            Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Low);
-
-            if (ClientManager.IsMainThread)
-            {
-                MainThreadhMeshSpawner(_meshes, id);
-                return;
-            }
-        }
-        public void CallbackMeshMedium(bool success, AssetMesh assetMesh)
-        {
-            if (!ClientManager.IsMainThread)
-                UnityMainThreadDispatcher.Instance().Enqueue(() => CallbackMeshMedium(success, assetMesh));
-            if (!success) return;
-
-            UUID id = assetMesh.AssetID;
-
-            Mesh[] _meshes = TranscodeFacetedMesh(assetMesh, requestedMeshes[id][0].prim, DetailLevel.Medium);
-
-            if (ClientManager.IsMainThread)
-            {
-                MainThreadhMeshSpawner(_meshes, id);
-                return;
-            }
-
-        }*/
-
-        public void MainThreadMeshSpawner(Mesh[] meshes, UUID id)
+        //public void MainThreadMeshSpawner(Mesh[] meshes, UUID id)
+        public void MainThreadMeshSpawner(MeshQueue meshItem, UUID id)
         {
             if (!ClientManager.IsMainThread)
             {
-                UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadMeshSpawner(meshes, id));
+                UnityMainThreadDispatcher.Instance().Enqueue(() => MainThreadMeshSpawner(meshItem, id));
             }
             //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  {meshes.Length} meshes");
             //v = 0;
             GameObject gomesh;// = Instantiate(blank);
             MeshRenderer _rendr;
-            MeshFilter filter;
+            //MeshFilter filter;
             int counter = 0;
             int vertexcount = 0;
             //Primitive prim = requestedSculpts[id][0].prim;
@@ -1010,25 +887,31 @@ namespace CrystalFrost
             //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  meshData has {meshData.Count.ToString()} entries");
             Primitive prim;
             GameObject go;
-            Mesh mesh;
+            MeshFilter filter;
             int i, j;
             prim = meshData[0].prim;
+
+            Vector3[] vertices;
+            Vector3[] normals;
+            Vector2[] uvs;
+            ushort[] indices;
+
             for (i = 0; i < meshData.Count; i++)
             {
                 prim = meshData[i].prim;
                 go = meshData[i].gameObject;
 
-                for (j = 0; j < meshes.Length; j++)
+                for (j = 0; j < meshItem.vertices.Count; j++)
                 {
                     //Debug.Log($"MainThreadMeshSpawner(mesh, {id.ToString()})  mesh{j.ToString()} has {meshes[j].vertices.Length.ToString()} vertices");
-                    if (meshes[j].vertices.Length == 0)
+                    if (meshItem.vertices.Count == 0)
                     {
                         continue;
                     }
-                    vertexcount += meshes[j].vertices.Length;
-                    counter++;
+                    //vertexcount += meshItem[j].vertices.Length;
+                    //counter++;
 
-                    mesh = new Mesh();
+                    //mesh = new Mesh();
 
                     //vertices = new Vector3[meshes[j].vertices.Length];
                     //indices = new int[fmesh.faces[j].Indices.Length];
@@ -1060,19 +943,24 @@ namespace CrystalFrost
                     //mesh = ReverseWind(mesh);
                     //mesh.name = assetTexture.AssetID.ToString();
 
-                    mesh = meshes[j];
+                    //mesh = meshes[j];
 
                     Material clonemat;// = null;
                                       //ImageType.
                     Color color;// = textureEntryFace.RGBA.ToUnity();
+
+                    vertices = meshItem.vertices.Dequeue();
+                    normals = meshItem.normals.Dequeue();
+                    uvs = meshItem.uvs.Dequeue();
+                    indices = meshItem.indices.Dequeue();
 
                     for (i = 0; i < requestedMeshes[id].Count; i++)
                     {
                         textureEntryFace = requestedMeshes[id][i].prim.Textures.GetFace((uint)j);
                         textureEntryFace.GetOSD(j);
                         color = textureEntryFace.RGBA.ToUnity();
-                        //requestedMeshes[id][i].gameObject.GetComponent<MeshFilter>().mesh = mesh;
-                        gomesh = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Sphere"));
+                        gomesh = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Sphere"));
+                        //gomesh.AddComponent<MeshObj>();
 
                         gomesh.transform.position = requestedMeshes[id][i].gameObject.transform.position;
                         gomesh.transform.rotation = requestedMeshes[id][i].gameObject.transform.rotation;
@@ -1082,7 +970,25 @@ namespace CrystalFrost
                         gomesh.name = $"Mesh Face {j.ToString()}";
                         _rendr = gomesh.GetComponent<MeshRenderer>();
                         filter = gomesh.GetComponent<MeshFilter>();
-                        filter.sharedMesh = mesh;
+                        //gomesh.GetComponent<MeshFilter>().sharedMesh.Clear();
+#if true
+                        if (filter.sharedMesh != null) filter.sharedMesh.Clear();
+
+                        filter.sharedMesh = new Mesh
+                        {
+                            vertices = vertices,
+                            normals = normals,
+                            uv = uvs
+                        };
+
+                        filter.sharedMesh.SetIndices(indices, MeshTopology.Triangles, 0);
+                        filter.sharedMesh = ReverseWind(filter.mesh);
+                        filter.sharedMesh.Optimize();
+                        filter.sharedMesh.OptimizeIndexBuffers();
+                        filter.sharedMesh.OptimizeReorderVertexBuffer();
+                        filter.sharedMesh.UploadMeshData(true);
+#endif    
+                        //filter.sharedMesh.vertices = meshItem.vertices[j].ToArray();
                         if (color.a < 0.0001f)
                         {
                             //rendr.enabled = false;
@@ -1322,12 +1228,12 @@ namespace CrystalFrost
             }
             mesh.triangles = indices;
             // additionally flip the vertex normals to get the correct lighting
-            var normals = mesh.normals;
+            /*var normals = mesh.normals;
             for (var n = 0; n < normals.Length; n++)
             {
                 normals[n] = -normals[n];
             }
-            mesh.normals = normals;
+            mesh.normals = normals;*/
 
             return mesh;
         }

@@ -214,15 +214,6 @@ namespace OpenMetaverse
         Ring,
         Sculpt,
         Mesh,
-        Unknown1,
-        Unknown2,
-        Unknown4,
-        Unknown5,
-        Unknown6,
-        Unknown7,
-        Unknown8,
-        Unknown9,
-        Unknown10,
     }
 
     /// <summary>

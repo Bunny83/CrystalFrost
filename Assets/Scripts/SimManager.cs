@@ -96,7 +96,16 @@ public class SimManager : MonoBehaviour
             Populate(prim);
         }
         
-
+        /// <summary>
+        /// Populate takes the prim, determines what kind of object it is, whether
+        /// it is a Second Life type primitive, a sculpted prim, or a mesh.
+        /// Then it creates the game objects that will contain the visual objects
+        /// and either decodes on the main thread (for primitives) or requests
+        /// multi-threaded mesh data for sculpted prims and meshes. The prim data
+        /// itself probably should be multithreaded too but I haven't gotten
+        /// a Round Tuit yet.
+        /// </summary>
+        /// <param name="prim"></param>
         public void Populate(Primitive prim)
         {
 #if true
@@ -112,18 +121,27 @@ public class SimManager : MonoBehaviour
             description = prim.Properties != null ? prim.Properties.Description : "";
             go.name = $"{prim.Type.ToString()} {primName}";
 
+            //If the prim is an avatar, don't do anything.
+            //comment this if you want purple boxes to show up to represent for avatars
+            //since most avatars wear mesh bodies, as long as mesh rendering is enabled,
+            //those purple boxes won't be necessary. Otherwise Linden avatar meshes have
+            //to be implemented to give naked avatars a visual representation.
             if (prim.PrimData.PCode == PCode.Avatar) return;
+
+            //Handle primitive prims. These are objects that use Second Life's weird but
+            //pretty cool procedural prim system that blows Unity's prims out of the water.
             if (prim.Type != PrimType.Mesh && prim.Type != PrimType.Unknown && prim.Type != PrimType.Sculpt)
             {
 #if RezPrims
                 //PrimMesh primMesh = new PrimMesh(24, prim.PrimData.ProfileBegin, prim.PrimData.ProfileEnd, prim.PrimData.ProfileHollow, 24);
                 MeshmerizerR mesher = new MeshmerizerR();
                 FacetedMesh fmesh;
+
+                //Get libreMetaverse to decode the prim details into usable mesh data.
                 fmesh = mesher.GenerateFacetedMesh(prim, DetailLevel.Highest);
                 //Jenny.Console.WriteLine($"Cylinder has {fmesh.faces.Count.ToString()} faces");
-
-                Mesh mesh = new Mesh();
-                Mesh subMesh = new Mesh();
+                //Mesh mesh = new Mesh();
+                //Mesh subMesh = new Mesh();
                 MeshFilter meshFilter;// = go.GetComponent<MeshFilter>();
                 MeshRenderer rendr;
 
@@ -150,6 +168,11 @@ public class SimManager : MonoBehaviour
                 //mesh.subMeshCount = fmesh.faces.Count;
                 v = 0;
                 GameObject gomesh;// = Instantiate(blank);
+
+                //Set up the objects for each submesh/face. I tried to do this with combining
+                //meshes into sub meshes but they turned out really janky and looked COMPLETELY
+                //wrong. The documentation in exactly how the data for submeshes should look is
+                //non-existant, so this is the hack I'm forced to do.
                 for (j = 0; j < fmesh.faces.Count; j++)
                 {
                     gomesh = Instantiate(Resources.Load<GameObject>("Cube"));
@@ -185,14 +208,14 @@ public class SimManager : MonoBehaviour
                         v++;
                     }
 
-                    mesh = new Mesh();
-                    mesh.vertices = vertices;
-                    mesh.normals = normals;
+                    //meshFilter.sharedMesh.Clear();
+                    meshFilter.mesh.Clear();
+                    meshFilter.mesh.vertices = vertices;
+                    meshFilter.mesh.normals = normals;
                     //mesh.RecalculateNormals();
-                    mesh.uv = uvs;
-                    mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0);
-                    meshFilter.mesh = ReverseWind(mesh);
-                    Material clonemat;// = null;
+                    meshFilter.mesh.uv = uvs;
+                    meshFilter.mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0); Material clonemat;// = null;
+                    meshFilter.mesh = ReverseWind(meshFilter.mesh);
 
                     //simMan.boundsTree.Add(gomesh, rendr.bounds);
 
@@ -288,41 +311,56 @@ public class SimManager : MonoBehaviour
                 }*/
 
 
-                //meshFilter.mesh = mesh;
 #endif
             }
+            //Sculpted prims are spheres, cylinders, and tori that use texture to set vertex positions
+            //with Red being X vertex position, Green is Y, Blue is Z. Clearly this results in a grainy
+            //fidelity, with each axis having only 256 possible positions, but it's a fairly light weight
+            //way to do convex meshes in a streamed environment. Interestingly enough, if you fade between
+            //two textures in an animated manner, you can morph from one object to another. However, that
+            //said, Second Life does not support sculpt fading like that. But I've done it in Unity with
+            //my own implementation of sculpts 12 years ago and it was pretty cool to watch.
             else if (prim.Type == PrimType.Sculpt)
             {
 #if RezSculpts
-                //#if !MultiThreadSculpts            
-                //go.name += $" {prim.Sculpt.SculptTexture}";
+                //Request mesh from server.
                 ClientManager.assetManager.RequestSculpt(meshHolder, prim);
-                //FacetedMesh fmesh = GenerateFacetedSculptMesh(prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
-                //#endif
 #endif
             }
             //else if(prim.Type == PrimType.Mesh) go.GetComponent<MeshRenderer>
 #if RezMeshes
+            //THE DREADED MESHES. These are the most common type of object in Second Life now
+            //Unfortunately the code for prims above has the same memory leak issue as meshes.
+            //Also, sculpts are populated in-scene the same way as meshes. This is because
+            //the multithreading creates the mesh and then passes it on. It was easier and
+            //smarter to reuse the main thread code to accomplish that.
+            //Regular prims will have that done to them as well, but they're so rare and low
+            //polycount that it doesn't impact performance a significant amount.
+            //However, a more efficient means of getting the meshes into the scene without
+            //using up shit tons of memory is definitely necessary before any further development
+            //can be realistically accomplished.
             else if (prim.Type == PrimType.Mesh)
             {
-                //meshObjects.TryAdd(prim.Sculpt.SculptTexture, new List<GameObject>());
-                //meshObjects[prim.Sculpt.SculptTexture].Add(go);
-                //go.GetComponent<MeshRenderer>().enabled = false;
                 if (prim.Sculpt != null && prim.Sculpt.SculptTexture != UUID.Zero)
                 {
+                    //Yeah, um, meshes were implemented in Second Life in a hackish manner.
+                    //Basically the prim type is sculpt, and the sculpt type is Mesh, as
+                    //opposed to sphere, torus, etc. Then the sculpt "texture" is the
+                    //actual mesh data, rather than a texture. But everything in Second Life
+                    //uses 128bit UUIDs, so unless you try to decode a mesh as a texture,
+                    //there's really not a problem with doing it this way.
                     if (prim.Sculpt.Type == SculptType.Mesh)
                     {
-                        //Debug.Log(l);
                         if (prim.Sculpt.SculptTexture != null)
+                            //Request mesh from server
                             simMan.RequestMesh(meshHolder, prim);
-                        //Debug.Log("Requesting Mesh");
-                        //go.GetComponent<MeshFilter>().mesh = 
                     }
                 }
             }
 #endif
 
             //prim.Light.GetOSD();
+            //Set up a light if there is a light.
             if (prim.Light != null)
             {
                 //Debug.Log("light");
@@ -336,6 +374,8 @@ public class SimManager : MonoBehaviour
 
                 //light. = prim.Light.Radius;
                 hdlight.color = prim.Light.Color.ToUnity();
+                //HDRP requires insane amounts of lumens to make lights show up like they do in SL
+                //Not sure why, but yeah...
                 hdlight.intensity = prim.Light.Intensity * 10000000f;
                 hdlight.range = prim.Light.Radius;
                 //hdlight.fadeDistance = prim.Light.Radius * (1f - prim.Light.Falloff)
@@ -346,7 +386,6 @@ public class SimManager : MonoBehaviour
             }
 #endif
 
-            //bgo.GetComponent<RezzedPrimStuff>().meshHolder = go;
             //rez.simMan = this;
             //rez.primType = prim.Type;
             //rez.primTypeNum = (int) prim.Type;
@@ -398,11 +437,15 @@ public class SimManager : MonoBehaviour
     Dictionary<uint, TranslationData> translationObjs = new Dictionary<uint, TranslationData>();
     */
 
+    /// <summary>
+    /// it's an Awake and Start routine, what do you want from me?
+    /// </summary>
     private void Awake()
     {
         ClientManager.assetManager.simManager = this;
         ClientManager.simManager = this;
     }
+
     void Start()
     {
         client = ClientManager.client;
@@ -430,6 +473,16 @@ public class SimManager : MonoBehaviour
     }
 
 #if MultiThreadTextures
+    /// <summary>
+    /// This handles processing of the concurrent queue that stores the data for
+    /// textures received from the server. The server sends JPEG2000 textures, so
+    /// for performance sake, they're decoded on a separate thread, using a native
+    /// library and its wrapper. After being decoded, the thread converts the data
+    /// into an array of Color objects and sticks them in a Concurrent Queue
+    /// This coroutine goes through that queue and hands it over to functions that
+    /// convert it into textures.
+    /// </summary>
+    /// <returns></returns>
     IEnumerator TextureQueueParsing()
     {
         CrystalFrost.AssetManager.TextureQueueData textureItem;
@@ -461,9 +514,18 @@ public class SimManager : MonoBehaviour
 
 #endif
 
+    /// <summary>
+    /// After meshes are received from the server, they are processed into Unity native
+    /// arrays those arrays placed into a concurrent queue to be loaded into meshes.
+    /// This coroutine creates the meshes from the queued items.
+    /// I had this working with a throttle, doing time variable delays based on
+    /// how long each item in the queue took to process, but had to revert.
+    /// Not because of the throttle code though. I'll just reimplement the throttle later
+    /// because cpu performance is still pretty decent. It's mesh memory use that
+    /// needs to be squashed first.
+    /// </summary>
     IEnumerator MeshQueueParsing()
     {
-#if true
         CrystalFrost.AssetManager.MeshQueue meshItem;
         Mesh[] meshes;
         int i;
@@ -479,8 +541,8 @@ public class SimManager : MonoBehaviour
                     {
                         //Debug.Log("DeQueing mesh stage 3");
                         //CrystalFrost.AssetManager.meshCache.TryAdd()
-                        meshes = new Mesh[meshItem.vertices.Count];
-                        for (i = 0; i < meshes.Length; i++)
+                        //meshes = new Mesh[meshItem.vertices.Count];
+                        /*for (i = 0; i < meshes.Length; i++)
                         {
                             meshes[i] = new Mesh();
                             meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
@@ -490,8 +552,8 @@ public class SimManager : MonoBehaviour
                             meshes[i].uv = meshItem.uvs.Dequeue();
                             meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
                             meshes[i] = AssetManager.ReverseWind(meshes[i]);
-                        }
-                        ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
+                        }*/
+                        ClientManager.assetManager.MainThreadMeshSpawner(meshItem, meshItem.uuid);
                     }
                     else
                     {
@@ -502,62 +564,15 @@ public class SimManager : MonoBehaviour
 
             yield return new WaitForSeconds(0.02f);
         }
-#else
-        CrystalFrost.AssetManager.MeshQueue meshItem;
-        Mesh[] meshes;
-        int i,count;
-        double time = Time.realtimeSinceStartupAsDouble;
-        double delta = 0;
-        while (true)
-        {
-            if(ClientManager.active)
-            {
-                delta = 0.0;
-                if (CrystalFrost.AssetManager.concurrentMeshQueue.Count > 0)
-                {
-                    while (delta < 0.01)
-                    {
-                        //Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
-                        if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
-                        {
-                            //Debug.Log("DeQueing mesh stage 2");
-                            if (meshItem.uuid != null)
-                            {
-                                //Debug.Log("DeQueing mesh stage 3");
-                                //CrystalFrost.AssetManager.meshCache.TryAdd()
-                                meshes = new Mesh[meshItem.vertices.Count];
-                                for (i = 0; i < meshes.Length; i++)
-                                {
-                                    meshes[i] = new Mesh();
-                                    meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
-                                    meshes[i].vertices = meshItem.vertices.Dequeue();
-                                    //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
-                                    meshes[i].normals = meshItem.normals.Dequeue();
-                                    meshes[i].uv = meshItem.uvs.Dequeue();
-                                    meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
-                                    meshes[i] = AssetManager.ReverseWind(meshes[i]);
-                                    //meshes[i].UploadMeshData(true);
-                                }
-                                ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
-                            }
-                            else
-                            {
-                                Debug.LogError("meshItem was null");
-                            }
-                        }
-                        time = Time.realtimeSinceStartupAsDouble - time;
-                        delta += time;
-                        //if (delta > 0.01 || CrystalFrost.AssetManager.concurrentMeshQueue.Count == 0)
-                        //    break;
-                    }
-                }
-            }
 
-            yield return new WaitForSeconds(0.1f - (float)delta);
-        }
-#endif
     }
 
+    /// <summary>
+    /// Honestly not sure what this update event is even about
+    /// The documentation on libOpenMetaverse and libreMetaverse
+    /// is incredibly scant, but it appears to be
+    /// Yet Another Prim Update Event
+    /// </summary>
     void ObjectDataBlockUpdateEvent(object sender, ObjectDataBlockUpdateEventArgs e)
     {
         if(!ClientManager.IsMainThread)
@@ -577,6 +592,14 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Finds the object representing the prim and updates it accordingly
+    /// Currently only position, rotation, scale, velocity, and omega are
+    /// supported. That said everything single possible variable for a
+    /// prim is theoretically possible to be updated, but those are the
+    /// most commonly updated parameters, and also the easiest to implement
+    /// </summary>
+    /// <param name="prim"></param>
     void UpdatePrim(Primitive prim)
     {
         GameObject bgo = objects[prim.LocalID].bgo;
@@ -598,6 +621,11 @@ public class SimManager : MonoBehaviour
         objects[prim.LocalID].omega = prim.AngularVelocity.ToUnity();
     }
 
+    /// <summary>
+    /// This will eventually be used to delete objects that are killed
+    /// Currently no objects are killed because we're just testing and
+    /// trying to get mesh memory use sorted right now.
+    /// </summary>
     void KillObjectEventHandler(object sender, KillObjectEventArgs e)
     {
 
@@ -616,6 +644,10 @@ public class SimManager : MonoBehaviour
     float DEG_TO_RAD = 0.017453292519943295769236907684886f;
     float RAD_TO_DEG = 57.295779513082320876798154814105f;
 
+    /// <summary>
+    /// Move and rotate objects according to their velocity variables.
+    /// </summary>
+    /// <param name="t"></param>
     void TranslateObjects(float t)
     {
         foreach(RezzedObjectData td in objects.Values)
@@ -626,6 +658,10 @@ public class SimManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// This is supposed to update the camera's position, direction, and view distance for the
+    /// server to know what objects to send to the client. However, it doesn't seem to work.
+    /// </summary>
     IEnumerator UpdateCamera()
     {
         while (true)
@@ -654,20 +690,14 @@ public class SimManager : MonoBehaviour
         }
     }
 
-
-
-    Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
-
-    public struct MeshUpdate
-    {
-        public GameObject go;
-        public Mesh[] meshes;
-        public Primitive prim;
-    }
-
     //public List<MeshUpdate> meshUpdates = new List<MeshUpdate>();
 
-    public struct MeshRequestData
+    /// <summary>
+    ///Mesh data needs to be requested from the server
+    ///This holds a queue of requests so that when the
+    ///mesh is received, it will be able to be added to
+    ///the correct object.
+    public class MeshRequestData
     {
         public GameObject gameObject;
         public Primitive primitive;
@@ -679,8 +709,9 @@ public class SimManager : MonoBehaviour
     {
         meshRequests.Enqueue(new SimManager.MeshRequestData { gameObject = go, primitive = prim });
     }
+    /// </summary>
 
-    public struct ObjectData
+    public class ObjectData
     {
         public Primitive primitive;
         public GameObject gameObject;
@@ -691,6 +722,11 @@ public class SimManager : MonoBehaviour
 
     int meshRequestCounter = 0;
 
+    /// <summary>
+    /// Process mesh requests. Since meshes are stored remotely, on the Second Life
+    /// asset server, objects that have mesh data need to request the mesh be downloaded
+    /// This Coroutine goes through meshes the requests and sends them off to the server
+    /// </summary>
     IEnumerator MeshRequests()
     {
         while (true)
@@ -724,15 +760,12 @@ public class SimManager : MonoBehaviour
     }
 
     /// <summary>
-    //BGO represents the unscaled parent, which is in the correct position and rotation but has a scale of Vector3.one
-    //
-    //GO represents the place holder cube object for rendering. It is given the same position and rotation as the BGO.
-    //
-    //Faces are built by the RezzedObject script located in the GO
-    //Faces are added to BGO, not to GO, and given the same rotation and position as the GO, then locally scaled
-    //to the prim.Scale.ToUnity() vector and then lastly parented to the BGO
+    ///BGO represents the unscaled parent, which is in the correct position and rotation but has a scale of Vector3.one
+    ///GO represents the place holder cube object for rendering. It is given the same position and rotation as the BGO.
+    ///Faces are built by the RezzedObject script located in the GO
+    ///Faces are added to BGO, not to GO, and given the same rotation and position as the GO, then locally scaled
+    ///to the prim.Scale.ToUnity() vector and then lastly parented to the BGO
     /// </summary>
-
     void ObjectsUpdate()
     {
         RezzedObjectData rez;
@@ -799,6 +832,9 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Event handler for object updates received from the server
+    /// </summary>
     void Objects_ObjectUpdate(PrimEventArgs e)
     {
         if (e.Prim.IsAttachment) return;
@@ -820,6 +856,8 @@ public class SimManager : MonoBehaviour
         }
     }
 
+    //if an object has a parent, this handles all of the parenting, rotation, and scaling
+    //to avoid distorted matrices
     void MakeParent(uint id, uint parent)
     {
         if (objects.ContainsKey(parent) && parent != id)
@@ -852,6 +890,10 @@ public class SimManager : MonoBehaviour
 
     List<uint> orphans = new List<uint>();
 #if true
+    /// <summary>
+    ///  Check distance of objects from camera. If the object is in range and hasn't been populated
+    ///  yet, then populate it. If it's out of range but populated, de-render its faces.
+    /// </summary>
     IEnumerator ObjectsLODUpdate()
     {
         //int counter = 0;
@@ -911,86 +953,6 @@ public class SimManager : MonoBehaviour
 
     }
 #endif
-    public void ParseMeshes(Mesh[] meshes, GameObject go, Primitive prim)
-    {
-        int k;
-        for (k = 0; k < meshes.Length; k++)
-        {
-            GameObject mo = Instantiate(cube);
-            mo.name = $"face {k.ToString()}";
-            mo.transform.position = go.transform.position;
-            mo.transform.rotation = go.transform.rotation;
-            mo.transform.parent = go.transform;
-            mo.transform.localScale = Vector3.one;
-
-            mo.GetComponent<MeshFilter>().mesh = meshes[k];
-
-            MeshRenderer rendr = mo.GetComponent<MeshRenderer>();
-            //rendr.enabled = true;
-            Material clonemat;// = null;
-            Primitive.TextureEntryFace textureEntryFace;
-            textureEntryFace = prim.Textures.GetFace((uint)k);
-
-            textureEntryFace.GetOSD(k);
-            Color color = textureEntryFace.RGBA.ToUnity();
-            if (color.a < 0.0001f)
-            {
-                rendr.enabled = false;
-                continue;
-            }
-            string texturestring = "_BaseColorMap";
-            string colorstring = "_BaseColor";
-            if (color.a >= 0.999f)
-            {
-                if (!textureEntryFace.Fullbright)
-                {
-                    clonemat = opaqueMat;
-                }
-                else
-                {
-                    texturestring = "_UnlitColorMap";
-                    colorstring = "_UnlitColor";
-                    clonemat = opaqueFullBrightMat;
-                }
-            }
-            else if (!textureEntryFace.Fullbright)
-            {
-                clonemat = alphaMat;
-            }
-            else
-            {
-                clonemat = alphaFullBrightMat;
-            }
-            //color.a = 0.5f;
-
-            rendr.material = Instantiate(clonemat);
-            rendr.material.SetColor(colorstring, color);
-            //prim.Properties.
-            //if (prim!=null)
-            //if (prim.Textures!=null)
-            //if (prim.Textures.FaceTextures!=null)
-            //if (prim.Textures.FaceTextures[j]!=null)
-            //if (prim.Textures.FaceTextures[j].TextureID!=null)
-            //{
-            UUID tuuid = textureEntryFace.TextureID;//prim.Textures.FaceTextures[j];
-            if (!textureEntryFace.Fullbright)
-                rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestTexture(tuuid, rendr));
-            else
-                rendr.material.SetTexture(texturestring, ClientManager.assetManager.RequestFullbrightTexture(tuuid, rendr));
-
-            if (textureEntryFace.TexMapType == MappingType.Default)
-            {
-                rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU * -2f, (textureEntryFace.OffsetV * -2f)));
-                rendr.material.SetTextureScale(texturestring, new Vector2(textureEntryFace.RepeatU, (textureEntryFace.RepeatV)));
-            }
-            else
-            {
-                rendr.material.SetTextureOffset(texturestring, new Vector2(textureEntryFace.OffsetU, (-textureEntryFace.OffsetV)));
-                rendr.material.SetTextureScale(texturestring, new Vector2((1f / textureEntryFace.RepeatU) * .1f, (1f / (textureEntryFace.RepeatV)) * .1f));
-            }
-        }
-    }
-
     public void TerrainEventHandler(object sender, LandPatchReceivedEventArgs e)
     {
         if (!ClientManager.IsMainThread)
@@ -998,6 +960,12 @@ public class SimManager : MonoBehaviour
             UnityMainThreadDispatcher.Instance().Enqueue(() => TerrainEventHandler(sender, e));
             return;
         }
+
+        //This looks like it's compliant with the standard algorithm for SL terrain
+        //however the splats don't quite populate correctly.
+        //for reference:
+        //https://wiki.secondlife.com/wiki/Creating_Terrain_Textures
+        //http://opensimulator.org/wiki/Terrain_Splatting
 
         float[,] terrainHeight = new float[16, 16];
         float[,,] terrainSplats = new float[16, 16, 4];
@@ -1028,6 +996,7 @@ public class SimManager : MonoBehaviour
         float verticalblend;
         float dist;
         float modheight;
+
         for (j = 0; j < 16; j++)
         {
             for (i = 0; i < 16; i++)
@@ -1239,10 +1208,10 @@ public class SimManager : MonoBehaviour
         }
     }
 
-    struct TerseUpdateData
+    class TerseUpdateData
     {
-        object sender;
-        TerseObjectUpdateEventArgs terseEvent;
+        public object sender;
+        public TerseObjectUpdateEventArgs terseEvent;
     }
 
     Queue<TerseUpdateData> terseUpdates = new Queue<TerseUpdateData>();
@@ -1376,19 +1345,5 @@ public class SimManager : MonoBehaviour
         //rPrim.BasePrim = prim;
         //lock (Prims) Prims[prim.LocalID] = rPrim;
     }*/
-
-    IEnumerator TimerRoutine()
-    {
-        while (true)
-        {
-            if (client.Settings.SEND_AGENT_UPDATES && ClientManager.active)
-            {
-
-                simName = client.Network.CurrentSim.Name.ToString();
-                simOwner = client.Network.CurrentSim.SimOwner.ToString();
-            }
-            yield return new WaitForSeconds(5f);
-        }
-    }
 
 }

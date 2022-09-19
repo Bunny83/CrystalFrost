@@ -777,7 +777,7 @@ PlayerSettings:
   webGLThreadsSupport: 0
   webGLDecompressionFallback: 0
   scriptingDefineSymbols:
-    Standalone: RezPrims;RezSculpts;RezMeshes;MultiThreadSculpts;MultiThreadTextures;UseMeshCache
+    Standalone: RezPrims;RezSculpts;RezMeshes;MultiThreadSculpts;MultiThreadTextures
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
