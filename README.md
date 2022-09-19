@@ -1,3 +1,7 @@
+Recent updates. as of Sept 17, 2022
+Textures, sculpts, and meshes are processed by an external thread before being fed into the main thread. This has greatly improved performance.
+HOWEVER, the client is eating an inordinate amount of ram to do its thing, and I highly suspect it's the way I'm handling LOD and will be fixing it.
+
 # CrystalFrost
 Open source Unity 2021.3.6f1 LTS based Second Life viewer using LibreMetaverse.
 
