@@ -22,6 +22,8 @@ namespace CrystalFrost
 
     public class AssetManager
     {
+        //it's faster to multiply by this than to divide by 255
+        //to derive the float value from 0-255 pixel values
         private static float byteMult = 0.003921568627451f;
 
         int queuedMeshes = 0;
@@ -53,16 +55,8 @@ namespace CrystalFrost
 #if UseMeshCache
         public static ConcurrentDictionary<UUID, Mesh[]> meshCache = new ConcurrentDictionary<UUID, Mesh[]>();
 #endif
-        //static Dictionary<UUID, Texture2D> sculpts = new Dictionary<UUID, Texture2D>();
-        //static List<UUID> alphaTextures;
-        //static Dictionary<UUID, >  = new Dictionary<UUID, >();
-        //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
-        //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
-        //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
-        //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
-        //static Dictionary<UUID, AssetData>  = new Dictionary<UUID, AssetData>();
 
-        
+        //request non-fullbright texture from the server
         public Texture2D RequestTexture(UUID uuid, MeshRenderer rendr)
         {
             if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
@@ -100,6 +94,7 @@ namespace CrystalFrost
             return textures[uuid];
         }
 
+        //request terrain texture from the server
         public Texture2D RequestTerrainTexture(UUID uuid)
         {
             if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
@@ -123,7 +118,7 @@ namespace CrystalFrost
             return textures[uuid];
         }
 
-        
+        //request texture from server that's marked as fullbright by the prim face it's applied to
         public Texture2D RequestFullbrightTexture(UUID uuid, MeshRenderer rendr)
         {
             if (!materials.ContainsKey(uuid)) materials.Add(uuid, new List<MeshRenderer>());
@@ -218,10 +213,10 @@ namespace CrystalFrost
             }
         }
 #endif
-
+        //concurrent dictionary that stores requested sculpt and mesh data
         ConcurrentDictionary<UUID, List<SculptData>> requestedSculpts = new ConcurrentDictionary<UUID, List<SculptData>>();
 
-        
+        //request sculpt texture from server
         public void RequestSculpt(GameObject gameObject, Primitive prim)
         {
             SculptData sculptdata = new SculptData
@@ -245,7 +240,10 @@ namespace CrystalFrost
             //return textures[uuid];
         }
 
-        
+        //callback that receives sculpt texture from the server,
+        //then processes it into a mesh for use in Unity
+        //if multithreaded sculpts are enabled, it adds data to a
+        //ConcurrentQueue to be processed on the main thread
         public void CallbackSculptTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -501,7 +499,7 @@ namespace CrystalFrost
 
         public static ConcurrentQueue<TextureQueueData> textureQueue = new ConcurrentQueue<TextureQueueData>();
 
-        
+        //callback that receives texture data from the server
         public void CallbackTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -547,7 +545,7 @@ namespace CrystalFrost
             }
 
 #if MultiThreadTextures
-
+            //add texture to concurrent queue for multithreaded texture processing
             textureQueue.Enqueue(new TextureQueueData
             {
                 uuid = assetTexture.AssetID,
@@ -569,7 +567,7 @@ namespace CrystalFrost
 
         }
 
-        
+        //callback for receiving terrain textures from the server
         public void CallbackTerrainTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
@@ -615,7 +613,8 @@ namespace CrystalFrost
 
         }
 
-        
+        //Reinitialize a texture for use as a shaded texture
+        //multi-threaded version.         
         public void MainThreadTextureReinitialize(Color[] colors, UUID uuid, int width, int height, int components)
         {
             //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
@@ -655,10 +654,10 @@ namespace CrystalFrost
             }
         }
 
-        
+        //Reinitialize a texture for use as a shaded texture
+        //main thread only version   
         public void MainThreadTextureReinitialize(Texture2D texture2D, UUID uuid, int components)
         {
-            //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
             if(components==3)
                 textures[uuid].Reinitialize(texture2D.width, texture2D.height, TextureFormat.RGB24, false);
             else
@@ -696,16 +695,12 @@ namespace CrystalFrost
             }
         }
 
-        
+        //Callback for receiving from the server textures marked as fullbright by their prim face
         public void CallbackFullbrightTexture(TextureRequestState state, AssetTexture assetTexture)
         {
             bool isMainThread = ClientManager.IsMainThread;
 
             if (!components.ContainsKey(assetTexture.AssetID)) components.Add(assetTexture.AssetID, 0);
-
-
-            //FIXME Replace this decode with the native code DLL version
-            //bool success = assetTexture.Decode();
 
             bool success = false;
 
@@ -733,9 +728,10 @@ namespace CrystalFrost
                 return;
             }
 
-#if MultiThreadTextures
 
-            textureQueue.Enqueue(new TextureQueueData
+#if MultiThreadTextures
+        //add relevant data to a ConcurrentQueue for population on the main thread.
+        textureQueue.Enqueue(new TextureQueueData
             {
                 uuid = assetTexture.AssetID,
                 colors = assetTexture.Image.ExportUnityThreadSafe(),
@@ -757,10 +753,10 @@ namespace CrystalFrost
 
         }
 #if MultiThreadTextures
-        
+        //Reinitialize a texture for use as a full bright texture
+        //multi-threaded version.
         public void MainThreadFullbrightTextureReinitialize(Color[] colors, UUID uuid, int width, int height, int components)
         {
-            //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
             textures[uuid].Reinitialize(width, height, TextureFormat.RGBA32, false);
             textures[uuid].SetPixels(colors);
             textures[uuid].name = $"{uuid} Comp:{components.ToString()}";
@@ -789,13 +785,11 @@ namespace CrystalFrost
                 }
             }
         }
-#endif
-
-
-        
+#else
+        //Reinitialize a texture for use as a full bright texture
+        //mainthread only version
         public void MainThreadFullbrightTextureReinitialize(Texture2D texture2D, UUID uuid, int components)
         {
-            //FIXME Create assetTexture.Image.ExportUnity() function to use the native code DLL decoded data
             textures[uuid].Reinitialize(texture2D.width, texture2D.height, TextureFormat.RGBA32, false);
             textures[uuid].SetPixels(texture2D.GetPixels());
             textures[uuid].name = $"{uuid} Comp:{components.ToString()}";
@@ -824,9 +818,11 @@ namespace CrystalFrost
                 }
             }
         }
+#endif
 
         ConcurrentDictionary<UUID, List<SculptData>> requestedMeshes = new ConcurrentDictionary<UUID, List<SculptData>>();
         
+        //Forward the request for mesh data to the server.
         public void RequestMeshHighest(GameObject gameObject, Primitive prim)
         {
             queuedMeshes++;
@@ -836,6 +832,9 @@ namespace CrystalFrost
                 gameObject = gameObject,
                 prim = prim
             };
+
+            //store the gameObject and prim data for the object that requested the mesh
+            //so that it can be applied once the data is ready
             requestedMeshes.TryAdd(prim.Sculpt.SculptTexture, new List<SculptData>());
             requestedMeshes[prim.Sculpt.SculptTexture].Add(sculptdata);
 
@@ -987,7 +986,7 @@ namespace CrystalFrost
                         filter.sharedMesh.OptimizeIndexBuffers();
                         filter.sharedMesh.OptimizeReorderVertexBuffer();
                         filter.sharedMesh.UploadMeshData(true);
-#endif    
+#endif
                         //filter.sharedMesh.vertices = meshItem.vertices[j].ToArray();
                         if (color.a < 0.0001f)
                         {
