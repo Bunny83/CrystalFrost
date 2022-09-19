@@ -15,7 +15,7 @@ Currently it's set up to only log into agni rather than any Open Sim grid, but t
 There is no working build, but the source code does work. It lets you log in and renders objects within a 32meter radius around the main camera. It also hogs memory like crazy, which is the current issue I'm trying to fix and would absolutely LOVE help from someone who's better with code than I am at fixing this.
 
 # Joining the Project
-Also please contact me using any of the IDs listed in the license if you want to be added as a contributor and help out in a more direct manner.
+Also please contact on SL as Berry Bunny, or on Discord as Kallisti#2038 if you want to be added as a contributor and help out in a more direct manner.
 
 # Short License.
 PLEASE VIEW ACTUAL LICENSE.TXT rather than relying on this alone.
