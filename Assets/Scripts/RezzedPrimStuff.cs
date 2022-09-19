@@ -7,7 +7,7 @@ using OpenMetaverse.Rendering;
 using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
 using UnityEngine.Rendering.HighDefinition;
-using Unity.Burst;
+
 
 public class RezzedPrimStuff : MonoBehaviour
 {
@@ -53,7 +53,7 @@ public class RezzedPrimStuff : MonoBehaviour
         }
     }
 
-    [BurstCompile]
+    
     public void Populate(Primitive _prim)
     {
 #if true

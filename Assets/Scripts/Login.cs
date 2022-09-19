@@ -63,7 +63,7 @@ public class Login : MonoBehaviour
         ClientManager.client.Settings.ENABLE_CAPS = true;
         ClientManager.client.Settings.STORE_LAND_PATCHES = true;
         ClientManager.client.Settings.ENABLE_SIMSTATS = true;
-        //ClientManager.client.Settings.= true;
+        ClientManager.client.Settings.USE_INTERPOLATION_TIMER = true;
         ClientManager.client.Settings.SEND_AGENT_THROTTLE = true;
         ClientManager.client.Settings.SEND_AGENT_UPDATES = true;
         ClientManager.client.Self.Movement.Camera.Far = 32f;

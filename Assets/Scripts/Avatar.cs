@@ -11,6 +11,8 @@ public class Avatar : MonoBehaviour
     public string firstName;
     public string lastName;
 
+    public uint id;
+
     public bool fly = false;
 
     public bool canMove = true;

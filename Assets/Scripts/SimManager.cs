@@ -11,7 +11,7 @@ using OpenMetaverse.Rendering;
 using OpenMetaverse.Assets;
 using LibreMetaverse.PrimMesher;
 using UnityEngine.Rendering.HighDefinition;
-//using Unity.Burst;
+//
 using CrystalFrost;
 
 public class SimManager : MonoBehaviour
@@ -44,6 +44,7 @@ public class SimManager : MonoBehaviour
     //List<TerseObjectUpdateEventArgs> terseRobjectsUpdates = new List<TerseObjectUpdateEventArgs>();
 
     Avatar avatar;
+    public BoundsOctree<GameObject> boundsTree = new BoundsOctree<GameObject>(15, new Vector3(127, 0, 127), 1, 1.25f);
 
     public class RezzedObjectData
     {
@@ -84,17 +85,18 @@ public class SimManager : MonoBehaviour
             velocity = p.Velocity.ToUnity();
             omega = p.AngularVelocity.ToUnity();
 
-            bgo.name = name;
+            bgo.name = $"{name} id:{id.ToString()} parent:{prim.ParentID}";
             go.name = bgo.name + " meshHolder";
             //primData = prim.PrimData;
 
         }
 
-        /*        public void Populate()
-                {
-                    Populate(prim);
-                }
-        */
+        public void Populate()
+        {
+            Populate(prim);
+        }
+        
+
         public void Populate(Primitive prim)
         {
 #if true
@@ -156,10 +158,11 @@ public class SimManager : MonoBehaviour
                     gomesh.transform.rotation = go.transform.rotation;
                     gomesh.transform.parent = meshHolder.transform;
                     gomesh.transform.localScale = Vector3.one;//prim.Scale.ToUnity();
+                    //SetGlobalScale(gomesh.transform, )
                     faces.Add(gomesh);
 
                     //if(Vector3.Distance(gomesh.transform.position, Camera.main.transform.position) >= 32f)
-                        gomesh.GetComponent<MeshRenderer>().enabled = true;
+                        //gomesh.GetComponent<MeshRenderer>().enabled = true;
 
 
                     vertices = new Vector3[fmesh.faces[j].Vertices.Count];
@@ -190,6 +193,8 @@ public class SimManager : MonoBehaviour
                     mesh.SetIndices(fmesh.faces[j].Indices, MeshTopology.Triangles, 0);
                     meshFilter.mesh = ReverseWind(mesh);
                     Material clonemat;// = null;
+
+                    //simMan.boundsTree.Add(gomesh, rendr.bounds);
 
                     textureEntryFace.GetOSD(j);
                     //ImageType.
@@ -331,7 +336,7 @@ public class SimManager : MonoBehaviour
 
                 //light. = prim.Light.Radius;
                 hdlight.color = prim.Light.Color.ToUnity();
-                hdlight.intensity = prim.Light.Intensity * 10000f;
+                hdlight.intensity = prim.Light.Intensity * 10000000f;
                 hdlight.range = prim.Light.Radius;
                 //hdlight.fadeDistance = prim.Light.Radius * (1f - prim.Light.Falloff)
             }
@@ -413,7 +418,7 @@ public class SimManager : MonoBehaviour
             //client.Objects. += new EventHandler<ObjectDataBlockUpdateEventArgs>(ObjectDataBlockUpdateEvent);
         //}
         client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(TerrainEventHandler);
-        //StartCoroutine(ObjectsLODUpdate());
+        StartCoroutine(ObjectsLODUpdate());
         StartCoroutine(MeshRequests());
         StartCoroutine(MeshQueueParsing());
         StartCoroutine(UpdateCamera());
@@ -450,7 +455,7 @@ public class SimManager : MonoBehaviour
                 //}
             }
 
-            yield return new WaitForSeconds(0.02f);
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -458,6 +463,46 @@ public class SimManager : MonoBehaviour
 
     IEnumerator MeshQueueParsing()
     {
+#if true
+        CrystalFrost.AssetManager.MeshQueue meshItem;
+        Mesh[] meshes;
+        int i;
+        while (true)
+        {
+            if (ClientManager.active)
+            {
+                //                Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
+                if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
+                {
+                    //Debug.Log("DeQueing mesh stage 2");
+                    if (meshItem.uuid != null)
+                    {
+                        //Debug.Log("DeQueing mesh stage 3");
+                        //CrystalFrost.AssetManager.meshCache.TryAdd()
+                        meshes = new Mesh[meshItem.vertices.Count];
+                        for (i = 0; i < meshes.Length; i++)
+                        {
+                            meshes[i] = new Mesh();
+                            meshes[i].name = $"{meshItem.uuid.ToString()} face:{i}";
+                            meshes[i].vertices = meshItem.vertices.Dequeue();
+                            //Debug.Log($"DeQueing mesh stage 4. {meshes[i].vertices.Length.ToString()} in vertices");
+                            meshes[i].normals = meshItem.normals.Dequeue();
+                            meshes[i].uv = meshItem.uvs.Dequeue();
+                            meshes[i].SetIndices(meshItem.indices.Dequeue(), MeshTopology.Triangles, 0);
+                            meshes[i] = AssetManager.ReverseWind(meshes[i]);
+                        }
+                        ClientManager.assetManager.MainThreadMeshSpawner(meshes, meshItem.uuid);
+                    }
+                    else
+                    {
+                        Debug.LogError("meshItem was null");
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(0.02f);
+        }
+#else
         CrystalFrost.AssetManager.MeshQueue meshItem;
         Mesh[] meshes;
         int i,count;
@@ -470,7 +515,7 @@ public class SimManager : MonoBehaviour
                 delta = 0.0;
                 if (CrystalFrost.AssetManager.concurrentMeshQueue.Count > 0)
                 {
-                    while (delta < 0.1)
+                    while (delta < 0.01)
                     {
                         //Debug.Log($"DeQueing mesh. {CrystalFrost.AssetManager.concurrentMeshQueue.Count} in queue");
                         if (CrystalFrost.AssetManager.concurrentMeshQueue.TryDequeue(out meshItem))
@@ -508,8 +553,9 @@ public class SimManager : MonoBehaviour
                 }
             }
 
-            yield return null;
+            yield return new WaitForSeconds(0.1f - (float)delta);
         }
+#endif
     }
 
     void ObjectDataBlockUpdateEvent(object sender, ObjectDataBlockUpdateEventArgs e)
@@ -546,7 +592,8 @@ public class SimManager : MonoBehaviour
             objects[prim.LocalID].go.transform.localRotation = prim.Rotation.ToUnity();
         }
 
-        bgo.transform.localScale = prim.Scale.ToUnity();
+        SetGlobalScale(bgo.transform, Vector3.one);
+        SetGlobalScale(objects[prim.LocalID].go.transform, prim.Scale.ToUnity());
         objects[prim.LocalID].velocity = prim.Velocity.ToUnity();
         objects[prim.LocalID].omega = prim.AngularVelocity.ToUnity();
     }
@@ -639,7 +686,7 @@ public class SimManager : MonoBehaviour
         public GameObject gameObject;
     }
 
-    List<ObjectData> objectData = new List<ObjectData>();
+    //List<ObjectData> objectData = new List<ObjectData>();
 
 
     int meshRequestCounter = 0;
@@ -697,14 +744,15 @@ public class SimManager : MonoBehaviour
             {
                 if (primevent == null) continue;
                 prim = primevent.Prim;
-                if (primevent.IsNew)
+                if (primevent.IsNew && !objects.ContainsKey(prim.LocalID))
                 {
                     GameObject bgo = Instantiate(blank, prim.Position.ToVector3(), prim.Rotation.ToUnity());
                     GameObject go = Instantiate(cube, bgo.transform.position, bgo.transform.rotation);
                     objects.TryAdd(prim.LocalID, new RezzedObjectData(prim.Type.ToString() + " Object", string.Empty, prim.LocalID, prim, bgo, go, this));
                     rez = objects[prim.LocalID];//go.GetComponent<RezzedPrimStuff>();
                                                 //rez.localID = prim.LocalID;
-                    if (objects.ContainsKey(prim.ParentID)) objects[prim.ParentID].children.Add(bgo);
+                    //if (objects.ContainsKey(prim.ParentID)) objects[prim.ParentID].children.Add(bgo);
+
                     //rez.bgo = bgo;
                     //rez.meshHolder = go;
                     //bgo.GetComponent<RezzedPrimStuff>().meshHolder = go;
@@ -713,14 +761,16 @@ public class SimManager : MonoBehaviour
                     //rez.primTypeNum = (int)prim.Type;
                     //rez.pCode = prim.PrimData.PCode;
 
-                    objectData.Add(new ObjectData { gameObject = bgo, primitive = prim });
+                    //objectData.Add(new ObjectData { gameObject = bgo, primitive = prim });
 
                     go.transform.position = prim.Position.ToUnity();
                     go.transform.rotation = prim.Rotation.ToUnity();
-                    go.transform.localScale = prim.Scale.ToUnity();
+                    //go.transform.localScale = prim.Scale.ToUnity();
+                    SetGlobalScale(go.transform, prim.Scale.ToUnity());
                     go.transform.parent = bgo.transform;
                     MakeParent(prim.LocalID, prim.ParentID);
 
+                    //boundsTree.Add(go, new Bounds(go.transform.position, prim.Scale.ToUnity()));
                     //TranslationData translationData = new TranslationData(go.transform, prim.Velocity.ToUnity(), prim.AngularVelocity.ToUnity());
                     //translationObjs.TryAdd(prim.LocalID, translationData);
 
@@ -730,10 +780,10 @@ public class SimManager : MonoBehaviour
                         av.myAvatar = bgo.transform;
                     }
 
-                    if (Vector3.Distance(Camera.main.transform.position, prim.Position.ToUnity()) < ClientManager.viewDistance)
-                    {
-                        objects[prim.LocalID].Populate(prim);
-                    }
+                    //if (Vector3.Distance(Camera.main.transform.position, prim.Position.ToUnity()) < ClientManager.viewDistance)
+                    //{
+                        //objects[prim.LocalID].Populate(prim);
+                    //}
                 }
                 else if (objects.ContainsKey(prim.LocalID))
                 {
@@ -786,16 +836,76 @@ public class SimManager : MonoBehaviour
         {
 
         }
+        if(!objects.ContainsKey(parent) && parent != 0)
+        {
+            orphans.Add(id);
+        }
+    }
+
+    public void SetGlobalScale(Transform t, Vector3 globalScale)
+    {
+        t.localScale = Vector3.one;
+        t.localScale = new Vector3(globalScale.x / t.lossyScale.x, globalScale.y / t.lossyScale.y, globalScale.z / t.lossyScale.z);
     }
 
     //IEnumerator ObjectsUpdate()
+
+    List<uint> orphans = new List<uint>();
 #if true
     IEnumerator ObjectsLODUpdate()
     {
-        int counter = 0;
+        //int counter = 0;
         while (true)
         {
+            //List<GameObject> collidingWith = new List<GameObject>();
+            //boundsTree.GetColliding(collidingWith, new Bounds(Camera.main.transform.position, new Vector3(ClientManager.viewDistance, ClientManager.viewDistance, ClientManager.viewDistance)));
+            foreach (RezzedObjectData rod in objects.Values)
+            {
+                if (Vector3.Distance(rod.bgo.transform.position, Camera.main.transform.position) < ClientManager.viewDistance)
+                {
+                    if (rod.isPopulated)
+                    {
+                        foreach (GameObject face in rod.faces)
+                        {
+                            if (Vector3.Distance(face.transform.position, Camera.main.transform.position) < ClientManager.viewDistance)
+                            {
+                                face.GetComponent<Renderer>().enabled = true;
+                            }
+                            else
+                            {
+                                face.GetComponent<Renderer>().enabled = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Vector3.Distance(rod.bgo.transform.position, Camera.main.transform.position) < ClientManager.viewDistance)
+                            rod.Populate();
+                    }
+                }
+                else
+                {
+                    foreach (GameObject face in rod.faces)
+                    {
+                        face.GetComponent<Renderer>().enabled = false;
+                    }
+                }
+            }
 
+            uint parent;
+
+            foreach (uint id in orphans)
+            {
+                parent = objects[id].prim.ParentID;
+                if (objects.ContainsKey(parent))
+                {
+                    MakeParent(id, parent);
+                }
+            }
+            /*foreach(GameObject go in collidingWith)
+            {
+                go.GetComponent<Renderer>().enabled = true;
+            }*/
             yield return new WaitForSeconds(1f);
         }
 

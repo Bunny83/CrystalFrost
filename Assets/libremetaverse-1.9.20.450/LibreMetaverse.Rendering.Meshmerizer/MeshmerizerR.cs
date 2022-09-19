@@ -39,7 +39,7 @@ using System.Drawing;
 using System.IO;
 using OpenMetaverse.StructuredData;
 using LibreMetaverse.PrimMesher;
-using Unity.Burst;
+
 using UnityEngine;
 
 namespace OpenMetaverse.Rendering
@@ -48,7 +48,7 @@ namespace OpenMetaverse.Rendering
     /// Meshing code based on the Idealist Viewer (20081213).
     /// </summary>
     [RendererName("MeshmerizerR")]
-    [BurstCompile]
+    
     public class MeshmerizerR : IRendering
     {
         /// <summary>
@@ -95,7 +95,7 @@ namespace OpenMetaverse.Rendering
         /// <param name="prim">Primitive to generate the mesh from</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
         /// <returns>The generated mesh or null on failure</returns>
-        [BurstCompile]
+        
         public SimpleMesh GenerateSimpleMeshWithNormals(Primitive prim, DetailLevel lod) {
             PrimMesh newPrim = GeneratePrimMesh(prim, lod, true);
 	        if(newPrim == null)
@@ -134,7 +134,7 @@ namespace OpenMetaverse.Rendering
         /// <param name="sculptTexture">Sculpt texture</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
         /// <returns>The generated mesh or null on failure</returns>
-        [BurstCompile]
+        
         public SimpleMesh GenerateSimpleSculptMesh(Primitive prim, Bitmap sculptTexture, DetailLevel lod)
         {
             var faceted = GenerateFacetedSculptMesh(prim, sculptTexture, lod);
@@ -169,7 +169,7 @@ namespace OpenMetaverse.Rendering
         /// <param name="prim">Primitive to generate the mesh from</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
         /// <returns>The generated mesh</returns >
-        [BurstCompile]
+        
         public FacetedMesh GenerateFacetedMesh(Primitive prim, DetailLevel lod)
         {
             bool isSphere = ((ProfileCurve)(prim.PrimData.profileCurve & 0x07) == ProfileCurve.HalfCircle);
@@ -231,7 +231,7 @@ namespace OpenMetaverse.Rendering
         /// routine since all the context for finding teh texture is elsewhere.
         /// </summary>
         /// <returns>The faceted mesh or null if can't do it</returns>
-        [BurstCompile]
+        
         public FacetedMesh GenerateFacetedSculptMesh(Primitive prim, Bitmap scupltTexture, DetailLevel lod)
         {
             //UnityMainThreadDispatcher.Instance().Enqueue(() => Debug.Log("Generating sculpt mesh"));
@@ -344,7 +344,7 @@ namespace OpenMetaverse.Rendering
         /// <param name="center">Center-point of the face</param>
         /// <param name="teFace">Face texture parameters</param>
         /// <param name="primScale">Prim scale vector</param>
-        [BurstCompile]
+        
         public void TransformTexCoords(List<Vertex> vertices, OMVVector3 center, Primitive.TextureEntryFace teFace, OMVVector3 primScale)
         {
             // compute trig stuff up front
@@ -418,7 +418,7 @@ namespace OpenMetaverse.Rendering
         /// routine since all the context for finding the data is elsewhere.
         /// </summary>
         /// <returns>The faceted mesh or null if can't do it</returns>
-        [BurstCompile]
+        
         public FacetedMesh GenerateFacetedMeshMesh(Primitive prim, byte[] meshData)
         {
             FacetedMesh ret = null;
@@ -446,7 +446,7 @@ namespace OpenMetaverse.Rendering
 
         // A version of GenerateFacetedMeshMesh that takes LOD spec so it's similar in calling convention of
         //    the other Generate* methods.
-        [BurstCompile]
+        
         public FacetedMesh GenerateFacetedMeshMesh(Primitive prim, byte[] meshData, DetailLevel lod) {
             FacetedMesh ret = null;
             string partName = null;
@@ -480,7 +480,7 @@ namespace OpenMetaverse.Rendering
         }
 
         // Convert a compressed submesh buffer into a FacetedMesh.
-        [BurstCompile]
+        
         public FacetedMesh MeshSubMeshAsFacetedMesh(Primitive prim, byte[] compressedMeshData)
         {
             FacetedMesh ret = null;
@@ -500,7 +500,7 @@ namespace OpenMetaverse.Rendering
 
 
         // Convert a compressed submesh buffer into a SimpleMesh.
-        [BurstCompile]
+        
         public SimpleMesh MeshSubMeshAsSimpleMesh(Primitive prim, byte[] compressedMeshData)
         {
             SimpleMesh ret = null;
@@ -521,7 +521,7 @@ namespace OpenMetaverse.Rendering
             return ret;
         }
 
-        [BurstCompile]
+        
         public List<List<OMVVector3>> MeshSubMeshAsConvexHulls(Primitive prim, byte[] compressedMeshData)
         {
             List<List<OMVVector3>> hulls = new List<List<OMVVector3>>();
@@ -591,7 +591,7 @@ namespace OpenMetaverse.Rendering
         }
 
         // Add the submesh to the passed SimpleMesh
-        [BurstCompile]
+        
         private void AddSubMesh(OSD subMeshOsd, ref SimpleMesh holdingMesh) {
             if (subMeshOsd is OSDMap subMeshMap)
             {
@@ -607,7 +607,7 @@ namespace OpenMetaverse.Rendering
         }
 
         // Add the submesh to the passed FacetedMesh as a new face.
-        [BurstCompile]
+        
         private void AddSubMesh(Primitive prim, int faceIndex, OSD subMeshOsd, ref FacetedMesh holdingMesh) {
             if (subMeshOsd is OSDMap subMesh)
             {
@@ -634,7 +634,7 @@ namespace OpenMetaverse.Rendering
             }
         }
 
-        [BurstCompile]
+        
         private List<Vertex> CollectVertices(OSDMap subMeshMap)
         {
             List<Vertex> vertices = new List<Vertex>();
@@ -721,7 +721,7 @@ namespace OpenMetaverse.Rendering
             return vertices;
         }
 
-        [BurstCompile]
+        
         private List<ushort> CollectIndices(OSDMap subMeshMap)
         {
             List<ushort> indices = new List<ushort>();
@@ -744,7 +744,7 @@ namespace OpenMetaverse.Rendering
         /// is the uncompressed data for that mesh.
         /// The OSDMap is made up of the asset_header section (which includes a lot of stuff)
         /// plus each of the submeshes unpacked into compressed byte arrays.</returns>
-        [BurstCompile]
+        
         public OSDMap UnpackMesh(byte[] assetData)
         {
             OSDMap meshData = new OSDMap();
@@ -788,7 +788,7 @@ namespace OpenMetaverse.Rendering
 
         // Local routine to create a mesh from prim parameters.
         // Collects parameters and calls PrimMesher to create all the faces of the prim.
-        [BurstCompile]
+        
         private PrimMesh GeneratePrimMesh(Primitive prim, DetailLevel lod, bool viewerMode)
         {
             Primitive.ConstructionData primData = prim.PrimData;
@@ -914,7 +914,7 @@ namespace OpenMetaverse.Rendering
         /// <param name="yBegin">Starting value for Y</param>
         /// <param name="yEnd">Max value of Y</param>
         /// <returns></returns>
-        [BurstCompile]
+        
         public Face TerrainMesh(float[,] zMap, float xBegin, float xEnd, float yBegin, float yEnd)
         {
             SculptMesh newMesh = new SculptMesh(zMap, xBegin, xEnd, yBegin, yEnd, true);

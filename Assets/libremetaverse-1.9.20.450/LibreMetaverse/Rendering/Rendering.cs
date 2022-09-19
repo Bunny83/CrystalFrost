@@ -31,7 +31,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using OpenMetaverse.Assets;
 using OpenMetaverse.StructuredData;
-using Unity.Burst;
+
 
 // The common elements shared between rendering plugins are defined here
 
@@ -243,7 +243,7 @@ namespace OpenMetaverse.Rendering
         /// <param name="LOD">Level of detail</param>
         /// <param name="mesh">Resulting decoded FacetedMesh</param>
         /// <returns>True if mesh asset decoding was successful</returns>
-        [BurstCompile]
+        
         public static bool TryDecodeFromAsset(Primitive prim, AssetMesh meshAsset, DetailLevel LOD, out FacetedMesh mesh)
         {
             mesh = null;
